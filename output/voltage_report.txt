@@ -1,0 +1,65 @@
+Voltage Correlation Analysis: G1000 NXi vs Triplett VDL48
+Aircraft: N238PS (Diamond DA40NG)  Date: 2026-02-08
+
+=================================================================
+  Flight 1: KBOW -> KSPG
+=================================================================
+  Samples (paired, 2-sec grid):  1650
+  Duration:                      55.0 min
+
+  G1000 volt1   - mean:  26.40 V   std: 0.573 V   range: [22.40, 27.70]
+  VDL voltage   - mean:  28.26 V   std: 0.145 V   range: [27.93, 28.41]
+
+  Difference (G1000 − VDL):
+    Mean:    -1.869 V
+    Median:  -1.920 V
+    Std Dev: 0.608 V
+    Min:     -5.580 V
+    Max:     -0.270 V
+    95% CI:  [-2.680, -0.420] V
+
+  Pearson r:         -0.1212  (p = 7.93e-07)
+  Paired t-test:     t = -124.89,  p = 0.00e+00
+  -> Highly significant difference (p < 0.001)
+
+=================================================================
+  Flight 2: KSPG -> KBOW
+=================================================================
+  Samples (paired, 2-sec grid):  2229
+  Duration:                      74.3 min
+
+  G1000 volt1   - mean:  27.32 V   std: 0.459 V   range: [23.50, 28.00]
+  VDL voltage   - mean:  28.31 V   std: 0.329 V   range: [25.55, 28.44]
+
+  Difference (G1000 − VDL):
+    Mean:    -0.990 V
+    Median:  -1.020 V
+    Std Dev: 0.534 V
+    Min:     -4.550 V
+    Max:     +1.700 V
+    95% CI:  [-1.775, -0.150] V
+
+  Pearson r:         0.1121  (p = 1.12e-07)
+  Paired t-test:     t = -87.48,  p = 0.00e+00
+  -> Highly significant difference (p < 0.001)
+
+=================================================================
+  Combined (Both Flights)
+=================================================================
+  Samples (paired, 2-sec grid):  3879
+  Duration:                      129.3 min
+
+  G1000 volt1   - mean:  26.93 V   std: 0.686 V   range: [22.40, 28.00]
+  VDL voltage   - mean:  28.29 V   std: 0.268 V   range: [25.55, 28.44]
+
+  Difference (G1000 − VDL):
+    Mean:    -1.364 V
+    Median:  -1.220 V
+    Std Dev: 0.714 V
+    Min:     -5.580 V
+    Max:     +1.700 V
+    95% CI:  [-2.670, -0.180] V
+
+  Pearson r:         0.0900  (p = 2.00e-08)
+  Paired t-test:     t = -118.92,  p = 0.00e+00
+  -> Highly significant difference (p < 0.001)
