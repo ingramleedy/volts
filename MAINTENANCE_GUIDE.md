@@ -74,7 +74,7 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 
 ![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
 
-**Note:** The GIA 63W avionics computers (#1 and #2) are remotely located in the **aft fuselage avionics rack** (AMM p.495), not on the instrument panel. The GEA 71S and GIA units are in different locations.
+**Note:** The GIA 63W avionics computers (#1 and #2) are remotely located in the **aft fuselage avionics rack** (AMM p.495).
 
 - The GEA 71S **measures its own power supply voltage internally** — there is no separate external sense wire
 - **Power input:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** from the Essential Bus through the **5A ENG INST** breaker
@@ -180,7 +180,7 @@ The G1000 units are split between two locations (per AMM 31-40-00):
 
 ### Instrument Panel Shelf (CHECK FIRST)
 
-The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf**, not in the aft bay. Its connector P701 and ground stud GS-IP-14 are both in this area.
+The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf**. Its connector P701 and ground stud GS-IP-14 are both in this area.
 
 **Inspect at the instrument panel:**
 - **GEA 71S connector P701** — is it fully seated with lock engaged? This is the voltage sensor unit. Check Pin 20 (power ground) and Pin 35 (aircraft power) specifically.
