@@ -64,11 +64,17 @@ Even from delivery, N238PS was reading **0.25V low** and had **4–5x more volta
 
 ### Where the Voltage Is Actually Measured
 
-The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit) on the avionics rack in the aft bay. Per the Garmin GEA 71 Installation Manual (190-00303-40) and AMM CH.92 schematic D44-9231-60-03_01 (Sheet 4/6, page 1910):
+The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit), which is mounted on the **instrument panel shelf** (AMM 31-40-00, p.985, Figure 6). Per the Garmin GEA 71 Installation Manual (190-00303-40) and AMM CH.92 schematic D44-9231-60-03_01 (Sheet 4/6, page 1910):
+
+**GEA 71S Installation Location (AMM 31-40-00, Figure 6):**
+
+![GEA 71 / 71B Processor Installation — instrument panel shelf](docs/AMM_p986_GEA71_installation.png)
 
 **AMM Schematic — G1000 NXi GEA 71S Wiring (D44-9231-60-03_01, Sheet 4/6):**
 
 ![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
+
+**Note:** The GIA 63W avionics computers (#1 and #2) are remotely located in the **aft fuselage avionics rack** (AMM p.495), not on the instrument panel. The GEA 71S and GIA units are in different locations.
 
 - The GEA 71S **measures its own power supply voltage internally** — there is no separate external sense wire
 - **Power input:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** from the Essential Bus through the **5A ENG INST** breaker
@@ -138,7 +144,7 @@ The engine R&R (oil leak) was not the only work performed. During the same visit
 3. **RACC relay troubleshooting** — relays in the **aft avionics bay** were inspected to diagnose the RACC power issue
 4. **GSA 91 pitch servo replaced** — autopilot pitch servo (also in the aft area)
 
-**This is critical:** The G1000 avionics rack (GEA 71S, GIA 63W, GRS 79, etc.) is mounted in the **aft avionics bay, near the battery**. While troubleshooting the RACC relays in that same bay, someone likely bumped, loosened, or failed to fully reseat a G1000 ground connection — particularly the GEA 71S connector P701 or its ground wire to GS-IP-14. The RACC got fixed, the engine went back on, and nobody noticed the G1000 was now reading a volt low.
+**The G1000 units are in two locations:** The GEA 71S (voltage sensor) is on the **instrument panel shelf**, while the GIA 63W computers are in the **aft fuselage avionics rack** near the battery. The RACC relay troubleshooting was in the aft bay — right on top of the GIA units. But the GEA 71S and its ground stud GS-IP-14 are at the instrument panel, so the aft bay work may not have directly disturbed them. However, the extensive scope of this shop visit — engine R&R, alternator swap, relay troubleshooting, servo replacement — involved working throughout the aircraft. Panels were opened, harnesses were moved, and connectors were handled. Something during this visit disturbed a ground connection in the GEA 71S's path, and nobody noticed the G1000 was now reading a volt low.
 
 A second engine R&R in Jul 2025 (piston crack) did **not** fix the problem, ruling out the firewall pass-through connectors (which were reconnected during that work). The GSA 91 pitch servo was also replaced a second time — also with no improvement.
 
@@ -161,17 +167,36 @@ The Feb 2026 pin cleaning targeted the **GDL 69A** (SiriusXM datalink transceive
 
 ## Where to Look
 
-### Aft Avionics Bay (CHECK FIRST)
+### G1000 LRU Locations
 
-The G1000 LRU rack (GEA 71S, GIA 63W, GRS 79, etc.) is mounted in the **aft avionics bay near the battery**. This is the same area where RACC relays were troubleshot during the Feb 2024 shop visit — someone was working right on top of the G1000 units when the problem started.
+The G1000 units are split between two locations (per AMM 31-40-00):
 
-**Inspect in the aft bay:**
+| Unit | Location | AMM Reference |
+|------|----------|---------------|
+| **GEA 71S** (voltage sensor) | **Instrument panel shelf** | 31-40-00, p.985, Figure 6 |
+| **GDU 1050 PFD / GDU 1060 MFD** | Instrument panel (displays) | Visible |
+| **GIA 63W #1 & #2** (avionics computers) | **Aft fuselage avionics rack** | p.495 |
+| **GRS 77/79 AHRS** | Next to aft avionics rack | 31-40-00, p.985 |
+
+### Instrument Panel Shelf (CHECK FIRST)
+
+The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf**, not in the aft bay. Its connector P701 and ground stud GS-IP-14 are both in this area.
+
+**Inspect at the instrument panel:**
 - **GEA 71S connector P701** — is it fully seated with lock engaged? This is the voltage sensor unit. Check Pin 20 (power ground) and Pin 35 (aircraft power) specifically.
 - **Ground stud GS-IP-14** — this is where the GEA 71S power ground wire (77016A22N) terminates. Check for loose nut, corrosion, or paint under the ring terminal.
-- All other G1000 LRU connectors on the rack
-- Any other ground studs in the aft bay
+- All GS-IP ground studs on the IP bus bar (see table below)
 - Look for anything that appears disturbed, loose, or not fully reconnected
-- Check for tool marks, scuffing, or signs that connectors were pulled and reseated
+
+### Aft Fuselage Avionics Rack (CHECK SECOND)
+
+The GIA 63W avionics computers and GRS 79 AHRS are in the **aft fuselage avionics rack**. This is the same area where RACC relays were troubleshot during the Feb 2024 shop visit.
+
+**Inspect in the aft bay:**
+- **GIA 63W #1 connector 1P604** and **GIA 63W #2 connector 2P604** — check Pin 14 (power ground) on each
+- All other LRU connectors on the aft rack
+- Any ground studs in the aft bay
+- Check for tool marks, scuffing, or signs that connectors were pulled and reseated during the RACC troubleshooting
 
 ### Ground Stud Locations (GS-IP Series)
 
@@ -314,6 +339,7 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 | Reference | Content |
 |-----------|---------|
 | AMM 24-60-00 | Bus structure, power distribution, troubleshooting table |
+| AMM 31-40-00, p.985-986 | GEA 71S location (instrument panel shelf), Figure 6 |
 | AMM CH.92, D44-9224-30-01 through -05 | Electrical system wiring diagrams (power distribution) |
 | AMM CH.92, D44-9231-60-03_01 | G1000 NXi wiring diagrams (Sheets 2-6, pages 1908-1912) |
 | AMM CH.31 | GDU 1050/1060 connector pinouts |
@@ -322,4 +348,4 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 
 ## Summary
 
-The G1000 reads low because of high-resistance ground connections — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit when RACC relays were troubleshot in the aft avionics bay — the same bay where the G1000 rack is mounted. Three voltage regulators, two alternators, and two pitch servos have been replaced unnecessarily. The fix is to **clean and retorque all G1000 ground connections** — both in the aft avionics bay and at the GS-IP ground studs. Don't stop after finding one bad connection; the data shows there may be more than one marginal joint.
+The G1000 reads low because of high-resistance ground connections — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit. Three voltage regulators, two alternators, and two pitch servos have been replaced unnecessarily. The GEA 71S (the actual voltage sensor) is on the **instrument panel shelf** — start there with connector P701 and ground stud GS-IP-14. Then check the GIA 63W units in the **aft fuselage avionics rack**. Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 LRU connectors. Don't stop after finding one bad connection; the data shows there may be more than one marginal joint.
