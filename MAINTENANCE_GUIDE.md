@@ -95,9 +95,9 @@ The ECU voltage did NOT change — it reads a steady 27.82V throughout the entir
 
 **How to read this chart:**
 
-- **Top panel** — Each dot is one flight's average voltage. The green dots (left of the dashed line) are flights before the Feb 2024 shop visit; the red dots (right) are after. The green ECU dots along the top stay flat at ~27.8V the entire time — proving the actual bus voltage never changed. Only the G1000 reading dropped.
-- **Middle panel** — This is a cumulative trend indicator (CUSUM). Think of it like a running score: when the G1000 reads above its long-term average, the line rises; when it reads below, the line falls. The peak and reversal at Feb 2024 pinpoints exactly when the readings shifted downward. The chart clearly shows the problem is getting progressively worse over time.
-- **Bottom panel** — Voltage noise (how much the reading jumps around during a single flight). After Feb 2024, the noise increased 55% — the G1000 reading became both lower *and* more erratic, consistent with a loose or corroded connection that vibration and temperature changes make worse.
+- **Top panel** — Each dot is one flight's average voltage. Green = before Feb 2024, red = after. The ECU dots along the top stay flat at ~27.8V the entire time — the actual bus voltage never changed. Only the G1000 dropped.
+- **Middle panel** — A trend line showing the problem is getting progressively worse over time, with a clear inflection at Feb 2024.
+- **Bottom panel** — Voltage noise (how much the reading jumps around during each flight). After Feb 2024, noise increased 55% — consistent with a loose or corroded connection that vibration makes worse.
 
 ### What Happened During That Shop Visit (Feb 2024)
 
@@ -108,7 +108,7 @@ The engine R&R (oil leak) was not the only work performed. During the same visit
 3. **RACC relay troubleshooting** — relays in the **aft avionics bay** were inspected to diagnose the RACC power issue
 4. **GSA 91 pitch servo replaced** — autopilot pitch servo (also in the aft area)
 
-**The G1000 units are in two locations:** The GEA 71S (voltage sensor) is on the **instrument panel shelf**, while the GIA 63W computers are in the **aft fuselage avionics rack** near the battery. The RACC relay troubleshooting was in the aft bay — right on top of the GIA units. But the GEA 71S and its ground stud GS-IP-14 are at the instrument panel, so the aft bay work may not have directly disturbed them. However, the extensive scope of this shop visit — engine R&R, alternator swap, relay troubleshooting, servo replacement — involved working throughout the aircraft. Panels were opened, harnesses were moved, and connectors were handled. Something during this visit disturbed a ground connection in the GEA 71S's path, and nobody noticed the G1000 was now reading a volt low.
+The scope of this visit was extensive — engine R&R, alternator swap, relay troubleshooting in the aft bay, servo replacement. Panels were opened, harnesses were moved, and connectors were handled throughout the aircraft. Something during this visit disturbed a ground connection, and nobody noticed the G1000 was now reading a volt low.
 
 A second engine R&R in Jul 2025 (piston crack) did **not** fix the problem, ruling out the firewall pass-through connectors (which were reconnected during that work). The GSA 91 pitch servo was also replaced a second time — also with no improvement.
 
@@ -205,7 +205,7 @@ The G1000 units are split between two locations (per AMM 31-40-00):
 | **GIA 63W #1 & #2** (avionics computers) | **Aft fuselage avionics rack** | p.495 |
 | **GRS 77/79 AHRS** | Next to aft avionics rack | 31-40-00, p.985 |
 
-### Instrument Panel Shelf (CHECK FIRST)
+### Instrument Panel
 
 The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf**. Its connector P701 and ground stud GS-IP-14 are both in this area.
 
@@ -273,12 +273,7 @@ The instrument panel frame connects to the fuselage structure. Check:
 
 **Setup:** Battery master OFF, **battery negative cable physically disconnected from the battery post**.
 
-**Why disconnect the battery?** A multimeter in ohms mode works by pushing a tiny known current through its probes and measuring the voltage drop. If the battery is still connected:
-- The battery's 28V overwhelms the meter's test signal — you get garbage readings
-- On milliohm ranges, external voltage can damage the meter
-- Current can flow through other powered paths (relays, avionics), making a bad connection appear good
-
-Battery master OFF alone is not enough — the HOT BUS and BATT BUS remain live. Disconnecting the negative cable physically isolates the battery so the meter reads only the wire and connection resistance.
+**Why disconnect the battery?** The meter needs to be the only source of current in the circuit. If the battery is still connected, its 28V overwhelms the meter's tiny test signal and readings will be wrong. Battery master OFF alone is not enough — the HOT BUS and BATT BUS remain live. Physically disconnecting the negative cable is the only way to fully isolate the circuit.
 
 **Recommended meter:** Fluke 289 or similar DMM with 0.01Ω resolution and **REL (relative) mode** for auto-zeroing lead resistance. Set the meter to the lowest ohm range (600Ω range on the Fluke 289 gives 0.01Ω resolution).
 
@@ -324,9 +319,9 @@ Battery master OFF alone is not enough — the HOT BUS and BATT BUS remain live.
 - Test each stud individually: **GS IP-14** (GEA voltage sensor ground — most critical), GS IP-6, GS IP-4, GS IP-5, GS IP-3, GS IP-10. If one reads high while others read near-zero, that's your culprit — clean all surfaces and retorque.
 
 **Test 5 — Each LRU Ground Wire:**
-- **Red probe:** The **ground pin** at the aircraft-side harness connector. Start with **P701 pin 20** (GEA 71S — the voltage sensor). Then test pin 14 on 1P604 (GIA 63W #1).
-- **Black probe:** The **GS-IP stud** that wire runs to — **GS IP-14** for the GEA 71S, GS IP-6 for both GIA 63W units.
-- Tests the wire, crimp, and connector pin between the LRU and its ground stud.
+- **Red probe:** The **ground pin** at the aircraft-side harness connector — start with **P701 pin 20** (GEA 71S, the voltage sensor).
+- **Black probe:** The **GS-IP stud** that wire runs to — **GS IP-14** for the GEA 71S.
+- Tests the wire, crimp, and connector pin between the LRU and its ground stud. Repeat for each connector on the instrument panel.
 
 ### Isolation Strategy
 
@@ -373,4 +368,4 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 
 ## Summary
 
-The G1000 reads low because of high-resistance ground connections — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit. Three voltage regulators, two alternators, and two pitch servos have been replaced unnecessarily. The GEA 71S (the actual voltage sensor) is on the **instrument panel shelf** — start there with connector P701 and ground stud GS-IP-14. Then check the GIA 63W units in the **aft fuselage avionics rack**. Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 LRU connectors. Don't stop after finding one bad connection; the data shows there may be more than one marginal joint.
+The G1000 reads low because of a high-resistance ground connection — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit. Three voltage regulators, two alternators, and two pitch servos have been replaced — none fixed it because the ground path was never addressed. Start at the **instrument panel shelf** with GEA 71S connector P701 (Pin 20) and ground stud GS-IP-14. Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 connectors on the instrument panel. Don't stop after finding one bad connection — the data shows there may be more than one marginal joint.
