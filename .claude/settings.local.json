@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python voltage_analysis.py:*)",
+      "Bash(python -c:*)",
+      "WebFetch(domain:www.diamondaviators.net)",
+      "WebFetch(domain:www.flysto.net)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(FLYSTO_EMAIL='ingramleedy@gmail.com' FLYSTO_PASSWORD='UY7bS6RwQTUmbVe' python3:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}

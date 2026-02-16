@@ -38,6 +38,7 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 - `Docs/G1000 DataLog Fields.pdf` - Garmin field reference (Appendix I: FDR Data Log Comparison, pages 94-98)
 - `Docs/AMM_p622_*_Bus_Structure_G1000.png` - Bus structure diagram from AMM 24-60-00 Figure 1
 - `Docs/AMM_p1857_*.png` through `AMM_p1861_*.png` - Electrical system wiring schematics extracted from DA40 NG AMM (Doc 6.02.15, CH.92), pages 1857-1861
+- `Docs/AMM_p1908_G1000_wiring.png` through `AMM_p1912_G1000_wiring.png` - G1000 NXi wiring diagrams (Drawing D44-9231-60-03_01, Sheets 2/6-6/6), 5100x3300 px each
 
 ## Analysis Approach
 
@@ -296,13 +297,8 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - Analyzed what specific work was done during R&R #1 (oil leak: cyl head cover, oil sump gasket) that was NOT done during R&R #2 (piston replacement)
 - Recognized that collateral damage during R&R #1 maintenance window is the most likely introduction point
 - Added compartment-by-compartment inspection guide: Instrument Panel (highest), Fuselage (medium), Engine Compartment (suspect — R&R #1 specific), Relay Panel (reference)
-- Created highlighted inspection path Mermaid diagram color-coded by compartment and priority
 - Engine compartment included as suspect area: oil leak repair access (cylinder head, oil sump) required harness/ground strap manipulation that R&R #2 piston work did not
 - Key insight: even though ECU grounds through GS-RP and reads correctly, the GS-IP return path passes through the firewall area and could be affected by engine compartment work independently
-- Created `annotate_schematics.py` — overlays color-coded inspection highlights on original AMM schematic PNGs
-- Annotated 3 diagrams: bus structure (p622), main wiring (p1857), wiring detail (p1858)
-- Color coding: Red=IP, Orange=Engine Compartment, Yellow=Fuselage, Green=Relay Panel
-- Output: `bus_structure_annotated.png`, `wiring_diagram_annotated.png`, `wiring_detail_annotated.png`
 
 ### 2026-02-15: Complete Ground Path Documentation
 - Traced all G1000 ground return paths through AMM CH.92 schematics (D44-9224-30-01 through -05)
@@ -314,6 +310,29 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - Added visual inspection checklist, priority-ranked failure points, and post-repair verification criteria
 - Replaced generic "Recommended Actions" with comprehensive "Diagnostic & Troubleshooting Procedure"
 - Noted AMM CH.31/34/23 cross-references for G1000 LRU-specific pin assignments (not in CH.92)
+
+### 2026-02-16: G1000 NXi Ground Stud Inventory (from LRU Wiring Diagrams)
+- Extracted AMM pages 1908-1912 (Drawing D44-9231-60-03_01, G1000 NXi Phase III, Sheets 2/6-6/6) to `docs/`
+- Processed 5100x3300 px schematics using parallel subagents to avoid API image dimension limits
+- Catalogued all G1000 power ground connections by LRU, connector, pin, wire number, gauge, and ground stud
+- **Key findings:**
+  - **GS IP-6**: Both GIA 63W #1 (wire 23011A20N, pin 14 on 1P604) and GIA 63W #2 (wire 23001A20N, pin 14 on 2P604) share this single ground stud — the primary voltage sensors
+  - **GS IP-4**: Most loaded stud — GDU 1050 PFD (31106A22N), GDU 1060 MFD (31158A22N), GEA 71S (77015A22N), GMA 1360 (23201A20N), COM 1 (23001A20N) — 5 LRUs on one stud
+  - **GS IP-5**: Both GRS 79 AHRS units via GS AVB intermediate bus bar with 53V TVS diode protection
+  - **GS IP-3**: GPS/NAV 1 (34001A22N) + Wx 500 Stormscope (34402A20N)
+  - **GS IP-10**: GPS/NAV 2 (34101A22N) — isolated
+  - **GS IP-14**: GEA 71S current monitor (74005A22N)
+  - **GS IP-8**: Config/power ground (31108A22N)
+- Updated Ground Stud Groups section in README with complete wire-level LRU ground inventory
+- Drawing reference: D44-9231-60-03_01, Doc 6.02.15, Rev. 5, 15 July 2024
+
+### 2026-02-16: External Voltage Comparison (Diamond Aviators Forum)
+- Forum post by geekmug (Scott), aircraft N541SA (DA40NG), on Diamond Aviators forum
+- URL: https://www.diamondaviators.net/forum/viewtopic.php?p=108026#p108026
+- FlySto graph from N541SA shows substantially more stable voltage than N238PS
+- Confirms the G1000 is capable of reading steady, accurate voltage when ground paths are healthy
+- Rules out Garmin firmware or sensor design as the cause — issue is aircraft-specific to N238PS
+- Added to README as external comparison reference supporting the high-resistance ground hypothesis
 
 ## Scripts
 
@@ -341,12 +360,6 @@ Bulk download of G1000 NXi CSV source logs from FlySto.net. Credentials from `FL
 python flysto_download.py --list          # List available logs
 python flysto_download.py                 # Download all G3000 CSVs
 python flysto_download.py --last 10       # Download last 10 logs
-```
-
-### annotate_schematics.py
-Annotates original AMM schematic PNGs with color-coded compartment zones and inspection callouts. Overlays highlights on bus structure (p622), main wiring diagram (p1857), and wiring detail (p1858).
-```bash
-python annotate_schematics.py
 ```
 
 ### generate_report.py
