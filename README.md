@@ -136,8 +136,9 @@ flowchart TB
         BATTBUS -->|"PWR 60A"| PWRRELAY
         BATTBUS -->|100A fuse| ECUBUS["ECU BUS"]
         ECUBUS --> ECUA["ECU A"]
-        ECUBBUS["ECU B BUS"] --> ECUB["ECU B"]
-        ECUBACKUP["EECU Backup\nRelay"] --> ECUBKBAT["ECU Backup\nBattery 32A"]
+        ECUBKBAT["ECU Backup\nBattery"] -->|32A fuse| ECUBACKUP["EECU Backup\nRelay"]
+        ECUBACKUP --> ECUBBUS["ECU B BUS"]
+        ECUBBUS --> ECUB["ECU B"]
         BATMINDER["Battery Minder\n(direct to battery)"] -.- BAT
     end
 
