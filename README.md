@@ -204,10 +204,9 @@ The alternator voltage regulator (J2424) has its own **dedicated USENSE wire** (
 This section documents every connection segment in the G1000 NXi ground return path, from LRU connector pins through to the battery negative terminal.
 
 **Source documents:**
-- AMM CH.92 wiring diagrams D44-9224-30-01 (p1857), D44-9224-30-01_02 (p1858), D44-9224-30-01X03 (p1859, MAM40-858)
-- AMM 24-60-00 Bus Structure Figure 1 (p622)
-- D44-9224-30-05 (p1861) is the **RACC / 2nd alternator AC system** — not part of the DC buses, excluded from this analysis
-- G1000 NXi LRU wiring detail is in AMM CH.31 (Instruments), CH.34 (Navigation), CH.23 (Communications) — referenced but not extracted
+- AMM 24-60-00 Bus Structure Figure 1 (p622) — bus architecture and power paths
+- AMM CH.92 wiring diagrams D44-9224-30-01 through -03 — power distribution system (alternator, relays, buses). These do NOT show G1000 LRU-level wiring.
+- **G1000 LRU connector pinouts and harness wire numbers** are in AMM CH.31 (Instruments), CH.34 (Navigation), CH.23 (Communications) — not yet extracted
 
 ### Ground Path Segment Map
 
@@ -270,31 +269,14 @@ flowchart TB
 | **5** | IP frame | Fuselage structure | Structural bond / bonding strap | May be integral or bonding jumper | Varies | Loose bonding strap, paint between surfaces, corrosion at bond |
 | **6** | Fuselage structure | Battery negative | Heavy cable + structural path | Battery negative cable | 4-6 AWG | Loose terminal, corrosion (unlikely — ECU reads correctly via same endpoint) |
 
-### Specific Wire & Connector References from AMM CH.92
-
-The following details are directly readable from the CH.92 wiring schematics:
-
-**Power Distribution (D44-9224-30-01, p1857; D44-9224-30-01_02, p1858):**
-
-| Component | Wire Number | Gauge | Function | From | To |
-|---|---|---|---|---|---|
-| Alt Regulator (J2424) | 24022A22 | 22 AWG | USENSE (voltage sense) | MAIN BUS sense point | Regulator pin 5 |
-| Alt Regulator (J2424) | 24018A20N | 20 AWG | Ground | Regulator pin 4 | GS-RP ground stud |
-| Alt Regulator (J2424) | 24017A20 | 20 AWG | Excitation | Excitation relay | Regulator pin 7 |
-| Current Sensor | 24xxx | Heavy | Alt output to MAIN BUS | Alternator | MAIN BUS |
-| Battery Relay | — | Heavy | Battery to BATT BUS | Battery (+) via 100A fuse | BATT BUS |
-| Power Relay | — | Heavy | BATT BUS to MAIN BUS | BATT BUS via PWR 60A CB | MAIN BUS |
-
-**Note:** The second alternator system (D44-9224-30-05, p1861) with regulator J2432 is part of the **RACC (AC system)** and does not feed into the DC buses that the G1000 measures. It is not relevant to this analysis.
-
-**Connectors Referenced in Maintenance History:**
+### G1000 Connectors Referenced in Maintenance History
 
 | Connector | Location | What It Connects | Maintenance Event |
 |---|---|---|---|
-| P2208 | Relay panel / firewall area | Power distribution harness | Jun 30, 2024: wire terminal repaired |
-| P2413 | Behind instrument panel | G1000 HSDB (High-Speed Data Bus) | Jul 26, 2024: connector replaced, harness repinned |
-| J2424 | Engine compartment | Main alt voltage regulator (DC) | Multiple VR replacements |
-| Firewall pass-through | Firewall | All engine-to-IP wire runs | Disconnected during both engine R&Rs |
+| P2413 | Behind instrument panel | G1000 HSDB (High-Speed Data Bus) harness | Jul 26, 2024: connector replaced, harness repinned |
+| GDL 69A connectors | Behind instrument panel | Datalink transceiver | Feb 15, 2026: pins cleaned (wrong unit — see CLAUDE.md) |
+
+**Note:** The CH.92 schematics (D44-9224-30-01 through -03) cover the power distribution system (alternator, relays, buses, circuit breakers) — not the G1000 LRU wiring itself. The G1000 LRU connector pinouts, harness wire numbers, and ground pin assignments are documented in AMM CH.31 (Instruments), CH.34 (Navigation), and CH.23 (Communications). The alternator regulator (J2424), second alternator/RACC (J2432), and power relays are charging/distribution components — they are not part of the G1000's measurement or ground path.
 
 ### Ground Stud Groups
 
@@ -311,7 +293,7 @@ flowchart TB
         RP5["Starter Relay<br/>ground"]
         RP6["ECU A ground"]
         RP7["ECU B ground"]
-        RP8["Alt Regulator<br/>24018A20N (20AWG)"]
+        RP8["Alt Regulator<br/>ground"]
         RPBAR["GS-RP Bus<br/>(short path to<br/>battery negative)"]
         RP1 & RP2 & RP3 & RP4 & RP5 & RP6 & RP7 & RP8 --> RPBAR
     end
