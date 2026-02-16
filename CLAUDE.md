@@ -36,6 +36,7 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 
 ### Documentation
 - `Docs/G1000 DataLog Fields.pdf` - Garmin field reference (Appendix I: FDR Data Log Comparison, pages 94-98)
+- `Docs/AMM_p1857_*.png` through `AMM_p1861_*.png` - Electrical system wiring schematics extracted from DA40 NG AMM (Doc 6.02.15, CH.92), pages 1857-1861
 
 ## Analysis Approach
 
@@ -68,6 +69,66 @@ High-resistance ground connection in the G1000's measurement path. Evidence:
 - Different magnitude between flights (thermal/vibration effects on contact resistance)
 - Even 0.05 ohms at 20A = 1.0V drop
 
+## Electrical System Architecture (from AMM CH.92 Wiring Diagrams)
+
+Schematics extracted from DA40 NG AMM pages 1857-1861 (Drawing Nos. D44-9224-30-01 through D44-9224-30-05).
+
+### Bus Structure
+The DA40 NG has seven buses:
+- **MAIN BUS** - Primary power distribution, fed by alternator and battery through MAIN TIE (wire 24007A10, 10 AWG)
+- **ESSENTIAL BUS** - Critical systems, connected through ESS TIE relay (wire 24006A10, 10 AWG)
+- **AVIONIC BUS** - G1000 and avionics, fed through AVIONIC RELAY and 25A circuit breaker (AV. BUS), wires 24107A10/24108A10 (10 AWG)
+- **BATT BUS** - Direct battery bus (always connected when battery relay closed)
+- **HOT BUS** - Always-on bus
+- **ECU BUS** / **ECU B BUS** - Engine control units (separate from avionics path)
+
+### Power Path to G1000
+```
+MAIN BATTERY (B1, 24V/13.6Ah)
+  -> 100A fuse -> BATTERY RELAY -> BATT BUS
+  -> MAIN TIE (24007A10, 10 AWG) -> MAIN BUS
+  -> 25A breaker (AV. BUS) -> AVIONIC RELAY -> AVIONIC BUS
+  -> individual circuit breakers -> G1000 GDU/GIA units
+```
+
+### Ground Path (Critical for Voltage Sensing)
+The G1000 measures voltage at its power input pins **relative to its own ground pins**. The ground return path is:
+```
+G1000 GDU/GIA ground pins
+  -> harness wires (22 AWG)
+  -> Instrument Panel ground studs (GS-IP-xx series)
+  -> ground bus bar
+  -> fuselage structure
+  -> engine compartment ground strap
+  -> battery negative terminal
+```
+
+The relay panel and engine compartment components use separate ground studs (GS-RP series). The battery, alternator, and starter grounds return through GS-RP directly to the battery negative.
+
+### Alternator Voltage Regulation
+The alternator regulator (J2424) has a **dedicated USENSE wire** (24022A22, 22 AWG, pin 5) for voltage sensing, separate from the G1000's measurement. This means:
+- The alternator regulates to the correct voltage (confirmed by VDL48 reading ~28.3V)
+- The G1000 reads low because of its own ground path, not because the bus is actually low
+- The ECU (on its own bus and ground) also reads near-correct voltage, confirming the G1000 ground path is the problem
+
+### Regulator Connections (D44-9224-30-01_02, p1858; D44-9224-30-05, p1861)
+| Pin | Function | Wire |
+|-----|----------|------|
+| 5 | USENSE (Voltage Sense) | 24022A22 (22 AWG) |
+| 7 | EXCITATION | 24017A20 (20 AWG) |
+| 6 | SUPPLY | via supply circuit |
+| 12 | LAMP | 31004A22 |
+| 4 | GROUND | 24018A20N (20 AWG) |
+
+### Where to Look for the Problem
+Based on the schematics, the most likely failure points for a high-resistance ground:
+1. **G1000 GDU/GIA ground pins at harness connector** - corrosion or loose pin
+2. **Instrument panel ground studs (GS-IP)** - loose nut, corrosion, paint under ring terminal
+3. **Ground bus bar to fuselage bond** - structural ground point where the instrument panel bus bar connects to the airframe
+4. **Firewall ground feedthrough** - where instrument panel grounds transition to the engine compartment/battery ground
+
+The AVIONIC BUS power path (25A breaker, relay contacts) could also contribute series resistance, but this would equally affect all avionics. The fact that only the G1000 reads low (while the ECU on a separate bus reads correctly) points specifically to the G1000's own ground return path.
+
 ## Three-Source Correlation (ECU)
 
 ### Cross-Project Reference
@@ -97,11 +158,14 @@ The ECU closely agrees with the VDL48 reference (especially Flight 1 at +0.11 V 
 - Output saved to `output/` directory
 - Published to https://github.com/ingramleedy/volts
 
-### 2026-02-15: ECU Correlation
+### 2026-02-15: ECU Correlation & Schematic Analysis
 - Created `correlate_ecu.py` - three-source analysis adding AE300 ECU battery voltage
 - ECU data parsed from AustroView project (sessions 80/81)
 - ECU agrees with VDL48 reference, confirming G1000 under-reading
 - New outputs: `three_way_flight1.png`, `three_way_flight2.png`, `ecu_vs_vdl_scatter.png`, `three_way_histograms.png`, `three_way_voltage_report.txt`
+- Extracted AMM CH.92 electrical system schematics (pages 1857-1861) to `docs/` as high-res PNGs
+- Analyzed bus architecture and G1000 voltage sensing/ground path from wiring diagrams
+- Identified specific failure points: GS-IP ground studs, harness ground pins, bus bar-to-fuselage bond
 
 ## Scripts
 

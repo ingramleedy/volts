@@ -93,6 +93,72 @@ The ECU mostly clusters near the 1:1 line with the VDL48, confirming both indepe
 
 ![Three-Way Histograms](output/three_way_histograms.png)
 
+## Electrical System Architecture
+
+N238PS is a MAM40-858 configuration. Wiring schematics were extracted from the DA40 NG Airplane Maintenance Manual (Doc 6.02.15, CH.92, Drawing Nos. D44-9224-30-01 through D44-9224-30-05).
+
+### DA40 NG Electrical System Schematic (p1859)
+
+![Electrical System Conversion](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png)
+
+### DA40 NG Electrical System Club (p1860)
+
+![Electrical System Club](docs/AMM_p1860_D44-9224-30-02_02_Electrical_System_Club.png)
+
+### Bus Structure
+
+The DA40 NG has seven electrical buses:
+
+| Bus | Function | Feed |
+|-----|----------|------|
+| **MAIN BUS** | Primary power distribution | Alternator and battery via MAIN TIE (24007A10, 10 AWG) |
+| **ESSENTIAL BUS** | Critical systems | ESS TIE relay (24006A10, 10 AWG) |
+| **AVIONIC BUS** | G1000 and avionics | AVIONIC RELAY + 25A breaker (24107A10/24108A10, 10 AWG) |
+| **BATT BUS** | Direct battery bus | Battery relay (always on when closed) |
+| **HOT BUS** | Always-on bus | Direct battery connection |
+| **ECU BUS** | Engine control unit A | Separate from avionics path |
+| **ECU B BUS** | Engine control unit B (backup) | Separate from avionics path |
+
+### Power Path to G1000
+
+```
+MAIN BATTERY (B1, 24V / 13.6Ah)
+  -> 100A fuse -> BATTERY RELAY -> BATT BUS
+  -> MAIN TIE (24007A10, 10 AWG) -> MAIN BUS
+  -> 25A circuit breaker (AV. BUS) -> AVIONIC RELAY -> AVIONIC BUS
+  -> individual circuit breakers -> G1000 GDU/GIA units
+```
+
+### Ground Return Path (Critical for Voltage Sensing)
+
+The G1000 measures bus voltage at its power input pins **relative to its own ground pins**. The ground return path is:
+
+```
+G1000 GDU/GIA ground pins
+  -> harness wires (22 AWG)
+  -> Instrument Panel ground studs (GS-IP-xx series)
+  -> instrument panel ground bus bar
+  -> fuselage structure
+  -> engine compartment ground strap
+  -> battery negative terminal
+```
+
+Any resistance in this ground return path causes the G1000 to read lower than actual bus voltage, because the current flowing through the resistance creates a voltage drop that subtracts from the measured value:
+
+```
+V_measured = V_bus - (I_load x R_ground)
+```
+
+### Why Only the G1000 is Affected
+
+The alternator voltage regulator (J2424) has its own **dedicated USENSE wire** (24022A22, 22 AWG, pin 5) that senses bus voltage independently. This is why:
+
+- The **alternator regulates correctly** — the VDL48 confirms a steady ~28.3 V on the bus
+- The **ECU reads correctly** — it has its own bus (ECU BUS) and its own ground path (GS-RP series ground studs), completely separate from the G1000's instrument panel grounds
+- **Only the G1000 reads low** — because it measures through its own degraded ground path on the GS-IP instrument panel ground studs
+
+The relay panel and engine compartment components (battery, alternator, starter, ECU) use separate GS-RP ground studs that return directly to battery negative, bypassing the instrument panel ground bus entirely.
+
 ## Probable Cause: High-Resistance Ground Connection
 
 The data patterns are consistent with a high-resistance connection in the G1000's voltage measurement or ground return path:
@@ -111,11 +177,14 @@ Using Ohm's law, even **0.05 ohms** of ground resistance at 20 A load produces a
 
 ## Recommended Actions
 
-- Inspect G1000 GDU and GIA ground terminals at the airframe ground bus for corrosion, loose hardware, paint under ring terminals, or cracked terminals
-- Measure resistance from the G1000 ground pin (at the connector) to battery negative — values above ~0.02-0.05 ohms would explain the observed offset
-- Inspect the main airframe ground bus to battery/engine ground strap
-- Check G1000 harness connector pins (GDU 1050/1060, GIA 63W) for the voltage sensing and ground pins
-- After repair, repeat this test to verify the offset is eliminated
+Based on the wiring schematics, in priority order:
+
+1. **G1000 GDU/GIA ground pins at harness connectors** — Check for corrosion, backed-out pins, or loose contact in the GDU 1050/1060 and GIA 63W connectors (ground pins specifically)
+2. **Instrument panel ground studs (GS-IP series)** — Inspect for loose nut, corrosion, paint under ring terminals, or cracked ring terminals. These are where the G1000 harness grounds attach to the airframe
+3. **Ground bus bar to fuselage bond** — Check the structural attachment point where the instrument panel ground bus bar connects to the airframe
+4. **Firewall ground feedthrough** — Where instrument panel grounds transition to the engine compartment/battery ground
+5. **Measure resistance** from the G1000 ground pin (at the connector) to battery negative terminal — values above ~0.02-0.05 ohms would explain the observed offset
+6. **After repair**, repeat this test with the VDL48 to verify the offset is eliminated
 
 ## Repository Structure
 
@@ -129,8 +198,13 @@ volt/
 │   ├── N238PS_KBOW-KSPG_20260208-1551UTC.csv   # G1000 log, Flight 1
 │   ├── N238PS_KSPG-KBOW_20260208-1812UTC.csv   # G1000 log, Flight 2
 │   └── LOG_VD.CSV                               # VDL48 voltage logger data
-├── Docs/
-│   └── G1000 DataLog Fields.pdf                 # G1000 data log field reference
+├── docs/
+│   ├── G1000 DataLog Fields.pdf                 # G1000 data log field reference
+│   ├── AMM_p1857_*_Electrical_System.png        # Main electrical system schematic
+│   ├── AMM_p1858_*_Electrical_System_Wiring.png # Electrical system wiring detail
+│   ├── AMM_p1859_*_Electrical_System_Conversion.png  # Electrical system (MAM40-858)
+│   ├── AMM_p1860_*_Electrical_System_Club.png   # Electrical system (Club variant)
+│   └── AMM_p1861_*_Second_Alternator.png        # Second alternator system
 └── output/
     ├── Voltage_Analysis_Report_N238PS_20260208.html  # Full shareable HTML report
     ├── voltage_report.txt              # Two-source statistical summary
