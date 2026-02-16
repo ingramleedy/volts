@@ -71,6 +71,23 @@ High-resistance ground connection in the G1000's measurement path. Evidence:
 - Different magnitude between flights (thermal/vibration effects on contact resistance)
 - Even 0.05 ohms at 20A = 1.0V drop
 
+## GEA 71B Voltage Measurement Configuration
+
+The G1000 `volt1` reading comes through the GEA 71B (Engine/Airframe Interface Unit), **Analog In 5 on GEA 1**:
+- **m (slope):** 1.0000e+00 — 1:1 scaling, no gain correction
+- **b (offset):** 0.0000e+00 — zero offset, no software compensation
+- **Filter Coeff:** 0.1000 — moderate smoothing
+- **Trans Func Type:** Linear (`Displayed = m × Raw + b`)
+- With m=1.0 and b=0.0, the G1000 displays exactly what arrives at the GEA input pin — the offset is hardware (ground path resistance), not calibration
+
+## Owner Ground Test (Aug 18, 2025)
+
+Static ground test performed after Jul 2025 annual (new battery, VR previously replaced, battery on BatteryMinder):
+- **Open circuit (master OFF):** Meter at AUX POWER reads 26.3V → 100% charged per Concorde table
+- **G1000 on, no other loads:** Meter reads 25.2V, G1000 displays 23.7V → **1.5V offset with battery only**
+- Premier mechanic Raymond independently confirmed variance from cigarette lighter connector
+- FlySto LOW VOLTS events: 18s, 85s, 5s below 25V during landing/taxi phases
+
 ## Electrical System Architecture (from AMM CH.92 Wiring Diagrams)
 
 Schematics extracted from DA40 NG AMM pages 1857-1861 (Drawing Nos. D44-9224-30-01 through D44-9224-30-05).
@@ -325,6 +342,21 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
   - **GS IP-8**: Config/power ground (31108A22N)
 - Updated Ground Stud Groups section in README with complete wire-level LRU ground inventory
 - Drawing reference: D44-9231-60-03_01, Doc 6.02.15, Rev. 5, 15 July 2024
+
+### 2026-02-16: Owner Ground Test Documentation (Aug 2025 LOW VOLTS.docx)
+- Source: `LOW VOLTS.docx` and associated PDFs from Premier Aircraft maintenance folder (Aug 2025)
+- **Ground test (Aug 18, 2025):**
+  - Open circuit battery: meter at AUX POWER reads 26.3V (100% charged per Concorde table)
+  - G1000 powered up, no other loads: meter reads 25.2V, G1000 displays 23.7V → **1.5V offset on ground with battery only**
+  - Premier mechanic Raymond independently confirmed same variance from cigarette lighter connector
+- **FlySto LOW VOLTS events:** 18 sec, 85 sec, and 5 sec below 25V during landing/taxi phases
+- **GEA 71B Analog In 5 configuration:** m=1.0000, b=0.0000, Filter=0.1000, Linear — no software correction applied
+  - Confirms G1000 displays exactly what arrives at GEA input pin — the offset is hardware, not calibration
+- **CALIBRATION ANALOG SENSOR PDF:** Discusses adjusting b (offset) to compensate, but this would be a band-aid
+  - The offset is variable (-5.6V to +1.7V per VDL48 data), so a fixed b correction cannot work
+  - Correct fix is repairing the ground path so m=1.0, b=0.0 reads correctly
+- Added ground test results, FlySto LOW VOLTS events, and GEA 71B config to README
+- Added Aug 18 ground test and Feb 2026 events to maintenance timeline
 
 ### 2026-02-16: External Voltage Comparison (Diamond Aviators Forum)
 - Forum post by geekmug (Scott), aircraft N541SA (DA40NG), on Diamond Aviators forum

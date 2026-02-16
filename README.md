@@ -658,6 +658,9 @@ Parsing the N238PS aircraft maintenance logs (115 pages) revealed the cause of t
 | Jul 26, 2024 | 95.6 | Replaced G1000 P2413 connector (repinned HSDB harness); replaced alt #2 belt |
 | Feb 21, 2025 | 136.9 | Replaced main alternator AND voltage regulator (3rd VR replacement) |
 | Jul 1, 2025 | 147.5 | Engine R&R (#1 piston crack); main battery failed capacity test at 68%, replaced |
+| **Aug 18, 2025** | ~150 | **Owner ground test**: meter at AUX POWER reads 26.3V (open circuit), 25.2V (G1000 on); G1000 displays 23.7V — **1.5V offset confirmed on ground with battery only** |
+| Feb 15, 2026 | ~160 | Shop cleaned GDL 69A pins (wrong unit — see below); could not reproduce on ground run |
+| **Feb 8, 2026** | ~158 | **VDL48 flight test**: confirmed -1.36V mean offset, -5.6V worst dip (this analysis) |
 
 **Pattern:** The shop recognized a voltage issue and attempted to resolve it through component replacement (3 voltage regulators, 2 alternators, 1 wire repair) — but the G1000 under-reading persisted because the root cause is a ground path resistance issue introduced during the engine R&R, not a charging system problem. The ECU reads correctly throughout, proving the alternator and regulators function normally.
 
@@ -699,6 +702,63 @@ The Pettitt change-point test pinpoints February 2024 with extremely high statis
 **Key constraint — the ECU test:** The ECU grounds through GS-RP (relay panel / engine compartment side) and reads correctly throughout the entire period. This means the GS-RP ground studs and engine compartment ground straps have good connections. However, the G1000's ground path from the GS-IP bus bar goes through the IP structure → fuselage → firewall area → battery negative. The firewall area IS in/near the engine compartment and could have been affected during R&R #1 oil leak work.
 
 **Bottom line:** The fault was most likely introduced as **collateral damage during the R&R #1 maintenance window** — either behind the instrument panel (most likely), at the IP-to-fuselage structural bond, or at a ground connection in the firewall area that was disturbed for oil leak access but not redone during R&R #2's piston work. The compartment-by-compartment inspection below covers all possibilities.
+
+## Owner Ground Test (August 18, 2025)
+
+Before the VDL48 flight test, the owner conducted a static ground test to document the voltage discrepancy. This test was performed after the Jul 2025 annual (new battery installed, voltage regulator previously replaced, battery maintained on BatteryMinder).
+
+### Test Conditions and Results
+
+| Condition | Meter at AUX POWER | G1000 Display | Offset |
+|-----------|-------------------|---------------|--------|
+| **Open circuit** (master OFF, no loads) | **26.3V** | N/A | N/A |
+| **G1000 powered up** (master ON, no other loads) | **25.2V** | **23.7V** | **-1.5V** |
+
+The Concorde battery open circuit voltage table shows 25.8V+ indicates 100% state of charge — the 26.3V reading confirms a fully charged, healthy battery.
+
+### Why This Matters
+
+The **1.5V offset exists on the ground with battery only** — no engine, no alternator, minimal current draw. This is significant because:
+
+- It proves the offset is **not alternator-related** and **not load-dependent in the traditional sense** — even the small current draw of the G1000 alone (~2-3A) produces a measurable voltage drop through the high-resistance ground path
+- The meter at AUX POWER drops from 26.3V to 25.2V when the G1000 turns on (1.1V drop from battery internal resistance under load) — this is normal
+- But the G1000 shows 23.7V vs the 25.2V actual — the **additional 1.5V drop is entirely in the G1000's own measurement/ground path**
+- Premier Aircraft mechanic Raymond independently confirmed the same voltage variance using the cigarette lighter connector
+
+### FlySto LOW VOLTS Events
+
+The owner's FlySto account recorded multiple LOW VOLTS annunciations (threshold: `volt1` < 25V) in recent flights:
+
+| Event | Duration Below 25V | Phase of Flight | Voltage Range |
+|-------|-------------------|-----------------|---------------|
+| Landing #1 | **18 seconds** | Final approach → taxi (RWY09L) | Dips to ~24.5V during approach, oscillating around 25V |
+| Landing #2 | **85 seconds** | Final → touchdown → taxi (RWY09L) | Sustained drops to ~24V during taxi, worst dips below 24V |
+| In-flight | **5 seconds** | Cruise/descent (~4000') | Brief dip to ~24.8V |
+
+These events correlate with high-current phases: landing configuration (flaps, lights), radio transmissions on final, and taxi (nosewheel steering servo, strobes, landing light).
+
+### GEA 71B Analog Channel Configuration
+
+The voltage measurement path was investigated through the GEA 71B (Engine/Airframe Interface Unit) configuration. The `volt1` reading uses **Analog In 5 on GEA 1** with these settings:
+
+| Parameter | Current Value | Meaning |
+|-----------|--------------|---------|
+| m (slope) | **1.0000e+00** | 1:1 scaling — no gain correction applied |
+| b (offset) | **0.0000e+00** | Zero offset — no software compensation |
+| Filter Coeff | 0.1000 | Moderate smoothing |
+| Trans Func Type | Linear | `Displayed = m × Raw + b` |
+| Min Value | -50V | Display floor |
+| Max Value | 50V | Display ceiling |
+| Gain | 1 | Unity gain |
+
+**Critical finding:** With `m=1.0` and `b=0.0`, the G1000 displays exactly what arrives at the GEA 71B input pin with no software correction. The 1.5V offset is therefore a **hardware voltage drop**, not a calibration or firmware issue.
+
+**Why adjusting `b` would be wrong:** The CALIBRATION ANALOG SENSOR document (also from Aug 2025) recommends increasing `b` to +1.0 to compensate for the offset. This would be a **band-aid that masks the real problem**:
+- The offset is **not constant** — our VDL48 flight data shows it varies from -5.6V to +1.7V depending on current load, vibration, and temperature
+- Setting `b=+1.0` would make the reading correct at one operating point but still wrong at others
+- The G1000 would under-report during high-current events (still triggering LOW VOLTS) and over-report during low-current conditions
+- The underlying high-resistance ground connection would continue to degrade, potentially causing other issues (noise on signal grounds, erratic sensor readings)
+- The correct fix is to repair the ground path so that `m=1.0, b=0.0` reads correctly
 
 ## External Comparison: DA40NG Voltage Stability (N541SA)
 
