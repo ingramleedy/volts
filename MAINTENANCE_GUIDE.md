@@ -51,6 +51,17 @@ A FlySto voltage graph from another DA40NG (N541SA) shows rock-steady voltage at
 
 ![N541SA voltage — stable](docs/N541SA_flysto_voltage.png)
 
+N238PS has **never** been this stable — not even on the delivery flight. Comparing voltage stability across the entire history:
+
+| Metric | N541SA | N238PS Brand New (Jul 2023) | N238PS Pre-Feb 2024 | N238PS Post-Feb 2024 |
+|--------|--------|---------------------------|--------------------|--------------------|
+| Mean voltage | ~27.8V | 27.55V | 27.44V | 26.86V |
+| Noise (σ) | ~0.05–0.10V | 0.36V | 0.38V | 0.51V |
+| Peak-to-peak range | ~0.3V | 4.4V | 4.6V | 5.2V |
+| Time below 27V | ~0% | 6.2% | 6.2% | **53.5%** |
+
+Even from delivery, N238PS was reading **0.25V low** and had **4–5x more voltage noise** than N541SA. This suggests a marginal ground connection has existed since the factory — the Feb 2024 shop visit then made it significantly worse.
+
 ### GEA 71B Configuration Confirms No Software Issue
 
 The G1000 voltage channel (GEA 1, Analog In 5) is configured with:
@@ -85,9 +96,11 @@ G1000 → GS-IP studs → IP bus bar → IP structure → fuselage → battery n
 ECU   → GS-RP studs → short ground strap → battery negative  (reads correctly)
 ```
 
-## When the Problem Started
+## When the Problem Got Worse
 
-Statistical analysis of **184 flight logs** (Jul 2023 – Feb 2026) detected a change-point on **February 29, 2024** (p < 0.001). This aligns exactly with the **Feb 2024 shop visit**.
+The ground path was never perfect (see N541SA comparison above), but it got **significantly worse** after the Feb 2024 shop visit.
+
+Statistical analysis of **184 flight logs** (Jul 2023 – Feb 2026) detected a change-point on **February 29, 2024** (p < 0.001):
 
 | Period | Mean G1000 Voltage | Voltage Noise |
 |--------|-------------------|---------------|
@@ -95,7 +108,7 @@ Statistical analysis of **184 flight logs** (Jul 2023 – Feb 2026) detected a c
 | After shop visit (131 flights) | 26.90V | 0.39V |
 | **Change** | **-0.54V** | **+55% noisier** |
 
-The ECU voltage did NOT change — it reads a steady 27.82V throughout the entire period. The problem is G1000-specific and was introduced during the Feb 2024 shop visit.
+The ECU voltage did NOT change — it reads a steady 27.82V throughout the entire period. The problem is G1000-specific. The Feb 2024 shop visit made a pre-existing marginal connection worse, pushing it into LOW VOLTS territory.
 
 ### What Happened During That Shop Visit (Feb 2024)
 
@@ -247,6 +260,8 @@ Battery master OFF alone is not enough — the HOT BUS and BATT BUS remain live.
 
 Start with **Test 1**. If high, the bad segment will stand out — everything else reads near-zero while the problem connection shows the bulk of the resistance. Work through Tests 2–5 in order to narrow down which segment carries the extra resistance.
 
+**Important: Don't stop after finding one bad connection.** The data shows the ground path was never as clean as other DA40NGs — even from the factory. There may be more than one marginal connection. Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 LRU connectors while the panels are open.
+
 ### What the Numbers Mean
 
 | End-to-End Resistance | Voltage Drop at 20A | What It Means |
@@ -286,4 +301,4 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 
 ## Summary
 
-The G1000 reads low because of a high-resistance ground connection — not a calibration issue, not a charging system issue, not a firmware issue. The problem started during the Feb 2024 shop visit when the engine was removed for an oil leak AND the RACC relays were troubleshot in the aft avionics bay — the same bay where the G1000 rack is mounted. Three voltage regulators, two alternators, and two pitch servos have been replaced unnecessarily. The fix is to find and repair the bad ground connection, most likely at a **G1000 LRU connector or ground point in the aft avionics bay**, or at a **GS-IP ground stud**.
+The G1000 reads low because of high-resistance ground connections — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit when RACC relays were troubleshot in the aft avionics bay — the same bay where the G1000 rack is mounted. Three voltage regulators, two alternators, and two pitch servos have been replaced unnecessarily. The fix is to **clean and retorque all G1000 ground connections** — both in the aft avionics bay and at the GS-IP ground studs. Don't stop after finding one bad connection; the data shows there may be more than one marginal joint.
