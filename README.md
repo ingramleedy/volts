@@ -204,8 +204,9 @@ The alternator voltage regulator (J2424) has its own **dedicated USENSE wire** (
 This section documents every connection segment in the G1000 NXi ground return path, from LRU connector pins through to the battery negative terminal.
 
 **Source documents:**
-- AMM CH.92 wiring diagrams D44-9224-30-01 (p1857), D44-9224-30-01_02 (p1858), D44-9224-30-01X03 (p1859, MAM40-858), D44-9224-30-05 (p1861)
+- AMM CH.92 wiring diagrams D44-9224-30-01 (p1857), D44-9224-30-01_02 (p1858), D44-9224-30-01X03 (p1859, MAM40-858)
 - AMM 24-60-00 Bus Structure Figure 1 (p622)
+- D44-9224-30-05 (p1861) is the **RACC / 2nd alternator AC system** — not part of the DC buses, excluded from this analysis
 - G1000 NXi LRU wiring detail is in AMM CH.31 (Instruments), CH.34 (Navigation), CH.23 (Communications) — referenced but not extracted
 
 ### Ground Path Segment Map
@@ -284,28 +285,7 @@ The following details are directly readable from the CH.92 wiring schematics:
 | Battery Relay | — | Heavy | Battery to BATT BUS | Battery (+) via 100A fuse | BATT BUS |
 | Power Relay | — | Heavy | BATT BUS to MAIN BUS | BATT BUS via PWR 60A CB | MAIN BUS |
 
-**Second Alternator System (D44-9224-30-05, p1861):**
-
-| Component | Wire Number | Gauge | Function | Color Code |
-|---|---|---|---|---|
-| 2nd Alt Regulator (J2432) | 24037A05 | 5 AWG | Alt output | — |
-| 2nd Alt Regulator (J2432) | 24036A22 | 22 AWG | Field | BROWN |
-| 2nd Alt Regulator (J2432) | 24035A20 | 20 AWG | Ground | BLACK |
-| 2nd Alt Regulator (J2432) | 24034A22 | 22 AWG | Voltage sense | YELLOW |
-| 2nd Alt Regulator (J2432) | 24038A22 | 22 AWG | Alt control | — |
-| 2nd Alt Regulator (J2432) | — | 22 AWG | Alt protection | ORANGE |
-| EMI Filter (optional) | U400854 | — | Inline on alt output | — |
-
-**Relay Panel (D44-9224-30-05, p1861):**
-
-| Relay | Wire In | Wire Out | Function |
-|---|---|---|---|
-| Excitation Relay | 24059A14, 24058A14 | To field circuit | Controls alt field current |
-| Main Relay | 24035A22 | To main bus connection | Main alt connect/disconnect |
-| Alt Control Relay | 24037A02, 24053A22 | Control signals | Alt system control |
-| Alt Fail Relay | Various | Warning circuit | Alt failure annunciation |
-| 2nd EPU Relay | 24417A6 | To EPU | Emergency power |
-| EPU Relay | — | To EPU bus | Emergency power |
+**Note:** The second alternator system (D44-9224-30-05, p1861) with regulator J2432 is part of the **RACC (AC system)** and does not feed into the DC buses that the G1000 measures. It is not relevant to this analysis.
 
 **Connectors Referenced in Maintenance History:**
 
@@ -313,8 +293,7 @@ The following details are directly readable from the CH.92 wiring schematics:
 |---|---|---|---|
 | P2208 | Relay panel / firewall area | Power distribution harness | Jun 30, 2024: wire terminal repaired |
 | P2413 | Behind instrument panel | G1000 HSDB (High-Speed Data Bus) | Jul 26, 2024: connector replaced, harness repinned |
-| J2424 | Engine compartment | Main alt voltage regulator | Multiple VR replacements |
-| J2432 | Engine compartment | 2nd alt voltage regulator | Alt #2 replacements |
+| J2424 | Engine compartment | Main alt voltage regulator (DC) | Multiple VR replacements |
 | Firewall pass-through | Firewall | All engine-to-IP wire runs | Disconnected during both engine R&Rs |
 
 ### Ground Stud Groups
@@ -333,10 +312,8 @@ flowchart TB
         RP6["ECU A ground"]
         RP7["ECU B ground"]
         RP8["Alt Regulator<br/>24018A20N (20AWG)"]
-        RP9["2nd Alt Regulator<br/>24035A20 (20AWG)"]
-        RP10["Excitation Relay<br/>ground"]
         RPBAR["GS-RP Bus<br/>(short path to<br/>battery negative)"]
-        RP1 & RP2 & RP3 & RP4 & RP5 & RP6 & RP7 & RP8 & RP9 & RP10 --> RPBAR
+        RP1 & RP2 & RP3 & RP4 & RP5 & RP6 & RP7 & RP8 --> RPBAR
     end
 
     subgraph GSIP_GROUP["<b>GS-IP Ground Studs — Instrument Panel</b><br/>(SUSPECT — reads LOW voltage)"]
