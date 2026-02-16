@@ -111,8 +111,14 @@ The DA40 NG has seven electrical buses. The VDL48 reference logger was connected
 
 ```mermaid
 flowchart TB
+    subgraph AF["AFT FUSELAGE"]
+        BAT["MAIN BATTERY\n24V / 13.6Ah"]
+        BATMINDER["Battery Minder\n(direct to battery)"]
+        BAT -.- BATMINDER
+    end
+
     subgraph EC["ENGINE COMPARTMENT"]
-        BAT["MAIN BATTERY\n24V / 13.6Ah"] -->|100A fuse| BATRELAY["Battery\nRelay"]
+        BAT -->|100A fuse| BATRELAY["Battery\nRelay"]
         ALT["Alternator"] -->|Current Sensor| MAINBUS
         BATRELAY --> BATTBUS["BATT BUS"]
         BATTBUS -->|"PWR 60A"| PWRRELAY["Power\nRelay"]
@@ -143,6 +149,7 @@ flowchart TB
     style HOTBUS fill:#d94a4a,color:#fff
     style AUXPLUG fill:#d94a4a,color:#fff,stroke-dasharray: 5 5
     style VDL48 fill:#d94a4a,color:#fff,stroke-dasharray: 5 5
+    style BATMINDER fill:#888,color:#fff,stroke-dasharray: 5 5
 ```
 
 **Note:** The G1000 is on the **AVIONIC BUS**, which is fed from the **MAIN BUS** (not the Essential Bus). The Avionic Master switch lives on the Essential Bus but only controls the Avionic Relay coil -- it does not carry power. The AMM trouble-shooting table (24-60-00, p627) confirms: "There is 28 VDC on the main bus (if G1000 is installed)... but not on the avionic bus" as the first fault condition, indicating the G1000's power originates from the MAIN BUS.
@@ -153,10 +160,10 @@ The G1000 measures bus voltage at its power input pins **relative to its own gro
 
 ```mermaid
 flowchart BT
-    BATNEG["Battery\nNegative Terminal"]
-    BATNEG --- GSRP["GS-RP Ground Studs\n(Relay Panel)"]
-    BATNEG --- FWGND["Firewall Ground\nFeedthrough"]
-    FWGND --- IPBAR["Instrument Panel\nGround Bus Bar"]
+    BATNEG["Battery Negative\n(Aft Fuselage)"]
+    BATNEG --- FUSELAGE["Fuselage\nStructure"]
+    FUSELAGE --- GSRP["GS-RP Ground Studs\n(Relay Panel /\nEngine Compartment)"]
+    FUSELAGE --- IPBAR["Instrument Panel\nGround Bus Bar"]
     IPBAR --- GSIP["GS-IP Ground Studs\n(Instrument Panel)"]
     GSIP ---|"22 AWG harness"| G1000GND["G1000 GDU/GIA\nGround Pins"]
     GSRP --- ECUGND["ECU A/B\nGround"]

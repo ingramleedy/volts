@@ -105,8 +105,7 @@ G1000 GDU/GIA ground pins
   -> Instrument Panel ground studs (GS-IP-xx series)
   -> ground bus bar
   -> fuselage structure
-  -> engine compartment ground strap
-  -> battery negative terminal
+  -> battery negative terminal (aft fuselage)
 ```
 
 The relay panel and engine compartment components use separate ground studs (GS-RP series). The battery, alternator, and starter grounds return through GS-RP directly to the battery negative.
