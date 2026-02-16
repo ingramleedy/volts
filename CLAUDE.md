@@ -150,6 +150,30 @@ The AE300 ECU battery voltage data comes from the **AustroView** project (`../Au
 
 The ECU closely agrees with the VDL48 reference (especially Flight 1 at +0.11 V offset). Both independent instruments read higher than the G1000, confirming the G1000 is the outlier.
 
+## Maintenance History
+
+### 2026-02-15: Pin Cleaning (Invoice)
+- **Squawk:** LOW VOLTS WARNING / INCORRECT READING ON G1000, TROUBLESHOOT
+- **Action:** Removed, inspected, cleaned pins, and reinstalled all GDL 69A computers IAW DA40NG MM CH. 23
+- **Labor:** 1.50 hrs / $240.00
+- **Result:** Could not reproduce voltage drop on ground run; voltage stayed in green
+
+**Concerns with this action:**
+- The **GDL 69A is the datalink transceiver** (SiriusXM weather/traffic), not the voltage-sensing avionics. The G1000 `volt1` reading comes from the **GIA 63W** (Integrated Avionics Units) and/or the **GDU 1050/1060** (displays). Those units' ground pins and connectors were not addressed.
+- The AMM reference was **CH. 23 (Communications)**, not CH. 24/34/92 where the voltage measurement path lives.
+- **Ground running cannot reproduce the issue.** The voltage offset in our data is driven by:
+  - Vibration (loosens marginal contacts) — absent on the ground
+  - Thermal cycling — absent during a brief ground run
+  - High-current transient loads (radio TX, autopilot servos, flap motor) — not exercised during a static check
+  - The -5.6 V worst-case dips only appear during flight operations
+- With a fully charged battery (owner uses a battery minder/trickle charger in hangar), the steady-state voltage reads in the green even with the ~1.4 V offset. LOW VOLTS only triggers during transient dips under load in flight.
+
+**Recommended next steps:**
+- Request inspection of **GIA 63W and GDU 1050/1060** connectors and ground pins specifically
+- Inspect **GS-IP instrument panel ground studs** (see Electrical System Architecture section)
+- Perform a **resistance measurement** from GIA/GDU ground pin to battery negative
+- Repeat the VDL48 flight test after any corrective action to verify
+
 ## Session History
 
 ### 2026-02-09: Initial Analysis
