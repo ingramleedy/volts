@@ -358,6 +358,13 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - Added ground test results, FlySto LOW VOLTS events, and GEA 71B config to README
 - Added Aug 18 ground test and Feb 2026 events to maintenance timeline
 
+### 2026-02-16: Maintenance Guide (Standalone Troubleshooting Document)
+- Created `MAINTENANCE_GUIDE.md` — focused, simplified document for the maintenance shop
+- Written for mechanics who may not be strong with G1000/avionics
+- Covers: problem statement, evidence summary, root cause explanation, specific inspection targets, resistance test procedure, verification criteria
+- Consolidates all findings into actionable format without the statistical analysis detail
+- Includes the ground stud inventory, LRU connector pin assignments, and resistance thresholds
+
 ### 2026-02-16: External Voltage Comparison (Diamond Aviators Forum)
 - Forum post by geekmug (Scott), aircraft N541SA (DA40NG), on Diamond Aviators forum
 - URL: https://www.diamondaviators.net/forum/viewtopic.php?p=108026#p108026
