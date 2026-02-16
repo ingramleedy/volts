@@ -704,6 +704,8 @@ The Pettitt change-point test pinpoints February 2024 with extremely high statis
 
 A comparison data point was provided by another DA40NG owner (geekmug / Scott, aircraft N541SA) on the [Diamond Aviators forum](https://www.diamondaviators.net/forum/viewtopic.php?p=108026#p108026) (Feb 16, 2026). Their FlySto voltage graph shows **substantially more stable voltage** than N238PS, with smooth, consistent readings throughout flight.
 
+![N541SA FlySto Voltage — stable ~27.8V across two flights with touch-and-goes](docs/N541SA_flysto_voltage.png)
+
 This comparison is significant because:
 - **Same aircraft type** (DA40NG) with the **same G1000 NXi avionics**
 - If the G1000 voltage measurement were inherently noisy or had a systemic calibration bias, it would appear in all DA40NG aircraft — it does not
