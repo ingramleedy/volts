@@ -199,6 +199,71 @@ flowchart LR
 
 The alternator voltage regulator (J2424) has its own **dedicated USENSE wire** (24022A22, 22 AWG, pin 5) that senses bus voltage independently, so the alternator regulates correctly regardless of the G1000's ground path issue.
 
+## Historical Voltage Analysis (184 Flights)
+
+The single-flight analysis above was confirmed across **all 184 G1000 NXi flight logs** downloaded from FlySto.net, spanning July 14, 2023 (first flight after delivery) through February 13, 2026.
+
+### Voltage History with ECU Reference
+
+The G1000 cruise voltage (blue) is compared against 265 independent ECU battery voltage readings (green triangles). Vertical lines mark maintenance events from the aircraft logbooks.
+
+![Voltage History](output/voltage_history.png)
+
+### Change-Point Detection (Pettitt's Test)
+
+A nonparametric Pettitt's test detected a statistically significant change-point at **February 29, 2024** (p = 3.75e-13). The top panel shows the before/after split with ECU reference. The CUSUM chart shows the cumulative deviation inflection. The bottom panel shows voltage noise increased 55% after the change-point.
+
+![Change-Point Analysis](output/voltage_changepoint.png)
+
+| Metric | Before (53 flights) | After (131 flights) |
+|---|---|---|
+| Mean cruise voltage | 27.44 V | 26.90 V |
+| Mean noise (std dev) | 0.251 V | 0.390 V |
+| **Voltage drop** | | **-0.54 V** |
+| **Noise increase** | | **+55%** |
+
+The ECU reads a stable **27.82 V** throughout the entire period — no change-point. The drop is specific to the G1000 measurement path.
+
+### Before vs After Distribution
+
+![Before After Distribution](output/voltage_before_after.png)
+
+## Maintenance Correlation
+
+Parsing the N238PS aircraft maintenance logs (115 pages) revealed the cause of the change-point: the **engine was removed and reinstalled on February 28, 2024** for oil leak repair. This required disconnecting and reconnecting all firewall pass-through connections, including ground straps and harness connectors.
+
+### Voltage vs Maintenance Events
+
+![Maintenance Correlation](output/voltage_maintenance_correlation.png)
+
+### Maintenance Timeline
+
+| Date | TT (hrs) | Event |
+|---|---|---|
+| **Feb 28, 2024** | **54.5** | **Engine R&R for oil leak** (prop off, engine removed, cyl head cover resealed, oil sump gasket replaced, engine+prop reinstalled) |
+| Mar 27, 2024 | 57.7 | Replaced alternator #2 (secondary) |
+| Apr 15, 2024 | 61.4 | Replaced voltage regulator |
+| Jun 30, 2024 | 100.7 | Replaced voltage regulator (again) + repaired wire terminal at P2208 |
+| Jul 26, 2024 | 95.6 | Replaced G1000 P2413 connector (repinned HSDB harness); replaced alt #2 belt |
+| Feb 21, 2025 | 136.9 | Replaced main alternator AND voltage regulator (3rd VR replacement) |
+| Jul 1, 2025 | 147.5 | Engine R&R (#1 piston crack); main battery failed capacity test at 68%, replaced |
+
+**Pattern:** The shop recognized a voltage issue and attempted to resolve it through component replacement (3 voltage regulators, 2 alternators, 1 wire repair) — but the G1000 under-reading persisted because the root cause is a ground path resistance issue introduced during the engine R&R, not a charging system problem. The ECU reads correctly throughout, proving the alternator and regulators function normally.
+
+### Second Engine R&R — Differential Diagnosis
+
+The engine was removed again in Apr–Jul 2025 for a piston crack (AD 2024-19-10). This required disconnecting and reconnecting the **same firewall pass-through connectors** as the Feb 2024 R&R. Comparing voltage across three periods:
+
+| Period | Flights | Mean Voltage | Mean Noise (σ) |
+|---|---|---|---|
+| Before R&R #1 (pre Feb 2024) | 50 | 27.46 V | 0.253 V |
+| Between R&Rs (Mar 2024 – Apr 2025) | 88 | 26.84 V | 0.374 V |
+| After R&R #2 (Jul 2025+) | 46 | 27.03 V | 0.410 V |
+
+The problem **did not resolve** after the second R&R. Voltage remains ~0.4 V below the pre-fault baseline and noise actually increased slightly. This **rules out the firewall pass-through connectors** as the fault location — they were reconnected during R&R #2 with no improvement.
+
+**Narrowed failure location:** The instrument panel ground path (GS-IP ground studs, ground bus bar, or G1000 harness ground pins) — these areas were NOT disturbed during either engine R&R. Something during the Feb 2024 shop visit disturbed an instrument panel ground connection, or the introduction of slightly higher resistance at the firewall shifted enough current through the instrument panel ground path to expose a pre-existing marginal connection.
+
 ## Probable Cause: High-Resistance Ground Connection
 
 The data patterns are consistent with a high-resistance connection in the G1000's voltage measurement or ground return path:
@@ -231,13 +296,18 @@ Based on the wiring schematics, in priority order:
 ```
 volt/
 ├── README.md                  # This file
+├── CLAUDE.md                  # Project context and session history
 ├── voltage_analysis.py        # Two-source analysis (G1000 vs VDL48)
 ├── correlate_ecu.py           # Three-source analysis (+ AE300 ECU)
+├── voltage_history.py         # Historical analysis (184 flights) + change-point detection
+├── flysto_download.py         # Bulk download G1000 CSVs from FlySto.net
 ├── generate_report.py         # Generates self-contained HTML report
 ├── data/
 │   ├── N238PS_KBOW-KSPG_20260208-1551UTC.csv   # G1000 log, Flight 1
 │   ├── N238PS_KSPG-KBOW_20260208-1812UTC.csv   # G1000 log, Flight 2
-│   └── LOG_VD.CSV                               # VDL48 voltage logger data
+│   ├── LOG_VD.CSV                               # VDL48 voltage logger data
+│   ├── source/                                  # All 184 G1000 CSVs (not in git)
+│   └── ecu/                                     # ECU .ae3 hex dump files (not in git)
 ├── docs/
 │   ├── G1000 DataLog Fields.pdf                 # G1000 data log field reference
 │   ├── AMM_p622_*_Bus_Structure_G1000.png       # Bus structure diagram (24-60-00 Fig.1)
@@ -248,16 +318,21 @@ volt/
 │   └── AMM_p1861_*_Second_Alternator.png        # Second alternator system
 └── output/
     ├── Voltage_Analysis_Report_N238PS_20260208.html  # Full shareable HTML report
-    ├── voltage_report.txt              # Two-source statistical summary
-    ├── three_way_voltage_report.txt    # Three-source statistical summary
-    ├── vdl_overview.png                # VDL full recording plot
-    ├── flight_comparison.png           # G1000 vs VDL time series
-    ├── difference_histograms.png       # Two-source voltage difference distributions
-    ├── scatter.png                     # G1000 vs VDL scatter with regression
-    ├── three_way_flight1.png           # Three-source Flight 1 overlay
-    ├── three_way_flight2.png           # Three-source Flight 2 overlay
-    ├── ecu_vs_vdl_scatter.png          # ECU vs VDL scatter
-    └── three_way_histograms.png        # Three-source difference distributions
+    ├── voltage_report.txt                # Two-source statistical summary
+    ├── three_way_voltage_report.txt      # Three-source statistical summary
+    ├── vdl_overview.png                  # VDL full recording plot
+    ├── flight_comparison.png             # G1000 vs VDL time series
+    ├── difference_histograms.png         # Two-source voltage difference distributions
+    ├── scatter.png                       # G1000 vs VDL scatter with regression
+    ├── three_way_flight1.png             # Three-source Flight 1 overlay
+    ├── three_way_flight2.png             # Three-source Flight 2 overlay
+    ├── ecu_vs_vdl_scatter.png            # ECU vs VDL scatter
+    ├── three_way_histograms.png          # Three-source difference distributions
+    ├── voltage_history.png               # 184-flight voltage history with ECU overlay
+    ├── voltage_noise_history.png         # Voltage noise (std dev) over time
+    ├── voltage_changepoint.png           # Change-point analysis (Pettitt + CUSUM)
+    ├── voltage_before_after.png          # Before/after distribution histograms
+    └── voltage_maintenance_correlation.png  # Voltage vs maintenance events timeline
 ```
 
 ## Running the Analysis
@@ -278,6 +353,20 @@ Run the three-source analysis (adds ECU data from AustroView):
 
 ```bash
 python correlate_ecu.py
+```
+
+Run the historical analysis across all 184 flights (requires `data/source/` CSVs):
+
+```bash
+python voltage_history.py
+```
+
+Download G1000 source logs from FlySto.net (requires credentials):
+
+```bash
+python flysto_download.py --list          # List available logs
+python flysto_download.py                 # Download all G3000 CSVs to data/source/
+python flysto_download.py --last 10       # Download last 10 only
 ```
 
 Generate the self-contained HTML report:

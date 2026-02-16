@@ -155,7 +155,79 @@ The AE300 ECU battery voltage data comes from the **AustroView** project (`../Au
 
 The ECU closely agrees with the VDL48 reference (especially Flight 1 at +0.11 V offset). Both independent instruments read higher than the G1000, confirming the G1000 is the outlier.
 
-## Maintenance History
+## Historical Voltage Analysis (184 flights)
+
+### FlySto Download
+All 184 G1000 NXi CSV source logs were bulk-downloaded from FlySto.net using `flysto_download.py`. Date range: July 14, 2023 (first flight after delivery) to February 13, 2026.
+
+### Change-Point Detection (Pettitt's Test)
+A nonparametric Pettitt's test on mean cruise voltage across all 184 flights detected a statistically significant change-point:
+
+| Metric | Value |
+|---|---|
+| Change-point date | **2024-02-29** (flight #53) |
+| Pettitt p-value | 3.75e-13 |
+| Before (53 flights) | mean=27.44V, noise=0.251V |
+| After (131 flights) | mean=26.90V, noise=0.390V |
+| Voltage drop | 0.54V |
+| Noise increase | 55% |
+
+### ECU Historical Reference (265 sessions)
+ECU battery voltage from 265 parsed sessions (Oct 2023 - Feb 2026) shows:
+- ECU mean cruise voltage: 27.82V (stable across entire period)
+- ECU mean noise: 0.240V
+- G1000 under-reports by 0.76V on average vs ECU
+- ECU voltage does NOT show a change-point — the drop is G1000-specific
+
+## Maintenance History (from Aircraft Logs)
+
+### Complete Maintenance Timeline (N239PS-AIRCRAFT-LOGS.pdf)
+
+| Date | TT (hrs) | Event | Relevance |
+|---|---|---|---|
+| Jun 26, 2023 | 3.2 | Aircraft delivered new | Baseline |
+| Nov 8, 2023 | 48.7 | ECU software update BC33_07_26 | Minor |
+| **Feb 28, 2024** | **54.5** | **Engine removed for oil leak repair** (prop off, engine off, R&I cylinder head cover, R&R oil sump gasket, engine+prop reinstalled) | **PRIMARY EVENT — coincides exactly with statistically detected change-point** |
+| Mar 27, 2024 | 57.7 | Replaced alternator #2 (secondary) S/N H-X010804 → H-X120098 | Shop chasing voltage issue |
+| Apr 15, 2024 | 61.4 | R&R voltage regulator (VR2000-28-1) | Shop chasing voltage issue |
+| Jun 7, 2024 | 89.2 | Replaced turbo | Unrelated |
+| Jun 30, 2024 | 100.7 | Replaced voltage regulator AGAIN (E4A-91-200-000) + repaired wire terminal at plug P2208 | Shop chasing voltage issue |
+| Jul 26, 2024 | 95.6 | Annual: replaced P2413 connector with new repinned HSDB harness; RSB 40NG-052 alt mounting; replaced alt #2 belt; ECU backup batteries | G1000 comms fix + alt work |
+| Sep 5, 2024 | 103.2 | Battery Minder interface installed; piston borescope | Minor |
+| Feb 21, 2025 | 136.9 | Replaced MAIN alternator (EA4-91-400-000) AND voltage regulator (3rd VR replacement) | Shop still chasing voltage |
+| Apr 30, 2025 | 147.5 | Engine removed (#1 piston crack, AD 2024-19-10) | Second engine R&R |
+| Jul 1, 2025 | 147.5 | Engine reinstalled (pistons+connecting rods replaced). Battery failed cap test at 68%, replaced. G1000 SW updated to 1669.14 | Battery degraded from chronic undercharging? |
+
+### Key Findings from Maintenance Correlation
+1. The **Feb 28, 2024 engine R&R** aligns precisely (within 1 day) with the statistically detected change-point
+2. When the engine was removed, all firewall pass-through connections (ground straps, harness connectors) were disconnected and reconnected
+3. The shop then chased the voltage issue for over a year with component replacements:
+   - 3 voltage regulator replacements
+   - 2 alternator replacements (secondary + main)
+   - 1 wire terminal repair
+   - None resolved the issue because it's a ground path resistance problem
+4. The ECU reads correctly throughout (27.82V), proving the alternator and regulators are functioning normally
+5. The main battery failed capacity test at 68% in Jul 2025 — possibly degraded from chronic undercharging due to the G1000 reporting low voltage
+
+### Second Engine R&R Analysis (Differential Diagnosis)
+
+The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston crack, AD 2024-19-10). This second R&R required disconnecting and reconnecting the **same firewall pass-through connectors** as the first R&R. If the fault were at the firewall, the second R&R should have either fixed it (by remaking the connection) or at least changed the reading.
+
+**Three-Period Comparison:**
+
+| Period | Flights | Mean Voltage | Mean Noise (σ) |
+|---|---|---|---|
+| Before R&R #1 (pre Feb 2024) | 50 | 27.46 V | 0.253 V |
+| Between R&Rs (Mar 2024 – Apr 2025) | 88 | 26.84 V | 0.374 V |
+| After R&R #2 (Jul 2025+) | 46 | 27.03 V | 0.410 V |
+
+**Result:** The problem **did NOT resolve** after R&R #2. The voltage remains ~0.4 V below the pre-fault baseline and noise actually increased slightly. This rules out the firewall pass-through connectors as the fault location, since they were reconnected during R&R #2 with no improvement.
+
+**Narrowed Failure Location:**
+- **Ruled out:** Firewall pass-through connectors, engine compartment ground straps (GS-RP) — these were all reconnected during R&R #2
+- **Most likely:** Instrument panel ground path (GS-IP ground studs, ground bus bar, or G1000 harness ground pins) — these areas were NOT disturbed during either engine R&R
+- **Note:** The pitch servo (also worked during the Feb 2024 shop visit) is located under the seats, not in the instrument panel, so it would not have required access to instrument panel ground studs
+- **Possible mechanism:** Something during the Feb 2024 shop visit (not necessarily the engine R&R itself) disturbed an instrument panel ground connection, or the introduction of slightly higher resistance at the firewall during R&R #1 shifted enough current through the instrument panel ground path to expose a pre-existing marginal connection
 
 ### 2026-02-15: Pin Cleaning (Invoice)
 - **Squawk:** LOW VOLTS WARNING / INCORRECT READING ON G1000, TROUBLESHOOT
@@ -191,20 +263,34 @@ The ECU closely agrees with the VDL48 reference (especially Flight 1 at +0.11 V 
 - Created `correlate_ecu.py` - three-source analysis adding AE300 ECU battery voltage
 - ECU data parsed from AustroView project (sessions 80/81)
 - ECU agrees with VDL48 reference, confirming G1000 under-reading
-- New outputs: `three_way_flight1.png`, `three_way_flight2.png`, `ecu_vs_vdl_scatter.png`, `three_way_histograms.png`, `three_way_voltage_report.txt`
 - Extracted AMM CH.92 electrical system schematics (pages 1857-1861) to `docs/` as high-res PNGs
 - Analyzed bus architecture and G1000 voltage sensing/ground path from wiring diagrams
 - Identified specific failure points: GS-IP ground studs, harness ground pins, bus bar-to-fuselage bond
 
 ### 2026-02-15: Forum Feedback & Bus Investigation
-- Forum post suggested "The G1000 is on the essential bus" and recommended monitoring that specific bus
-- Investigated AMM 24-60-00 bus structure diagrams (Figures 1, 3, 5) for all DA40 NG variants
-- **Finding: The G1000 is on the AVIONIC BUS, NOT the Essential Bus.** The AVIONIC BUS is fed directly from the MAIN BUS (AV. BUS 25A breaker + Avionic Relay). The Avionic Master switch on the Essential Bus only controls the relay coil.
-- Extracted and saved AMM 24-60-00 Figure 1 (bus structure diagram) as `docs/AMM_p622_24-60-00_Bus_Structure_G1000.png`
-- Confirmed AMM trouble-shooting table (p627): "There is 28 VDC on the main bus (if G1000 is installed)" -- power originates from MAIN BUS
-- Identified VDL48 connection point: **AUX POWER PLUG** on the **HOT BUS** (direct battery, 5A fuse) per AMM 24-00-00 Figure 1
-- Updated README.md with bus structure clarification, corrected bus feed descriptions, and forum feedback response
-- Removed Club variant schematic (p1860) from README since N238PS is MAM40-858 (p1859 is the correct diagram)
+- Investigated AMM 24-60-00 bus structure diagrams for all DA40 NG variants
+- **Finding: The G1000 is on the AVIONIC BUS, NOT the Essential Bus.**
+- Updated README.md with bus structure clarification and Mermaid diagrams
+
+### 2026-02-15: Historical Analysis & FlySto Download
+- Reverse-engineered FlySto.net API and created `flysto_download.py` for bulk CSV download
+- Downloaded all 184 G1000 NXi source logs to `data/source/` (Jul 2023 - Feb 2026)
+- Created `voltage_history.py` - historical analysis with change-point detection
+- Ran Pettitt's test: change-point at Feb 29, 2024 (p=3.75e-13)
+- Added CUSUM visualization, before/after distributions
+- Integrated ECU data from AustroView (265 sessions, Oct 2023 - Feb 2026) as independent reference
+- Processed older `.ae3` files through AustroView decrypt/parse pipeline to extend ECU date range
+- Parsed aircraft maintenance logs (N239PS-AIRCRAFT-LOGS.pdf, 115 pages)
+- **Key discovery**: Engine R&R on Feb 28, 2024 for oil leak repair aligns exactly with the change-point
+- Identified pattern of the shop chasing the voltage issue with component replacements (3 VRs, 2 alternators) without addressing the ground path root cause
+- New outputs: `voltage_history.png`, `voltage_noise_history.png`, `voltage_changepoint.png`, `voltage_before_after.png`, `voltage_maintenance_correlation.png`
+
+### 2026-02-15: Second R&R Differential Diagnosis
+- Compared three periods: before R&R #1 (50 flights), between R&Rs (88 flights), after R&R #2 (46 flights)
+- Found R&R #2 did NOT resolve the problem (27.03V vs 27.46V baseline, noise still elevated)
+- Ruled out firewall pass-through connectors as the fault location
+- Narrowed failure to instrument panel ground path (GS-IP studs, ground bus bar, harness ground pins)
+- Corrected assumption about pitch servo location (under seats, not instrument panel)
 
 ## Scripts
 
@@ -218,6 +304,20 @@ python voltage_analysis.py
 Three-source analysis adding AE300 ECU data. Requires AustroView parsed CSVs at `../AustroView/Data/Parsed/`.
 ```bash
 python correlate_ecu.py
+```
+
+### voltage_history.py
+Historical analysis across all 184 G1000 logs with change-point detection, ECU overlay, and maintenance event correlation. Requires G1000 CSVs in `data/source/` and AustroView parsed ECU data at `../AustroView/Data/Parsed/`.
+```bash
+python voltage_history.py
+```
+
+### flysto_download.py
+Bulk download of G1000 NXi CSV source logs from FlySto.net. Credentials from `FLYSTO_EMAIL`/`FLYSTO_PASSWORD` env vars or interactive prompt.
+```bash
+python flysto_download.py --list          # List available logs
+python flysto_download.py                 # Download all G3000 CSVs
+python flysto_download.py --last 10       # Download last 10 logs
 ```
 
 ### generate_report.py
