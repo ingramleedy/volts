@@ -111,27 +111,10 @@ The DA40 NG has seven electrical buses. The VDL48 reference logger was connected
 
 ```mermaid
 flowchart TB
-    subgraph AF["AFT FUSELAGE"]
-        BAT["MAIN BATTERY\n24V / 13.6Ah"]
-        BATMINDER["Battery Minder\n(direct to battery)"]
-        BAT -.- BATMINDER
-    end
-
-    subgraph EC["ENGINE COMPARTMENT"]
-        BAT -->|100A fuse| BATRELAY["Battery\nRelay"]
-        ALT["Alternator"] -->|Current Sensor| MAINBUS
-        BATRELAY --> BATTBUS["BATT BUS"]
-        BATTBUS -->|"PWR 60A"| PWRRELAY["Power\nRelay"]
-        PWRRELAY --> MAINBUS["MAIN BUS"]
-        BATTBUS -->|100A fuse| ECUBUS["ECU BUS"]
-        ECUBUS --> ECUA["ECU A"]
-        ECUBBUS["ECU B BUS"] --> ECUB["ECU B"]
-        BAT ---|direct| HOTBUS["HOT BUS"]
-    end
-
     subgraph IP["INSTRUMENT PANEL"]
-        MAINBUS -->|"AV. BUS 25A"| AVRELAY["Avionic\nRelay"]
-        AVRELAY --> AVBUS["AVIONIC BUS"]
+        AVRELAY["Avionic\nRelay"] --> AVBUS["AVIONIC BUS"]
+        PWRRELAY["Power\nRelay"] --> MAINBUS["MAIN BUS"]
+        MAINBUS -->|"AV. BUS 25A"| AVRELAY
         MAINBUS -->|"MAIN TIE 30A"| ESSTIE["Ess Tie\nRelay"]
         ESSTIE -->|"ESS TIE 30A"| ESSBUS["ESSENTIAL BUS"]
         ESSBUS -.->|"controls coil only"| AVRELAY
@@ -139,8 +122,23 @@ flowchart TB
         AVBUS --> GDU1055["GDU 1055\nMFD"]
         AVBUS --> GIA1["GIA 63W #1"]
         AVBUS --> GIA2["GIA 63W #2"]
-        HOTBUS -->|5A fuse| AUXPLUG["AUX POWER\nPLUG"]
+        HOTBUS["HOT BUS"] -->|5A fuse| AUXPLUG["AUX POWER\nPLUG"]
         AUXPLUG --> VDL48["VDL48\nLogger"]
+    end
+
+    subgraph EC["ENGINE COMPARTMENT"]
+        ALT["Alternator"] -->|Current Sensor| MAINBUS
+    end
+
+    subgraph FUS["FUSELAGE"]
+        BAT["MAIN BATTERY\n24V / 13.6Ah"] -->|100A fuse| BATTBUS["BATT BUS"]
+        BAT ---|direct| HOTBUS
+        BATTBUS -->|"PWR 60A"| PWRRELAY
+        BATTBUS -->|100A fuse| ECUBUS["ECU BUS"]
+        ECUBUS --> ECUA["ECU A"]
+        ECUBBUS["ECU B BUS"] --> ECUB["ECU B"]
+        ECUBACKUP["EECU Backup\nRelay"] --> ECUBKBAT["ECU Backup\nBattery 32A"]
+        BATMINDER["Battery Minder\n(direct to battery)"] -.- BAT
     end
 
     style AVBUS fill:#4a90d9,color:#fff
