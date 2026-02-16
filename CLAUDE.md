@@ -292,6 +292,14 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - Narrowed failure to instrument panel ground path (GS-IP studs, ground bus bar, harness ground pins)
 - Corrected assumption about pitch servo location (under seats, not instrument panel)
 
+### 2026-02-15: R&R #1 vs R&R #2 Analysis & Compartment-Based Troubleshooting
+- Analyzed what specific work was done during R&R #1 (oil leak: cyl head cover, oil sump gasket) that was NOT done during R&R #2 (piston replacement)
+- Recognized that collateral damage during R&R #1 maintenance window is the most likely introduction point
+- Added compartment-by-compartment inspection guide: Instrument Panel (highest), Fuselage (medium), Engine Compartment (suspect — R&R #1 specific), Relay Panel (reference)
+- Created highlighted inspection path Mermaid diagram color-coded by compartment and priority
+- Engine compartment included as suspect area: oil leak repair access (cylinder head, oil sump) required harness/ground strap manipulation that R&R #2 piston work did not
+- Key insight: even though ECU grounds through GS-RP and reads correctly, the GS-IP return path passes through the firewall area and could be affected by engine compartment work independently
+
 ### 2026-02-15: Complete Ground Path Documentation
 - Traced all G1000 ground return paths through AMM CH.92 schematics (D44-9224-30-01 through -05)
 - Documented 6-segment ground path from LRU pins → harness → GS-IP studs → bus bar → IP frame → fuselage → battery negative

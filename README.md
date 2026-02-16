@@ -449,6 +449,209 @@ Based on the data analysis (change-point at Feb 2024, second R&R did not resolve
 | **4** | **GIA 63W connector ground pins** | Connector pin corrosion or insufficient pin tension. The GIA is the primary voltage sensor — its ground pin is the most critical. | Step 5: LRU pin to stud |
 | **5** | **Harness ground wire crimp** | Factory crimp on ring terminal at the GS-IP stud end. Can crack internally without visible damage. | Step 5: LRU pin to stud |
 
+### Compartment-by-Compartment Inspection Guide
+
+Organized by physical location for systematic troubleshooting. Work through each compartment methodically — the fault was introduced during the Feb 2024 R&R #1 maintenance window and could be anywhere along the G1000's ground return path.
+
+#### INSTRUMENT PANEL (Highest Priority)
+
+This is where all G1000 LRUs are mounted and where the GS-IP ground stud group connects them to the airframe ground. Most likely compartment for the fault — the shop accessed this area during R&R #1 and again during every subsequent repair attempt.
+
+| Item | What to Check | Test Method | Pass Criteria |
+|---|---|---|---|
+| **GS-IP ground studs** | Torque, corrosion, paint under terminals, cracked ring terminals | Milliohm: each GS-IP stud → IP frame | < 0.005 Ω per stud |
+| **Ground bus bar** | Mounting bolt torque, dissimilar metal corrosion (Cu bar on Al frame), cracks | Milliohm: bus bar → IP frame | < 0.005 Ω |
+| **GIA 63W #1 connector (J63W-1)** | Pin corrosion, backed-out pins, connector lock, strain relief — THIS IS THE PRIMARY VOLTAGE SENSOR | Milliohm: GIA GND pin → GS-IP stud | < 0.010 Ω |
+| **GIA 63W #2 connector (J63W-2)** | Same as above — redundant voltage sensor | Milliohm: GIA GND pin → GS-IP stud | < 0.010 Ω |
+| **GDU 1050 PFD connector (J5044)** | Pin corrosion, connector lock — displays the voltage reading | Milliohm: GDU GND pin → GS-IP stud | < 0.010 Ω |
+| **GDU 1055 MFD connector (J5055)** | Same as above | Milliohm: GDU GND pin → GS-IP stud | < 0.010 Ω |
+| **GEA 71 connector** | Engine/airframe interface — sensor wires pass through firewall | Milliohm: GEA GND pin → GS-IP stud | < 0.010 Ω |
+| **GMA 1347 / GTX 33 / GDL 69A / GSU 73** | All remaining G1000 LRU connectors | Milliohm: each GND pin → GS-IP stud | < 0.010 Ω |
+| **P2413 connector** | Repinned Jul 2024 — check quality of rework | Visual: pin alignment, crimp quality, solder joints | No bent/recessed pins |
+| **Harness routing behind IP** | Chafing, pinched wires, harness tie-down damage from repeated panel access | Visual + continuity test | No damaged insulation |
+| **All ring terminal crimps at GS-IP studs** | Crimp integrity — can crack internally without visible damage | Milliohm: wire side of crimp → stud side | < 0.005 Ω across crimp |
+
+**Visual inspection checklist:**
+- [ ] Each GS-IP stud nut torqued to AMM spec
+- [ ] Lock washers present and not flattened
+- [ ] Ring terminals fully seated, no paint/anodize between terminal and stud
+- [ ] No green/white corrosion or arcing evidence
+- [ ] All LRU connectors fully seated and locked (CPA clips engaged)
+- [ ] No backed-out pins visible from rear of any connector
+- [ ] Harness strain reliefs intact on all connectors
+- [ ] Bus bar mounting bolts tight, contact surfaces bright metal
+- [ ] No evidence of tools dropped on or damage to ground bus bar
+
+#### FUSELAGE (Medium Priority)
+
+The structural ground path from the instrument panel to the battery passes through the fuselage. The pitch servo work (under seats) during R&R #1 could have involved moving or bumping harnesses/structure in this area.
+
+| Item | What to Check | Test Method | Pass Criteria |
+|---|---|---|---|
+| **IP frame-to-fuselage structural bond** | Bonding strap or structural joint where IP mounts to fuselage — vibration can loosen | Milliohm: IP frame → bare fuselage metal | < 0.005 Ω |
+| **IP mounting bolts/shock mounts** | If IP is shock-mounted, ground depends on bonding jumper not structure | Visual: bonding jumper present and tight | Metal-to-metal contact |
+| **Fuselage structure continuity** | DA40 NG is composite with metal structural elements — ground path follows metal | Milliohm: fuselage near IP → fuselage near firewall | < 0.010 Ω |
+| **Under-seat area (pitch servo)** | Harness routing disturbed during pitch servo work (R&R #1 only) | Visual: no pinched wires, correct routing | No damage |
+| **Battery negative terminal** | Aft fuselage — loose/corroded terminal | Milliohm: fuselage metal near battery → battery negative post | < 0.005 Ω |
+| **Battery negative cable** | Heavy gauge cable from terminal to airframe ground point | Visual + milliohm: cable end-to-end | < 0.005 Ω |
+
+**Visual inspection checklist:**
+- [ ] IP-to-fuselage bonding strap/jumper present and tight (if applicable per AMM)
+- [ ] No paint or sealant between bonding surfaces
+- [ ] IP shock mount bolts tight (if shock-mounted)
+- [ ] Under-seat wiring harnesses properly routed and secured
+- [ ] Battery negative terminal clean and tight
+- [ ] Battery ground cable: no corrosion, no fraying, secure at both ends
+
+#### ENGINE COMPARTMENT (Suspect — R&R #1 Specific Work)
+
+The oil leak repair during R&R #1 required accessing the cylinder head cover (top of engine) and oil sump gasket (bottom of engine). Any wiring or ground connections disturbed for this access would NOT have been re-done during R&R #2's piston work. The G1000's ground path passes through the firewall area on its way to the battery.
+
+| Item | What to Check | Test Method | Pass Criteria |
+|---|---|---|---|
+| **Firewall ground bonding** | Bonding strap(s) from firewall to fuselage structure — in the ground return path | Milliohm: firewall metal → fuselage metal (cockpit side) | < 0.005 Ω |
+| **Firewall feedthrough grounding** | Ground continuity through firewall penetrations (connectors, grommets) | Milliohm: cockpit-side firewall → engine-side firewall | < 0.005 Ω |
+| **Engine ground straps** | Engine-to-airframe bonding straps — affect overall ground reference | Visual: clean, tight, correct torque | Bright metal contact |
+| **Harness routing near cylinder head** | Oil leak repair required access to top of engine — harnesses may have been moved/re-routed | Visual: harnesses in correct routing per AMM, no chafing | No damage or misrouting |
+| **Harness routing near oil sump** | Oil sump gasket replacement required access to bottom of engine | Visual: same as above | No damage or misrouting |
+| **P2208 connector area** | Wire terminal repaired Jun 2024 — check quality of repair | Visual + milliohm: repaired terminal resistance | < 0.010 Ω |
+| **GEA 71 sensor wire pass-throughs** | Sensor wires from engine to GEA 71 behind IP pass through firewall | Visual: seals intact, no chafing at firewall | No damage |
+
+**Why check here even though ECU reads correctly:** The ECU's GS-RP ground path is a *different* ground path than the G1000's GS-IP path. Both paths share the fuselage-to-battery-negative segment, but diverge at the firewall/relay panel area. If the firewall bonding or a specific ground strap was disturbed during the oil leak repair in a way that increases resistance in the GS-IP return path (not the GS-RP path), this could explain the G1000 under-reading while the ECU remains unaffected.
+
+**Visual inspection checklist:**
+- [ ] All engine ground straps clean, tight, correct torque per AMM
+- [ ] Firewall bonding strap(s) present and tight
+- [ ] No paint, sealant, or corrosion between bonding surfaces
+- [ ] Harness routing matches AMM diagrams — no re-routing from R&R work
+- [ ] No chafing where harnesses pass through firewall grommets
+- [ ] P2208 wire repair from Jun 2024: terminal secure, no discoloration
+
+#### RELAY PANEL / FUSE PANEL (Low Priority — Comparison Reference)
+
+The relay panel houses GS-RP ground studs and the power distribution relays. The ECU grounds through GS-RP and reads correctly, so this area is unlikely to be the fault location. However, the Avionic Relay (which powers the AVIONIC BUS that feeds the G1000) lives here and could affect the power side.
+
+| Item | What to Check | Test Method | Pass Criteria |
+|---|---|---|---|
+| **AV.BUS 25A circuit breaker** | Powers the Avionic Relay — high contact resistance would drop voltage | Milliohm: across CB contacts (breaker ON) | < 0.010 Ω |
+| **Avionic Relay contacts** | Relay feeds AVIONIC BUS — worn contacts could drop voltage | Milliohm: relay input → relay output (relay engaged) | < 0.010 Ω |
+| **GS-RP ground studs (comparison)** | Measure for reference — should all be very low resistance | Milliohm: each GS-RP stud → battery negative | < 0.005 Ω (expect near-zero) |
+
+**Note:** If the AV.BUS CB or Avionic Relay contacts show high resistance, this would be a **power-side** voltage drop rather than a ground-side drop. The symptom would be similar (G1000 reads low) but the mechanism is different. The diagnostic flowchart (Step 1) catches this: if the end-to-end ground path resistance is low, investigate the power side.
+
+### Highlighted Inspection Path Diagram
+
+This diagram shows the complete G1000 ground return path, color-coded by compartment and inspection priority. **Red = highest priority, orange = medium priority, yellow = suspect (R&R #1 specific), green = low priority (comparison reference).**
+
+```mermaid
+flowchart TB
+    subgraph IP_ZONE["🔴 INSTRUMENT PANEL — Highest Priority"]
+        direction TB
+
+        subgraph LRU_CONNS["LRU Connectors (Seg 1)"]
+            direction LR
+            GIA1["<b>GIA 63W #1</b><br/>J63W-1 GND pins<br/>⚠️ PRIMARY SENSOR"]
+            GIA2["<b>GIA 63W #2</b><br/>J63W-2 GND pins"]
+            GDU1["<b>GDU 1050 PFD</b><br/>J5044 GND pins"]
+            GDU2["<b>GDU 1055 MFD</b><br/>J5055 GND pins"]
+            GEA["<b>GEA 71</b><br/>GND pins"]
+            MISC["<b>GMA/GTX/GDL/GSU</b><br/>GND pins"]
+        end
+
+        subgraph HARNESS_IP["Harness Ground Wires (Seg 2)"]
+            HWIRE["22 AWG ground wires<br/>bundled in G1000 harness<br/>routed behind IP<br/>CHECK: chafing from<br/>repeated panel access"]
+        end
+
+        subgraph STUDS_IP["GS-IP Ground Studs (Seg 3)"]
+            GSIP["GS-IP studs with<br/>ring terminals + lock washers<br/>CHECK: torque, corrosion,<br/>paint under terminals"]
+        end
+
+        subgraph BUSBAR_IP["Ground Bus Bar (Seg 4)"]
+            GBAR["Cu/Al bus bar<br/>bolted to IP frame<br/>CHECK: mounting bolts,<br/>dissimilar metal corrosion"]
+        end
+
+        P2413["<b>P2413</b><br/>Repinned Jul 2024<br/>CHECK: rework quality"]
+
+        GIA1 & GIA2 & GDU1 & GDU2 & GEA & MISC -->|"22 AWG"| HWIRE
+        HWIRE -->|"crimped ring terminals"| GSIP
+        GSIP -->|"stud-to-bar"| GBAR
+    end
+
+    subgraph FUSE_ZONE["🟡 FUSELAGE — Medium Priority"]
+        direction TB
+
+        subgraph IP_BOND["IP-to-Fuselage Bond (Seg 5)"]
+            BOND["IP frame → fuselage<br/>structural bond or<br/>bonding strap/jumper<br/>CHECK: strap present,<br/>no paint between surfaces"]
+        end
+
+        subgraph FUSE_STRUCT["Fuselage Structure"]
+            STRUCT["Metal structural elements<br/>through composite fuselage<br/>CHECK: continuity<br/>IP area → firewall area"]
+            BATT["<b>Battery Negative</b><br/>Aft fuselage<br/>Heavy gauge cable<br/>CHECK: terminal tight,<br/>no corrosion"]
+        end
+
+        subgraph SEAT_AREA["Under-Seat Area"]
+            SERVO["Pitch servo area<br/>Worked on during R&R #1<br/>CHECK: harness routing<br/>not disturbed"]
+        end
+
+        BOND --> STRUCT
+        STRUCT --> BATT
+    end
+
+    subgraph ENG_ZONE["🟠 ENGINE COMPARTMENT — Suspect (R&R #1 Specific)"]
+        direction TB
+
+        subgraph FIREWALL["Firewall Area (Seg 6)"]
+            FWBOND["<b>Firewall bonding</b><br/>strap(s) to fuselage<br/>CHECK: in ground return path"]
+            FWTHRU["Firewall feedthrough<br/>grounding continuity"]
+            P2208["<b>P2208</b><br/>Wire terminal repaired<br/>Jun 2024"]
+        end
+
+        subgraph ENG_ACCESS["Oil Leak Repair Access Areas"]
+            CYLHD["Near cylinder head cover<br/>(R&R #1 ONLY — resealed)<br/>CHECK: harness routing,<br/>any moved ground straps"]
+            SUMP["Near oil sump<br/>(R&R #1 ONLY — gasket replaced)<br/>CHECK: harness routing,<br/>any moved connections"]
+        end
+
+        subgraph ENG_GND["Engine Ground Straps"]
+            EGND["Engine-to-airframe<br/>bonding straps<br/>CHECK: clean, tight,<br/>correct torque"]
+        end
+
+        FWBOND & FWTHRU & P2208 --- ENG_ACCESS
+        ENG_GND --- FWBOND
+    end
+
+    subgraph RP_ZONE["🟢 RELAY PANEL — Low Priority (Reference)"]
+        direction LR
+        AVCB["AV.BUS 25A CB<br/>CHECK: contact resistance"]
+        AVRELAY["Avionic Relay<br/>contacts<br/>CHECK: power-side drop"]
+        GSRP["GS-RP studs<br/>(ECU grounds here<br/>— reads CORRECTLY)"]
+    end
+
+    GBAR -->|"bolted joint"| BOND
+    STRUCT -->|"through firewall area"| FWBOND
+    FWBOND -->|"structure + cable"| BATT
+
+    style IP_ZONE fill:#f8d7da,stroke:#dc3545,stroke-width:3px
+    style FUSE_ZONE fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style ENG_ZONE fill:#ffe0b2,stroke:#ff9800,stroke-width:2px
+    style RP_ZONE fill:#d4edda,stroke:#28a745,stroke-width:1px
+    style GIA1 fill:#d94a4a,color:#fff
+    style GSIP fill:#d94a4a,color:#fff
+    style GBAR fill:#d94a4a,color:#fff
+    style BOND fill:#e6a817,color:#000
+    style FWBOND fill:#ff9800,color:#000
+    style CYLHD fill:#ff9800,color:#000
+    style SUMP fill:#ff9800,color:#000
+    style P2413 fill:#d94a4a,color:#fff
+    style P2208 fill:#ff9800,color:#000
+    style GSRP fill:#2d8659,color:#fff
+```
+
+**Reading the diagram:**
+- **Red zone (Instrument Panel):** Inspect first. All G1000 LRU ground connections, the GS-IP studs, and the ground bus bar. This is where 22 AWG ground wires terminate on ring terminals and where the shop has repeatedly accessed during repair attempts.
+- **Orange zone (Engine Compartment):** Key suspect for R&R #1 collateral damage. The oil leak repair (cylinder head cover, oil sump gasket) required access to areas where harnesses and ground straps may have been disturbed. The P2208 wire terminal was also repaired here. Firewall bonding is in the G1000's ground return path.
+- **Yellow zone (Fuselage):** The structural ground path from IP to battery. The IP-to-fuselage bond is a single-point connection that can develop high resistance. Pitch servo work (under seats) during R&R #1 may have disturbed harness routing.
+- **Green zone (Relay Panel):** Reference measurements only. The ECU grounds here and reads correctly, confirming this area is healthy. Check the Avionic Relay and AV.BUS CB for power-side voltage drops.
+
 ### Post-Repair Verification
 
 After corrective action, verify the repair with **both** a static test and a flight test:
@@ -532,6 +735,31 @@ The engine was removed again in Apr–Jul 2025 for a piston crack (AD 2024-19-10
 The problem **did not resolve** after the second R&R. Voltage remains ~0.4 V below the pre-fault baseline and noise actually increased slightly. This **rules out the firewall pass-through connectors** as the fault location — they were reconnected during R&R #2 with no improvement.
 
 **Narrowed failure location:** The instrument panel ground path (GS-IP ground studs, ground bus bar, or G1000 harness ground pins) — these areas were NOT disturbed during either engine R&R. Something during the Feb 2024 shop visit disturbed an instrument panel ground connection, or the introduction of slightly higher resistance at the firewall shifted enough current through the instrument panel ground path to expose a pre-existing marginal connection.
+
+### What Changed During R&R #1 That Did NOT Happen During R&R #2?
+
+The Pettitt change-point test pinpoints February 2024 with extremely high statistical confidence (p = 3.75e-13). Something definitely changed during the R&R #1 maintenance window. The question is what was touched during R&R #1 that was NOT touched during R&R #2.
+
+**Work unique to R&R #1 (Feb 2024 — oil leak repair):**
+- Cylinder head cover R&I (resealed) — top of engine
+- Oil sump gasket replaced — bottom of engine
+- Pitch servo work (under seats, same shop visit)
+
+**Work unique to R&R #2 (Jul 2025 — piston crack):**
+- Pistons and connecting rods replaced — internal engine
+- Battery replaced (failed capacity test at 68%)
+
+**Work common to BOTH R&Rs:**
+- Engine removed and reinstalled
+- All firewall pass-through connectors disconnected/reconnected
+- Engine ground straps disconnected/reconnected
+- Engine mount bolts removed/reinstalled
+
+**Analysis:** The oil leak repair required specific engine compartment access (cylinder head cover, oil sump) that the piston replacement did not. Any wiring, harness routing, or ground connections disturbed specifically for oil leak access would NOT have been re-done during R&R #2. Additionally, the subsequent cascade of troubleshooting repairs after R&R #1 (3 voltage regulators, 2 alternators, P2413 repinning, P2208 wire repair) each involved further work in the engine compartment and behind the instrument panel, potentially worsening a marginal connection.
+
+**Key constraint — the ECU test:** The ECU grounds through GS-RP (relay panel / engine compartment side) and reads correctly throughout the entire period. This means the GS-RP ground studs and engine compartment ground straps have good connections. However, the G1000's ground path from the GS-IP bus bar goes through the IP structure → fuselage → firewall area → battery negative. The firewall area IS in/near the engine compartment and could have been affected during R&R #1 oil leak work.
+
+**Bottom line:** The fault was most likely introduced as **collateral damage during the R&R #1 maintenance window** — either behind the instrument panel (most likely), at the IP-to-fuselage structural bond, or at a ground connection in the firewall area that was disturbed for oil leak access but not redone during R&R #2's piston work. The compartment-by-compartment inspection below covers all possibilities.
 
 ## Probable Cause: High-Resistance Ground Connection
 
