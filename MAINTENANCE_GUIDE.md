@@ -271,9 +271,9 @@ Battery master OFF alone is not enough — the HOT BUS and BATT BUS remain live.
 
 1. Get a length of **heavy gauge wire** (12–14 AWG, 4–5 meters) with alligator clips on each end
 2. Clip one end to the **black DMM lead**
-3. Lay the extension wire through the cabin from aft bay to instrument panel — leave the far end free (not connected to the aircraft yet)
-4. **Zero the leads:** Touch the **red probe** to the **free end of the extension wire**. Press **REL** on the Fluke 289 — this zeros out the red lead + extension wire + black lead. The display should read 0.00Ω. The aircraft is not in the circuit during zeroing.
-5. Now clip the free end of the extension wire to the **disconnected battery negative cable lug** — this is the cable end you just pulled off the battery post. It's still connected to the aircraft's ground network. Do NOT clip to the battery post itself (it's isolated once the cable is removed).
+3. Clip the other end to the **red DMM lead**
+4. **Zero the leads:** Press **REL** on the Fluke 289 — this zeros out the red lead + extension wire + black lead. The display should read 0.00Ω. The aircraft is not in the circuit during zeroing.
+5. Unclip the extension wire from the **red DMM lead**. Lay the extension wire through the cabin from instrument panel to aft bay. Clip the free end to the **disconnected battery negative cable lug** — this is the cable end you just pulled off the battery post. It's still connected to the aircraft's ground network. Do NOT clip to the battery post itself (it's isolated once the cable is removed).
 6. Place the red probe on the test point (e.g., P701 pin 20) — the meter current flows from the red probe through the aircraft's ground wiring to the cable lug. The reading is the true ground path resistance with lead resistance already zeroed out.
 
 | Test | From | To | Expected | If High |
