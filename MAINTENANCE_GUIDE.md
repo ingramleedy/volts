@@ -135,6 +135,14 @@ Statistical analysis of **184 flight logs** (Jul 2023 – Feb 2026) detected a c
 
 The ECU voltage did NOT change — it reads a steady 27.82V throughout the entire period. The problem is G1000-specific. The Feb 2024 shop visit made a pre-existing marginal connection worse, pushing it into LOW VOLTS territory.
 
+![Voltage change-point analysis — 184 flights](output/voltage_changepoint.png)
+
+**How to read this chart:**
+
+- **Top panel** — Each dot is one flight's average voltage. The green dots (left of the dashed line) are flights before the Feb 2024 shop visit; the red dots (right) are after. The green ECU dots along the top stay flat at ~27.8V the entire time — proving the actual bus voltage never changed. Only the G1000 reading dropped.
+- **Middle panel** — This is a cumulative trend indicator (CUSUM). Think of it like a running score: when the G1000 reads above its long-term average, the line rises; when it reads below, the line falls. The peak and reversal at Feb 2024 pinpoints exactly when the readings shifted downward. The chart clearly shows the problem is getting progressively worse over time.
+- **Bottom panel** — Voltage noise (how much the reading jumps around during a single flight). After Feb 2024, the noise increased 55% — the G1000 reading became both lower *and* more erratic, consistent with a loose or corroded connection that vibration and temperature changes make worse.
+
 ### What Happened During That Shop Visit (Feb 2024)
 
 The engine R&R (oil leak) was not the only work performed. During the same visit:
