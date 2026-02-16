@@ -270,11 +270,11 @@ Battery master OFF alone is not enough — the HOT BUS and BATT BUS remain live.
 **Practical setup for long-distance measurements:** The GEA 71S is on the instrument panel shelf (front) while the battery is in the aft bay — too far apart for standard 1-meter test leads. To reach both points:
 
 1. Get a length of **heavy gauge wire** (12–14 AWG, 4–5 meters) with alligator clips on each end
-2. Clip one end to the **disconnected battery negative cable lug** — this is the cable end you just pulled off the battery post. It's still connected to the aircraft's ground network. Do NOT clip to the battery post itself (it's isolated once the cable is removed).
-3. Run the wire forward through the cabin to the instrument panel area
-4. Clip the other end to the **black DMM lead**
-5. **Zero the leads:** Bring both DMM probes together at the instrument panel and touch them tip-to-tip. Press **REL** on the Fluke 289 — this zeros out all lead and extension wire resistance. The display should read 0.00Ω. All subsequent readings now show only the aircraft's resistance.
-6. Now place the red probe on the test point (e.g., P701 pin 20) — the meter current flows from the red probe through the aircraft's ground wiring to the cable lug where the black probe extension is clipped. The reading is the true ground path resistance.
+2. Clip one end to the **black DMM lead**
+3. Lay the extension wire through the cabin from aft bay to instrument panel — leave the far end free (not connected to the aircraft yet)
+4. **Zero the leads:** Touch the **red probe** to the **free end of the extension wire**. Press **REL** on the Fluke 289 — this zeros out the red lead + extension wire + black lead. The display should read 0.00Ω. The aircraft is not in the circuit during zeroing.
+5. Now clip the free end of the extension wire to the **disconnected battery negative cable lug** — this is the cable end you just pulled off the battery post. It's still connected to the aircraft's ground network. Do NOT clip to the battery post itself (it's isolated once the cable is removed).
+6. Place the red probe on the test point (e.g., P701 pin 20) — the meter current flows from the red probe through the aircraft's ground wiring to the cable lug. The reading is the true ground path resistance with lead resistance already zeroed out.
 
 | Test | From | To | Expected | If High |
 |------|------|----|----------|---------|
@@ -287,7 +287,7 @@ Battery master OFF alone is not enough — the HOT BUS and BATT BUS remain live.
 ### Where to Put the Probes (Step by Step)
 
 **Test 1 — End-to-End (most important, do this first):**
-- **Black probe:** Connected via extension wire to the **disconnected battery negative cable lug** in the aft bay (see setup above). Make sure REL has been pressed to zero out lead resistance.
+- **Black probe:** Connected via extension wire to the **disconnected battery negative cable lug** in the aft bay (see setup above). REL should already be set from the zeroing step.
 - **Red probe:** Touch the back of **pin 20** on connector P701 (the aircraft-side harness connector for the GEA 71S, on the instrument panel shelf). This is the power ground pin — the ground reference for the voltage measurement. If the connector is mated to the unit, you'll need to back-probe or disconnect it to access the pin.
 - This measures the entire ground path at once. If it reads good (< 0.050 Ω), the ground path is fine and the problem is elsewhere. If high, continue with Tests 2–5 to find which segment has the resistance.
 
