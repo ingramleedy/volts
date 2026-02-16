@@ -192,20 +192,11 @@ ECU     → GS-RP studs → separate ground path → battery negative           
 
 ## Where to Look
 
-### G1000 LRU Locations
-
-The units relevant to the voltage reading are all on the **instrument panel** (per AMM 31-40-00):
-
-| Unit | Location | AMM Reference |
-|------|----------|---------------|
-| **GEA 71S** (voltage sensor) | Instrument panel shelf | 31-40-00, p.985, Figure 6 |
-| **GDU 1050 PFD / GDU 1060 MFD** | Instrument panel (displays) | Visible |
-
 ### Instrument Panel
 
-The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf**. Its connector P701 and ground stud GS-IP-14 are both in this area.
+The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf** (AMM 31-40-00, p.985). Its connector P701 and ground stud GS-IP-14 are both in this area.
 
-**Inspect at the instrument panel:**
+**Inspect:**
 - **GEA 71S connector P701** — is it fully seated with lock engaged? This is the voltage sensor unit. Check Pin 20 (power ground) and Pin 35 (aircraft power) specifically.
 - **Ground stud GS-IP-14** — this is where the GEA 71S power ground wire (77016A22N) terminates. Check for loose nut, corrosion, or paint under the ring terminal.
 - All GS-IP ground studs on the IP bus bar (see table below)
@@ -302,7 +293,7 @@ The instrument panel frame connects to the fuselage structure. Check:
 - **Red probe:** Bare/scraped fuselage metal **near the instrument panel** — find an unpainted screw head or lightly sand a small spot to get bare metal contact.
 - Tests the fuselage structure itself as a conductor from front to back.
 
-**Tests 3–5** are all at the instrument panel — no extension wire needed. Disconnect the extension, short the standard leads together, and press REL again to re-zero with just the standard leads.
+**Tests 3–5** are all at the instrument panel — no extension wire needed. Disconnect the extension, touch the standard leads together, and press REL again to re-zero with just the standard leads.
 
 **Test 3 — IP Frame to Fuselage:**
 - **Red probe:** Bare metal on the **instrument panel frame** — the structural part the ground studs are mounted to.
