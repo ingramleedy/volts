@@ -11,6 +11,20 @@
 
 The G1000 consistently reads **1–2 volts lower** than actual bus voltage, with transient dips up to **5.6 volts low** during high-current events. This causes false LOW VOLTS annunciations in flight even though the electrical system is charging normally.
 
+### FlySto LOW VOLTS Events (In-Flight)
+
+These FlySto screenshots show actual LOW VOLTS events captured from G1000 flight logs. The voltage drops below the 25V threshold repeatedly during normal flight operations:
+
+**85 seconds below 25V** — approach and taxi at KBOW, voltage swinging wildly between 24–27V:
+
+![LOW VOLTS event — 85 sec below 25V during approach/taxi](docs/lowvolts_page3_img2.jpeg)
+
+**18 seconds below 25V** — during landing, and **5 seconds below 25V** — at altitude during cruise:
+
+![LOW VOLTS events — 18 sec and 5 sec below 25V](docs/lowvolts_page3_img1.jpeg)
+
+These dips are **not real** — the independent VDL48 logger shows the bus voltage is steady at ~28V during these same periods. The G1000 is the only instrument seeing these drops.
+
 ## How We Know It's Real
 
 Three independent measurements were taken on the same aircraft, on the same flights. Two agree. One doesn't.
