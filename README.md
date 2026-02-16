@@ -95,15 +95,15 @@ The ECU mostly clusters near the 1:1 line with the VDL48, confirming both indepe
 
 ## Electrical System Architecture
 
-N238PS is a MAM40-858 configuration. Wiring schematics were extracted from the DA40 NG Airplane Maintenance Manual (Doc 6.02.15, CH.92, Drawing Nos. D44-9224-30-01 through D44-9224-30-05).
+N238PS is a MAM40-858 configuration. Wiring schematics were extracted from the DA40 NG Airplane Maintenance Manual (Doc 6.02.15, CH.92, Drawing Nos. D44-9224-30-01 through D44-9224-30-05). The bus structure diagram is from AMM Section 24-60-00.
 
-### DA40 NG Electrical System Schematic (p1859)
+### Bus Structure Diagram (AMM 24-60-00, Figure 1)
+
+![Bus Structure Diagram](docs/AMM_p622_24-60-00_Bus_Structure_G1000.png)
+
+### DA40 NG Electrical System Schematic (MAM40-858 Conversion, p1859)
 
 ![Electrical System Conversion](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png)
-
-### DA40 NG Electrical System Club (p1860)
-
-![Electrical System Club](docs/AMM_p1860_D44-9224-30-02_02_Electrical_System_Club.png)
 
 ### Bus Structure
 
@@ -111,23 +111,38 @@ The DA40 NG has seven electrical buses:
 
 | Bus | Function | Feed |
 |-----|----------|------|
-| **MAIN BUS** | Primary power distribution | Alternator and battery via MAIN TIE (24007A10, 10 AWG) |
-| **ESSENTIAL BUS** | Critical systems | ESS TIE relay (24006A10, 10 AWG) |
-| **AVIONIC BUS** | G1000 and avionics | AVIONIC RELAY + 25A breaker (24107A10/24108A10, 10 AWG) |
+| **MAIN BUS** | Primary power distribution | Battery via Power Relay (PWR 60A breaker) + alternator |
+| **ESSENTIAL BUS** | Critical systems | MAIN BUS via MAIN TIE 30A breaker + Essential Tie Relay + ESS TIE 30A breaker |
+| **AVIONIC BUS** | G1000 and avionics | **MAIN BUS** via AV. BUS 25A breaker + Avionic Relay |
 | **BATT BUS** | Direct battery bus | Battery relay (always on when closed) |
 | **HOT BUS** | Always-on bus | Direct battery connection |
-| **ECU BUS** | Engine control unit A | Separate from avionics path |
+| **ECU BUS** | Engine control unit A | Separate from avionics path (100A fuse from BATT BUS) |
 | **ECU B BUS** | Engine control unit B (backup) | Separate from avionics path |
 
 ### Power Path to G1000
 
+Per AMM 24-60-00 Figure 1 (G1000 bus structure), the power flows:
+
 ```
 MAIN BATTERY (B1, 24V / 13.6Ah)
   -> 100A fuse -> BATTERY RELAY -> BATT BUS
-  -> MAIN TIE (24007A10, 10 AWG) -> MAIN BUS
-  -> 25A circuit breaker (AV. BUS) -> AVIONIC RELAY -> AVIONIC BUS
+  -> Power Relay (PWR 60A breaker) -> MAIN BUS
+  -> AV. BUS 25A circuit breaker -> AVIONIC RELAY -> AVIONIC BUS
   -> individual circuit breakers -> G1000 GDU/GIA units
 ```
+
+The Avionic Master switch (on the Essential Bus) controls the Avionic Relay coil, but the **power path** to the AVIONIC BUS comes directly from the MAIN BUS through the AV. BUS 25A breaker. The Essential Bus and Avionic Bus are **sibling buses** that both branch from the MAIN BUS independently:
+
+```
+MAIN BUS -+-> AV. BUS 25A -> Avionic Relay -> AVIONIC BUS (G1000)
+           |
+           +-> MAIN TIE 30A -> Ess Tie Relay -> ESS TIE 30A -> ESSENTIAL BUS
+                                                                   |
+                                                    Avionic Master switch
+                                                    (controls relay coil only)
+```
+
+**Note:** A common misconception is that the G1000 is on the Essential Bus. This is incorrect for the DA40 NG. The G1000 is on the **AVIONIC BUS**, which is fed from the **MAIN BUS** (not through the Essential Bus). The Avionic Master switch lives on the Essential Bus but only controls the relay coil -- it does not carry the power. The AMM trouble-shooting table (24-60-00, p627) confirms: "There is 28 VDC on the main bus (if G1000 is installed)... but not on the avionic bus" as the first fault condition, indicating the G1000's power originates from the MAIN BUS.
 
 ### Ground Return Path (Critical for Voltage Sensing)
 
@@ -200,6 +215,7 @@ volt/
 │   └── LOG_VD.CSV                               # VDL48 voltage logger data
 ├── docs/
 │   ├── G1000 DataLog Fields.pdf                 # G1000 data log field reference
+│   ├── AMM_p622_*_Bus_Structure_G1000.png       # Bus structure diagram (24-60-00 Fig.1)
 │   ├── AMM_p1857_*_Electrical_System.png        # Main electrical system schematic
 │   ├── AMM_p1858_*_Electrical_System_Wiring.png # Electrical system wiring detail
 │   ├── AMM_p1859_*_Electrical_System_Conversion.png  # Electrical system (MAM40-858)
@@ -250,7 +266,7 @@ The HTML report embeds all images as base64 and can be shared as a single file. 
 ## Data Sources
 
 - **G1000 NXi data logs**: Exported from the G1000 NXi SD card. CSV format with 1-second sampling, 58 columns including `volt1` (main bus voltage). See `Docs/G1000 DataLog Fields.pdf` for field definitions.
-- **VDL48 log**: Triplett VDL48 data logger with 2-second sampling. The logger's date/time stamp is incorrect (shows 2019-03-01), but the sampling period is accurate. The analysis aligns the VDL segments to G1000 flight times based on voltage pattern segmentation.
+- **VDL48 log**: Triplett VDL48 data logger with 2-second sampling, connected to the **AUX POWER PLUG** in the cockpit. Per AMM 24-00-00 Figure 1, the Aux Power Plug is on the **HOT BUS** (direct battery connection via 5A fuse), giving the VDL48 a clean reference measurement of battery/alternator voltage without relay or breaker drops. The logger's date/time stamp is incorrect (shows 2019-03-01), but the sampling period is accurate. The analysis aligns the VDL segments to G1000 flight times based on voltage pattern segmentation.
 - **AE300 ECU data log**: Battery voltage (channel 808) from the Austro Engine AE300 ECU's flash data logger, 1-second sampling. Parsed from encrypted `.ae3` hex dump files using the [AustroView](../AustroView/) project. Sessions 80 and 81 correspond to the same Feb 8 flights.
 
 ## Statistical Methods

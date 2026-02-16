@@ -36,6 +36,7 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 
 ### Documentation
 - `Docs/G1000 DataLog Fields.pdf` - Garmin field reference (Appendix I: FDR Data Log Comparison, pages 94-98)
+- `Docs/AMM_p622_*_Bus_Structure_G1000.png` - Bus structure diagram from AMM 24-60-00 Figure 1
 - `Docs/AMM_p1857_*.png` through `AMM_p1861_*.png` - Electrical system wiring schematics extracted from DA40 NG AMM (Doc 6.02.15, CH.92), pages 1857-1861
 
 ## Analysis Approach
@@ -74,22 +75,27 @@ High-resistance ground connection in the G1000's measurement path. Evidence:
 Schematics extracted from DA40 NG AMM pages 1857-1861 (Drawing Nos. D44-9224-30-01 through D44-9224-30-05).
 
 ### Bus Structure
-The DA40 NG has seven buses:
-- **MAIN BUS** - Primary power distribution, fed by alternator and battery through MAIN TIE (wire 24007A10, 10 AWG)
-- **ESSENTIAL BUS** - Critical systems, connected through ESS TIE relay (wire 24006A10, 10 AWG)
-- **AVIONIC BUS** - G1000 and avionics, fed through AVIONIC RELAY and 25A circuit breaker (AV. BUS), wires 24107A10/24108A10 (10 AWG)
+The DA40 NG has seven buses (per AMM 24-60-00 Figure 1 and 24-00-00 Figure 1):
+- **MAIN BUS** - Primary power distribution, fed by battery via Power Relay (PWR 60A breaker) + alternator
+- **ESSENTIAL BUS** - Critical systems, fed from MAIN BUS via MAIN TIE 30A + Essential Tie Relay + ESS TIE 30A
+- **AVIONIC BUS** - G1000 and avionics, fed from **MAIN BUS** via AV. BUS 25A breaker + Avionic Relay
 - **BATT BUS** - Direct battery bus (always connected when battery relay closed)
-- **HOT BUS** - Always-on bus
-- **ECU BUS** / **ECU B BUS** - Engine control units (separate from avionics path)
+- **HOT BUS** - Always-on bus, direct battery connection (AUX POWER PLUG is here, 5A fuse)
+- **ECU BUS** / **ECU B BUS** - Engine control units (separate from avionics path, 100A fuse from BATT BUS)
+
+**Important:** The G1000 is on the AVIONIC BUS, NOT the Essential Bus. The Avionic Master switch lives on the Essential Bus but only controls the Avionic Relay coil -- it does not carry the power. The AVIONIC BUS and ESSENTIAL BUS are sibling buses that both branch independently from the MAIN BUS.
 
 ### Power Path to G1000
 ```
 MAIN BATTERY (B1, 24V/13.6Ah)
   -> 100A fuse -> BATTERY RELAY -> BATT BUS
-  -> MAIN TIE (24007A10, 10 AWG) -> MAIN BUS
-  -> 25A breaker (AV. BUS) -> AVIONIC RELAY -> AVIONIC BUS
+  -> Power Relay (PWR 60A breaker) -> MAIN BUS
+  -> AV. BUS 25A breaker -> AVIONIC RELAY -> AVIONIC BUS
   -> individual circuit breakers -> G1000 GDU/GIA units
 ```
+
+### VDL48 Connection Point
+The VDL48 was connected to the **AUX POWER PLUG** in the cockpit, which is on the **HOT BUS** (direct battery connection via 5A fuse). This gives a clean reference measurement of battery/alternator voltage without relay or breaker voltage drops.
 
 ### Ground Path (Critical for Voltage Sensing)
 The G1000 measures voltage at its power input pins **relative to its own ground pins**. The ground return path is:
@@ -190,6 +196,16 @@ The ECU closely agrees with the VDL48 reference (especially Flight 1 at +0.11 V 
 - Extracted AMM CH.92 electrical system schematics (pages 1857-1861) to `docs/` as high-res PNGs
 - Analyzed bus architecture and G1000 voltage sensing/ground path from wiring diagrams
 - Identified specific failure points: GS-IP ground studs, harness ground pins, bus bar-to-fuselage bond
+
+### 2026-02-15: Forum Feedback & Bus Investigation
+- Forum post suggested "The G1000 is on the essential bus" and recommended monitoring that specific bus
+- Investigated AMM 24-60-00 bus structure diagrams (Figures 1, 3, 5) for all DA40 NG variants
+- **Finding: The G1000 is on the AVIONIC BUS, NOT the Essential Bus.** The AVIONIC BUS is fed directly from the MAIN BUS (AV. BUS 25A breaker + Avionic Relay). The Avionic Master switch on the Essential Bus only controls the relay coil.
+- Extracted and saved AMM 24-60-00 Figure 1 (bus structure diagram) as `docs/AMM_p622_24-60-00_Bus_Structure_G1000.png`
+- Confirmed AMM trouble-shooting table (p627): "There is 28 VDC on the main bus (if G1000 is installed)" -- power originates from MAIN BUS
+- Identified VDL48 connection point: **AUX POWER PLUG** on the **HOT BUS** (direct battery, 5A fuse) per AMM 24-00-00 Figure 1
+- Updated README.md with bus structure clarification, corrected bus feed descriptions, and forum feedback response
+- Removed Club variant schematic (p1860) from README since N238PS is MAM40-858 (p1859 is the correct diagram)
 
 ## Scripts
 
