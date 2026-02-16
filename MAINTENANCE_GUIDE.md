@@ -180,14 +180,14 @@ Essential Bus → 5A ENG INST breaker → wire 77015A22 → GEA 71S Pin 35 (POWE
 
 ### Why Only the G1000 Reads Low
 
-The GEA 71S grounds through **GS-IP-14**, which takes a long path through the instrument panel structure, fuselage, and airframe to reach the battery negative terminal.
+The GEA 71S grounds through **GS-IP-14**, which routes through the instrument panel bus bar, IP frame, and fuselage structure to reach the battery negative terminal. Every joint in that chain adds potential resistance.
 
-The ECU and alternator ground through the **GS-RP** (Ground Stud — Relay Panel) studs, which have a short, direct path to battery negative. That's why the ECU reads correctly.
+The ECU (located under the pilot's seat) grounds through the **GS-RP** (Ground Stud — Relay Panel) studs, which use a separate ground path to battery negative. The ECU reads correctly — its ground path doesn't share the instrument panel's bus bar, frame bonds, or GS-IP studs.
 
 ```
-GEA 71S → GS-IP-14 → IP bus bar → fuselage → battery negative  (reads low)
+GEA 71S → GS-IP-14 → IP bus bar → IP frame → fuselage → battery negative  (reads low)
 
-ECU     → GS-RP studs → short ground strap → battery negative   (reads correctly)
+ECU     → GS-RP studs → separate ground path → battery negative            (reads correctly)
 ```
 
 ## Where to Look
