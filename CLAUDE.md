@@ -68,6 +68,27 @@ High-resistance ground connection in the G1000's measurement path. Evidence:
 - Different magnitude between flights (thermal/vibration effects on contact resistance)
 - Even 0.05 ohms at 20A = 1.0V drop
 
+## Three-Source Correlation (ECU)
+
+### Cross-Project Reference
+The AE300 ECU battery voltage data comes from the **AustroView** project (`../AustroView/`). The `correlate_ecu.py` script reads parsed CSV files from `../AustroView/Data/Parsed/` — specifically sessions 80 and 81, which correspond to the same Feb 8, 2026 flights.
+
+### ECU Data Details
+- **Source**: AE300 ECU channel 808 ("Battery Voltage"), 1 Hz sampling
+- **Conversion**: `eVolt_Batt` signal class — coefficient 0.01955034, offset 0
+- **Session 80**: 2026-02-08 15:57:57 - 16:54:23 UTC (Flight 1)
+- **Session 81**: 2026-02-08 18:18:47 - 19:32:10 UTC (Flight 2)
+- **File pattern**: `DataLog_*_session80_*.csv` / `session81_*.csv`
+
+### Three-Way Results Summary
+| Pair | Flight 1 | Flight 2 | Combined |
+|------|----------|----------|----------|
+| G1000 - VDL48 | -1.94 V | -0.98 V | -1.38 V |
+| G1000 - ECU | -2.05 V | -0.21 V | -0.99 V |
+| ECU - VDL48 | +0.11 V | -0.77 V | -0.40 V |
+
+The ECU closely agrees with the VDL48 reference (especially Flight 1 at +0.11 V offset). Both independent instruments read higher than the G1000, confirming the G1000 is the outlier.
+
 ## Session History
 
 ### 2026-02-09: Initial Analysis
@@ -76,12 +97,24 @@ High-resistance ground connection in the G1000's measurement path. Evidence:
 - Output saved to `output/` directory
 - Published to https://github.com/ingramleedy/volts
 
+### 2026-02-15: ECU Correlation
+- Created `correlate_ecu.py` - three-source analysis adding AE300 ECU battery voltage
+- ECU data parsed from AustroView project (sessions 80/81)
+- ECU agrees with VDL48 reference, confirming G1000 under-reading
+- New outputs: `three_way_flight1.png`, `three_way_flight2.png`, `ecu_vs_vdl_scatter.png`, `three_way_histograms.png`, `three_way_voltage_report.txt`
+
 ## Scripts
 
 ### voltage_analysis.py
-Main analysis script. Prints statistics to console and saves individual PNG plots to `output/`.
+Two-source analysis (G1000 vs VDL48). Prints statistics to console and saves PNG plots to `output/`.
 ```bash
 python voltage_analysis.py
+```
+
+### correlate_ecu.py
+Three-source analysis adding AE300 ECU data. Requires AustroView parsed CSVs at `../AustroView/Data/Parsed/`.
+```bash
+python correlate_ecu.py
 ```
 
 ### generate_report.py

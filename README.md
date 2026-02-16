@@ -59,6 +59,40 @@ Nearly all data points fall below the 1:1 line. The low r-squared value indicate
 
 ![Scatter Plot](output/scatter.png)
 
+## Three-Source Correlation: Adding ECU Battery Voltage
+
+A third independent voltage measurement was added from the Austro Engine AE300 ECU's own ADC (channel 808, "Battery Voltage"). The ECU data was extracted from encrypted `.ae3` hex dump files using the [AustroView](../AustroView/) project. The same two flights exist in the ECU data logger (sessions 80 and 81).
+
+### Three-Way Results
+
+| Pair | Flight 1 | Flight 2 | Combined |
+|------|----------|----------|----------|
+| **G1000 - VDL48** | **-1.94 V** | **-0.98 V** | **-1.38 V** |
+| **G1000 - ECU** | **-2.05 V** | **-0.21 V** | **-0.99 V** |
+| **ECU - VDL48** | **+0.11 V** | **-0.77 V** | **-0.40 V** |
+
+**Key findings:**
+- **Flight 1**: The ECU closely agrees with the VDL48 (mean offset only +0.11 V). Both read ~28.3 V while the G1000 reads ~26.4 V. This confirms the G1000 is the outlier.
+- **Flight 2**: The ECU reads slightly lower than the VDL48 (-0.77 V), but still significantly higher than the G1000. The G1000 remains the lowest of the three.
+- **The G1000 is consistently the lowest reading** across both flights and all pairwise comparisons, strongly supporting the high-resistance ground hypothesis.
+
+### Three-Way Time Series
+
+Each flight shows VDL48 (green) and ECU (orange) tracking together while G1000 (blue) reads consistently lower:
+
+![Three-Way Flight 1](output/three_way_flight1.png)
+![Three-Way Flight 2](output/three_way_flight2.png)
+
+### ECU vs VDL48 Scatter
+
+The ECU mostly clusters near the 1:1 line with the VDL48, confirming both independent instruments agree on the actual bus voltage:
+
+![ECU vs VDL Scatter](output/ecu_vs_vdl_scatter.png)
+
+### Three-Way Difference Distributions
+
+![Three-Way Histograms](output/three_way_histograms.png)
+
 ## Probable Cause: High-Resistance Ground Connection
 
 The data patterns are consistent with a high-resistance connection in the G1000's voltage measurement or ground return path:
@@ -88,7 +122,8 @@ Using Ohm's law, even **0.05 ohms** of ground resistance at 20 A load produces a
 ```
 volt/
 ├── README.md                  # This file
-├── voltage_analysis.py        # Main analysis script (console output + PNG plots)
+├── voltage_analysis.py        # Two-source analysis (G1000 vs VDL48)
+├── correlate_ecu.py           # Three-source analysis (+ AE300 ECU)
 ├── generate_report.py         # Generates self-contained HTML report
 ├── data/
 │   ├── N238PS_KBOW-KSPG_20260208-1551UTC.csv   # G1000 log, Flight 1
@@ -98,11 +133,16 @@ volt/
 │   └── G1000 DataLog Fields.pdf                 # G1000 data log field reference
 └── output/
     ├── Voltage_Analysis_Report_N238PS_20260208.html  # Full shareable HTML report
-    ├── voltage_report.txt         # Text statistical summary
-    ├── vdl_overview.png           # VDL full recording plot
-    ├── flight_comparison.png      # G1000 vs VDL time series
-    ├── difference_histograms.png  # Voltage difference distributions
-    └── scatter.png                # G1000 vs VDL scatter with regression
+    ├── voltage_report.txt              # Two-source statistical summary
+    ├── three_way_voltage_report.txt    # Three-source statistical summary
+    ├── vdl_overview.png                # VDL full recording plot
+    ├── flight_comparison.png           # G1000 vs VDL time series
+    ├── difference_histograms.png       # Two-source voltage difference distributions
+    ├── scatter.png                     # G1000 vs VDL scatter with regression
+    ├── three_way_flight1.png           # Three-source Flight 1 overlay
+    ├── three_way_flight2.png           # Three-source Flight 2 overlay
+    ├── ecu_vs_vdl_scatter.png          # ECU vs VDL scatter
+    └── three_way_histograms.png        # Three-source difference distributions
 ```
 
 ## Running the Analysis
@@ -113,10 +153,16 @@ Requires Python 3.10+ with numpy, matplotlib, and scipy:
 pip install numpy matplotlib scipy
 ```
 
-Run the analysis (prints statistics to console, saves plots to `output/`):
+Run the two-source analysis (G1000 vs VDL48):
 
 ```bash
 python voltage_analysis.py
+```
+
+Run the three-source analysis (adds ECU data from AustroView):
+
+```bash
+python correlate_ecu.py
 ```
 
 Generate the self-contained HTML report:
@@ -131,6 +177,7 @@ The HTML report embeds all images as base64 and can be shared as a single file. 
 
 - **G1000 NXi data logs**: Exported from the G1000 NXi SD card. CSV format with 1-second sampling, 58 columns including `volt1` (main bus voltage). See `Docs/G1000 DataLog Fields.pdf` for field definitions.
 - **VDL48 log**: Triplett VDL48 data logger with 2-second sampling. The logger's date/time stamp is incorrect (shows 2019-03-01), but the sampling period is accurate. The analysis aligns the VDL segments to G1000 flight times based on voltage pattern segmentation.
+- **AE300 ECU data log**: Battery voltage (channel 808) from the Austro Engine AE300 ECU's flash data logger, 1-second sampling. Parsed from encrypted `.ae3` hex dump files using the [AustroView](../AustroView/) project. Sessions 80 and 81 correspond to the same Feb 8 flights.
 
 ## Statistical Methods
 

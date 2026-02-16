@@ -1,0 +1,104 @@
+Three-Source Voltage Correlation: G1000 vs VDL48 vs AE300 ECU
+Aircraft: N238PS (Diamond DA40NG)  Date: 2026-02-08
+
+======================================================================
+  Flight 1: KBOW -> KSPG
+======================================================================
+  Samples (paired, 2-sec grid):  1438
+  Duration:                      47.9 min
+
+  G1000 volt1  - mean:  26.35 V   std: 0.368 V   range: [25.40, 27.60]
+  VDL48 ref    - mean:  28.29 V   std: 0.128 V   range: [27.96, 28.41]
+  ECU ch808    - mean:  28.41 V   std: 0.357 V   range: [22.10, 28.80]
+
+  G1000 - VDL48:
+    Mean diff:   -1.938 V
+    Std Dev:     0.412 V
+    95% range:   [-2.640, -1.019] V
+    Min/Max:     [-2.960, -0.610] V
+    Pearson r:   -0.1864  (p = 1.03e-12)
+    Paired t:    t = -178.45,  p = 0.00e+00  ***
+
+  G1000 - ECU:
+    Mean diff:   -2.051 V
+    Std Dev:     0.506 V
+    95% range:   [-2.800, -1.100] V
+    Min/Max:     [-3.100, +4.400] V
+    Pearson r:   0.0261  (p = 3.23e-01)
+    Paired t:    t = -153.61,  p = 0.00e+00  ***
+
+  ECU - VDL48:
+    Mean diff:   +0.113 V
+    Std Dev:     0.357 V
+    95% range:   [-0.270, +0.500] V
+    Min/Max:     [-6.040, +0.650] V
+    Pearson r:   0.1830  (p = 2.66e-12)
+    Paired t:    t = 12.05,  p = 6.62e-32  ***
+
+======================================================================
+  Flight 2: KSPG -> KBOW
+======================================================================
+  Samples (paired, 2-sec grid):  1983
+  Duration:                      66.1 min
+
+  G1000 volt1  - mean:  27.36 V   std: 0.247 V   range: [26.20, 27.90]
+  VDL48 ref    - mean:  28.34 V   std: 0.339 V   range: [25.55, 28.44]
+  ECU ch808    - mean:  27.57 V   std: 0.268 V   range: [23.50, 28.70]
+
+  G1000 - VDL48:
+    Mean diff:   -0.983 V
+    Std Dev:     0.401 V
+    95% range:   [-1.510, -0.373] V
+    Min/Max:     [-2.065, +1.675] V
+    Pearson r:   0.0904  (p = 5.53e-05)
+    Paired t:    t = -109.08,  p = 0.00e+00  ***
+
+  G1000 - ECU:
+    Mean diff:   -0.214 V
+    Std Dev:     0.344 V
+    95% range:   [-0.700, +0.300] V
+    Min/Max:     [-1.600, +3.500] V
+    Pearson r:   0.1070  (p = 1.79e-06)
+    Paired t:    t = -27.65,  p = 1.45e-142  ***
+
+  ECU - VDL48:
+    Mean diff:   -0.769 V
+    Std Dev:     0.422 V
+    95% range:   [-1.120, -0.391] V
+    Min/Max:     [-4.535, +2.145] V
+    Pearson r:   0.0464  (p = 3.87e-02)
+    Paired t:    t = -81.07,  p = 0.00e+00  ***
+
+======================================================================
+  Combined (Both Flights)
+======================================================================
+  Samples (paired, 2-sec grid):  3421
+  Duration:                      114.0 min
+
+  G1000 volt1  - mean:  26.94 V   std: 0.580 V   range: [25.40, 27.90]
+  VDL48 ref    - mean:  28.32 V   std: 0.272 V   range: [25.55, 28.44]
+  ECU ch808    - mean:  27.92 V   std: 0.516 V   range: [22.10, 28.80]
+
+  G1000 - VDL48:
+    Mean diff:   -1.384 V
+    Std Dev:     0.622 V
+    95% range:   [-2.540, -0.575] V
+    Min/Max:     [-2.960, +1.675] V
+    Pearson r:   0.0746  (p = 1.26e-05)
+    Paired t:    t = -130.13,  p = 0.00e+00  ***
+
+  G1000 - ECU:
+    Mean diff:   -0.986 V
+    Std Dev:     1.000 V
+    95% range:   [-2.700, +0.200] V
+    Min/Max:     [-3.100, +4.400] V
+    Pearson r:   -0.6641  (p = 0.00e+00)
+    Paired t:    t = -57.69,  p = 0.00e+00  ***
+
+  ECU - VDL48:
+    Mean diff:   -0.398 V
+    Std Dev:     0.589 V
+    95% range:   [-1.107, +0.470] V
+    Min/Max:     [-6.040, +2.145] V
+    Pearson r:   -0.0235  (p = 1.69e-01)
+    Paired t:    t = -39.54,  p = 5.55e-282  ***
