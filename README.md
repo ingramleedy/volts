@@ -105,74 +105,93 @@ N238PS is a MAM40-858 configuration. Wiring schematics were extracted from the D
 
 ![Electrical System Conversion](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png)
 
-### Bus Structure
+### Bus Structure & Power Distribution
 
-The DA40 NG has seven electrical buses:
+The DA40 NG has seven electrical buses. The VDL48 reference logger was connected to the **AUX POWER PLUG** on the HOT BUS (direct battery, 5A fuse).
 
-| Bus | Function | Feed |
-|-----|----------|------|
-| **MAIN BUS** | Primary power distribution | Battery via Power Relay (PWR 60A breaker) + alternator |
-| **ESSENTIAL BUS** | Critical systems | MAIN BUS via MAIN TIE 30A breaker + Essential Tie Relay + ESS TIE 30A breaker |
-| **AVIONIC BUS** | G1000 and avionics | **MAIN BUS** via AV. BUS 25A breaker + Avionic Relay |
-| **BATT BUS** | Direct battery bus | Battery relay (always on when closed) |
-| **HOT BUS** | Always-on bus | Direct battery connection |
-| **ECU BUS** | Engine control unit A | Separate from avionics path (100A fuse from BATT BUS) |
-| **ECU B BUS** | Engine control unit B (backup) | Separate from avionics path |
+```mermaid
+flowchart TB
+    subgraph EC["ENGINE COMPARTMENT"]
+        BAT["MAIN BATTERY\n24V / 13.6Ah"] -->|100A fuse| BATRELAY["Battery\nRelay"]
+        ALT["Alternator"] -->|Current Sensor| MAINBUS
+        BATRELAY --> BATTBUS["BATT BUS"]
+        BATTBUS -->|"PWR 60A"| PWRRELAY["Power\nRelay"]
+        PWRRELAY --> MAINBUS["MAIN BUS"]
+        BATTBUS -->|100A fuse| ECUBUS["ECU BUS"]
+        ECUBUS --> ECUA["ECU A"]
+        ECUBBUS["ECU B BUS"] --> ECUB["ECU B"]
+        BAT ---|direct| HOTBUS["HOT BUS"]
+    end
 
-### Power Path to G1000
+    subgraph IP["INSTRUMENT PANEL"]
+        MAINBUS -->|"AV. BUS 25A"| AVRELAY["Avionic\nRelay"]
+        AVRELAY --> AVBUS["AVIONIC BUS"]
+        MAINBUS -->|"MAIN TIE 30A"| ESSTIE["Ess Tie\nRelay"]
+        ESSTIE -->|"ESS TIE 30A"| ESSBUS["ESSENTIAL BUS"]
+        ESSBUS -.->|"controls coil only"| AVRELAY
+        AVBUS --> GDU1050["GDU 1050\nPFD"]
+        AVBUS --> GDU1055["GDU 1055\nMFD"]
+        AVBUS --> GIA1["GIA 63W #1"]
+        AVBUS --> GIA2["GIA 63W #2"]
+        HOTBUS -->|5A fuse| AUXPLUG["AUX POWER\nPLUG"]
+        AUXPLUG --> VDL48["VDL48\nLogger"]
+    end
 
-Per AMM 24-60-00 Figure 1 (G1000 bus structure), the power flows:
-
-```
-MAIN BATTERY (B1, 24V / 13.6Ah)
-  -> 100A fuse -> BATTERY RELAY -> BATT BUS
-  -> Power Relay (PWR 60A breaker) -> MAIN BUS
-  -> AV. BUS 25A circuit breaker -> AVIONIC RELAY -> AVIONIC BUS
-  -> individual circuit breakers -> G1000 GDU/GIA units
-```
-
-The Avionic Master switch (on the Essential Bus) controls the Avionic Relay coil, but the **power path** to the AVIONIC BUS comes directly from the MAIN BUS through the AV. BUS 25A breaker. The Essential Bus and Avionic Bus are **sibling buses** that both branch from the MAIN BUS independently:
-
-```
-MAIN BUS -+-> AV. BUS 25A -> Avionic Relay -> AVIONIC BUS (G1000)
-           |
-           +-> MAIN TIE 30A -> Ess Tie Relay -> ESS TIE 30A -> ESSENTIAL BUS
-                                                                   |
-                                                    Avionic Master switch
-                                                    (controls relay coil only)
-```
-
-**Note:** A common misconception is that the G1000 is on the Essential Bus. This is incorrect for the DA40 NG. The G1000 is on the **AVIONIC BUS**, which is fed from the **MAIN BUS** (not through the Essential Bus). The Avionic Master switch lives on the Essential Bus but only controls the relay coil -- it does not carry the power. The AMM trouble-shooting table (24-60-00, p627) confirms: "There is 28 VDC on the main bus (if G1000 is installed)... but not on the avionic bus" as the first fault condition, indicating the G1000's power originates from the MAIN BUS.
-
-### Ground Return Path (Critical for Voltage Sensing)
-
-The G1000 measures bus voltage at its power input pins **relative to its own ground pins**. The ground return path is:
-
-```
-G1000 GDU/GIA ground pins
-  -> harness wires (22 AWG)
-  -> Instrument Panel ground studs (GS-IP-xx series)
-  -> instrument panel ground bus bar
-  -> fuselage structure
-  -> engine compartment ground strap
-  -> battery negative terminal
+    style AVBUS fill:#4a90d9,color:#fff
+    style ESSBUS fill:#e6a817,color:#000
+    style MAINBUS fill:#2d8659,color:#fff
+    style HOTBUS fill:#d94a4a,color:#fff
+    style AUXPLUG fill:#d94a4a,color:#fff,stroke-dasharray: 5 5
+    style VDL48 fill:#d94a4a,color:#fff,stroke-dasharray: 5 5
 ```
 
-Any resistance in this ground return path causes the G1000 to read lower than actual bus voltage, because the current flowing through the resistance creates a voltage drop that subtracts from the measured value:
+**Note:** The G1000 is on the **AVIONIC BUS**, which is fed from the **MAIN BUS** (not the Essential Bus). The Avionic Master switch lives on the Essential Bus but only controls the Avionic Relay coil -- it does not carry power. The AMM trouble-shooting table (24-60-00, p627) confirms: "There is 28 VDC on the main bus (if G1000 is installed)... but not on the avionic bus" as the first fault condition, indicating the G1000's power originates from the MAIN BUS.
 
+### Ground Return Paths
+
+The G1000 measures bus voltage at its power input pins **relative to its own ground pins**. Any resistance in the ground return path causes the G1000 to read lower than actual bus voltage: `V_measured = V_bus - (I_load x R_ground)`.
+
+```mermaid
+flowchart BT
+    BATNEG["Battery\nNegative Terminal"]
+    BATNEG --- GSRP["GS-RP Ground Studs\n(Relay Panel)"]
+    BATNEG --- FWGND["Firewall Ground\nFeedthrough"]
+    FWGND --- IPBAR["Instrument Panel\nGround Bus Bar"]
+    IPBAR --- GSIP["GS-IP Ground Studs\n(Instrument Panel)"]
+    GSIP ---|"22 AWG harness"| G1000GND["G1000 GDU/GIA\nGround Pins"]
+    GSRP --- ECUGND["ECU A/B\nGround"]
+    GSRP --- ALTGND["Alternator\nGround"]
+    GSRP --- STARTGND["Starter\nGround"]
+
+    G1000GND -.-|"HIGH RESISTANCE\ncauses under-reading"| GSIP
+
+    style G1000GND fill:#d94a4a,color:#fff
+    style GSIP fill:#d94a4a,color:#fff
+    style IPBAR fill:#e6a817,color:#000
+    style ECUGND fill:#2d8659,color:#fff
+    style ALTGND fill:#2d8659,color:#fff
+    style STARTGND fill:#2d8659,color:#fff
 ```
-V_measured = V_bus - (I_load x R_ground)
+
+The relay panel and engine compartment components (battery, alternator, starter, ECU) use separate **GS-RP ground studs** that return directly to battery negative, bypassing the instrument panel ground bus entirely. This is why only the G1000 reads low.
+
+### Why Three Instruments Disagree
+
+```mermaid
+flowchart LR
+    BUS["Actual Bus Voltage\n~28.3V"]
+    BUS --> VDL["VDL48\nHOT BUS + good ground\nReads: 28.3V"]
+    BUS --> ECU["ECU\nECU BUS + GS-RP ground\nReads: 28.3V"]
+    BUS --> G1000["G1000\nAVIONIC BUS + GS-IP ground\nReads: 26.9V"]
+    G1000 ---|"V_drop = I x R_ground"| BADGND["High-R Ground\n~0.05 ohms"]
+
+    style VDL fill:#2d8659,color:#fff
+    style ECU fill:#2d8659,color:#fff
+    style G1000 fill:#d94a4a,color:#fff
+    style BADGND fill:#d94a4a,color:#fff
 ```
 
-### Why Only the G1000 is Affected
-
-The alternator voltage regulator (J2424) has its own **dedicated USENSE wire** (24022A22, 22 AWG, pin 5) that senses bus voltage independently. This is why:
-
-- The **alternator regulates correctly** — the VDL48 confirms a steady ~28.3 V on the bus
-- The **ECU reads correctly** — it has its own bus (ECU BUS) and its own ground path (GS-RP series ground studs), completely separate from the G1000's instrument panel grounds
-- **Only the G1000 reads low** — because it measures through its own degraded ground path on the GS-IP instrument panel ground studs
-
-The relay panel and engine compartment components (battery, alternator, starter, ECU) use separate GS-RP ground studs that return directly to battery negative, bypassing the instrument panel ground bus entirely.
+The alternator voltage regulator (J2424) has its own **dedicated USENSE wire** (24022A22, 22 AWG, pin 5) that senses bus voltage independently, so the alternator regulates correctly regardless of the G1000's ground path issue.
 
 ## Probable Cause: High-Resistance Ground Connection
 
