@@ -292,6 +292,17 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - Narrowed failure to instrument panel ground path (GS-IP studs, ground bus bar, harness ground pins)
 - Corrected assumption about pitch servo location (under seats, not instrument panel)
 
+### 2026-02-15: Complete Ground Path Documentation
+- Traced all G1000 ground return paths through AMM CH.92 schematics (D44-9224-30-01 through -05)
+- Documented 6-segment ground path from LRU pins → harness → GS-IP studs → bus bar → IP frame → fuselage → battery negative
+- Catalogued all wire numbers, connectors, and gauge sizes from CH.92 drawings
+- Documented GS-RP vs GS-IP ground stud group separation and component assignments
+- Created detailed Mermaid diagrams: segment map, ground stud groups, diagnostic flowchart
+- Wrote complete diagnostic/troubleshooting procedure with resistance thresholds and step-by-step isolation
+- Added visual inspection checklist, priority-ranked failure points, and post-repair verification criteria
+- Replaced generic "Recommended Actions" with comprehensive "Diagnostic & Troubleshooting Procedure"
+- Noted AMM CH.31/34/23 cross-references for G1000 LRU-specific pin assignments (not in CH.92)
+
 ## Scripts
 
 ### voltage_analysis.py

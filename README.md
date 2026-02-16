@@ -199,6 +199,316 @@ flowchart LR
 
 The alternator voltage regulator (J2424) has its own **dedicated USENSE wire** (24022A22, 22 AWG, pin 5) that senses bus voltage independently, so the alternator regulates correctly regardless of the G1000's ground path issue.
 
+## G1000 Ground Path — Complete Wire-Level Detail
+
+This section documents every connection segment in the G1000 NXi ground return path, from LRU connector pins through to the battery negative terminal.
+
+**Source documents:**
+- AMM CH.92 wiring diagrams D44-9224-30-01 (p1857), D44-9224-30-01_02 (p1858), D44-9224-30-01X03 (p1859, MAM40-858), D44-9224-30-05 (p1861)
+- AMM 24-60-00 Bus Structure Figure 1 (p622)
+- G1000 NXi LRU wiring detail is in AMM CH.31 (Instruments), CH.34 (Navigation), CH.23 (Communications) — referenced but not extracted
+
+### Ground Path Segment Map
+
+The G1000's ground return has **six segments** connected in series. The total resistance from LRU ground pin to battery negative is the sum of all segment resistances. Any single high-resistance segment causes the under-reading.
+
+```mermaid
+flowchart TB
+    subgraph SEG1["<b>SEGMENT 1</b><br/>LRU Ground Pins → Harness"]
+        direction LR
+        GDU1050["<b>GDU 1050 PFD</b><br/>Connector: J5044<br/>Ground pins: chassis + signal<br/>Location: IP, pilot side"]
+        GDU1055["<b>GDU 1055 MFD</b><br/>Connector: J5055<br/>Ground pins: chassis + signal<br/>Location: IP, center"]
+        GIA1["<b>GIA 63W #1</b><br/>Connector: J63W-1<br/>Multiple GND pins<br/>Location: behind IP<br/>PRIMARY VOLTAGE SENSOR"]
+        GIA2["<b>GIA 63W #2</b><br/>Connector: J63W-2<br/>Multiple GND pins<br/>Location: behind IP"]
+        GEA71["<b>GEA 71</b><br/>Engine/Airframe unit<br/>Location: behind IP"]
+        OTHER["<b>GMA 1347 / GTX 33<br/>GDL 69A / GSU 73</b><br/>Various connectors<br/>Location: behind IP"]
+    end
+
+    subgraph SEG2["<b>SEGMENT 2</b><br/>Harness Ground Wires"]
+        HARNESS["G1000 wiring harness<br/>22 AWG ground wires<br/>Multiple runs bundled<br/>Routed behind IP"]
+    end
+
+    subgraph SEG3["<b>SEGMENT 3</b><br/>Ground Studs"]
+        GSIP["<b>GS-IP Ground Studs</b><br/>Ring terminals on threaded studs<br/>Nut + lock washer<br/>Mounted on IP structure<br/>Multiple studs (GS-IP-xx series)"]
+    end
+
+    subgraph SEG4["<b>SEGMENT 4</b><br/>Ground Bus Bar"]
+        GBAR["<b>Ground Bus Bar</b><br/>Copper/aluminum bar<br/>Bolted to IP frame<br/>Collects all GS-IP studs"]
+    end
+
+    subgraph SEG5["<b>SEGMENT 5</b><br/>Structural Bond"]
+        BOND["<b>IP Frame → Fuselage Bond</b><br/>Structural ground point<br/>IP frame to fuselage skin<br/>May include bonding strap"]
+    end
+
+    subgraph SEG6["<b>SEGMENT 6</b><br/>Fuselage → Battery"]
+        FUSE["<b>Fuselage Structure</b><br/>Composite + metal structure<br/>Firewall feedthrough"]
+        BATNEG["<b>Battery Negative Terminal</b><br/>Aft fuselage<br/>Heavy gauge cable"]
+    end
+
+    GDU1050 & GDU1055 & GIA1 & GIA2 & GEA71 & OTHER --> HARNESS
+    HARNESS -->|"22 AWG wires"| GSIP
+    GSIP -->|"stud-to-bar"| GBAR
+    GBAR -->|"bolted joint"| BOND
+    BOND --> FUSE
+    FUSE -->|"structure + cable"| BATNEG
+
+    style GIA1 fill:#d94a4a,color:#fff
+    style GSIP fill:#e6a817,color:#000
+    style GBAR fill:#e6a817,color:#000
+    style BOND fill:#e6a817,color:#000
+```
+
+### Segment Detail Table
+
+| Seg | From | To | Connection Type | Wire/Cable | Gauge | Failure Modes |
+|---|---|---|---|---|---|---|
+| **1** | GIA 63W / GDU ground pins | Harness connector mate | Pin-to-socket in LRU connector | Per AMM CH.31/34 | 22 AWG | Backed-out pin, corrosion on pin/socket, loose connector lock |
+| **2** | Harness connector | GS-IP stud | Crimped ring terminal on wire | G1000 harness ground wires | 22 AWG | Crimp failure, wire break inside insulation, chafed wire |
+| **3** | GS-IP stud | Ground bus bar | Ring terminal bolted to threaded stud | Stud with nut + lock washer | N/A (hardware) | Loose nut, corrosion under ring terminal, paint/anodize under terminal, cracked ring terminal |
+| **4** | Ground bus bar | IP frame | Bolted or bonded joint | Bus bar mounting hardware | N/A (hardware) | Loose mounting bolt, corrosion at contact surface, dissimilar metal corrosion |
+| **5** | IP frame | Fuselage structure | Structural bond / bonding strap | May be integral or bonding jumper | Varies | Loose bonding strap, paint between surfaces, corrosion at bond |
+| **6** | Fuselage structure | Battery negative | Heavy cable + structural path | Battery negative cable | 4-6 AWG | Loose terminal, corrosion (unlikely — ECU reads correctly via same endpoint) |
+
+### Specific Wire & Connector References from AMM CH.92
+
+The following details are directly readable from the CH.92 wiring schematics:
+
+**Power Distribution (D44-9224-30-01, p1857; D44-9224-30-01_02, p1858):**
+
+| Component | Wire Number | Gauge | Function | From | To |
+|---|---|---|---|---|---|
+| Alt Regulator (J2424) | 24022A22 | 22 AWG | USENSE (voltage sense) | MAIN BUS sense point | Regulator pin 5 |
+| Alt Regulator (J2424) | 24018A20N | 20 AWG | Ground | Regulator pin 4 | GS-RP ground stud |
+| Alt Regulator (J2424) | 24017A20 | 20 AWG | Excitation | Excitation relay | Regulator pin 7 |
+| Current Sensor | 24xxx | Heavy | Alt output to MAIN BUS | Alternator | MAIN BUS |
+| Battery Relay | — | Heavy | Battery to BATT BUS | Battery (+) via 100A fuse | BATT BUS |
+| Power Relay | — | Heavy | BATT BUS to MAIN BUS | BATT BUS via PWR 60A CB | MAIN BUS |
+
+**Second Alternator System (D44-9224-30-05, p1861):**
+
+| Component | Wire Number | Gauge | Function | Color Code |
+|---|---|---|---|---|
+| 2nd Alt Regulator (J2432) | 24037A05 | 5 AWG | Alt output | — |
+| 2nd Alt Regulator (J2432) | 24036A22 | 22 AWG | Field | BROWN |
+| 2nd Alt Regulator (J2432) | 24035A20 | 20 AWG | Ground | BLACK |
+| 2nd Alt Regulator (J2432) | 24034A22 | 22 AWG | Voltage sense | YELLOW |
+| 2nd Alt Regulator (J2432) | 24038A22 | 22 AWG | Alt control | — |
+| 2nd Alt Regulator (J2432) | — | 22 AWG | Alt protection | ORANGE |
+| EMI Filter (optional) | U400854 | — | Inline on alt output | — |
+
+**Relay Panel (D44-9224-30-05, p1861):**
+
+| Relay | Wire In | Wire Out | Function |
+|---|---|---|---|
+| Excitation Relay | 24059A14, 24058A14 | To field circuit | Controls alt field current |
+| Main Relay | 24035A22 | To main bus connection | Main alt connect/disconnect |
+| Alt Control Relay | 24037A02, 24053A22 | Control signals | Alt system control |
+| Alt Fail Relay | Various | Warning circuit | Alt failure annunciation |
+| 2nd EPU Relay | 24417A6 | To EPU | Emergency power |
+| EPU Relay | — | To EPU bus | Emergency power |
+
+**Connectors Referenced in Maintenance History:**
+
+| Connector | Location | What It Connects | Maintenance Event |
+|---|---|---|---|
+| P2208 | Relay panel / firewall area | Power distribution harness | Jun 30, 2024: wire terminal repaired |
+| P2413 | Behind instrument panel | G1000 HSDB (High-Speed Data Bus) | Jul 26, 2024: connector replaced, harness repinned |
+| J2424 | Engine compartment | Main alt voltage regulator | Multiple VR replacements |
+| J2432 | Engine compartment | 2nd alt voltage regulator | Alt #2 replacements |
+| Firewall pass-through | Firewall | All engine-to-IP wire runs | Disconnected during both engine R&Rs |
+
+### Ground Stud Groups
+
+The DA40 NG uses two physically separate ground stud groups. This separation is critical to understanding why only the G1000 reads low:
+
+```mermaid
+flowchart TB
+    subgraph GSRP_GROUP["<b>GS-RP Ground Studs — Relay Panel / Engine Compartment</b><br/>(reads CORRECT voltage)"]
+        direction LR
+        RP1["Battery Relay<br/>ground"]
+        RP2["Power Relay<br/>ground"]
+        RP3["Avionic Relay<br/>ground"]
+        RP4["Ess Tie Relay<br/>ground"]
+        RP5["Starter Relay<br/>ground"]
+        RP6["ECU A ground"]
+        RP7["ECU B ground"]
+        RP8["Alt Regulator<br/>24018A20N (20AWG)"]
+        RP9["2nd Alt Regulator<br/>24035A20 (20AWG)"]
+        RP10["Excitation Relay<br/>ground"]
+        RPBAR["GS-RP Bus<br/>(short path to<br/>battery negative)"]
+        RP1 & RP2 & RP3 & RP4 & RP5 & RP6 & RP7 & RP8 & RP9 & RP10 --> RPBAR
+    end
+
+    subgraph GSIP_GROUP["<b>GS-IP Ground Studs — Instrument Panel</b><br/>(SUSPECT — reads LOW voltage)"]
+        direction LR
+        IP1["GDU 1050 PFD<br/>harness GND (22AWG)"]
+        IP2["GDU 1055 MFD<br/>harness GND (22AWG)"]
+        IP3["GIA 63W #1<br/>harness GND (22AWG)"]
+        IP4["GIA 63W #2<br/>harness GND (22AWG)"]
+        IP5["GEA 71<br/>harness GND (22AWG)"]
+        IP6["GMA 1347 Audio<br/>harness GND (22AWG)"]
+        IP7["GTX 33 XPDR<br/>harness GND (22AWG)"]
+        IP8["GDL 69A Datalink<br/>harness GND (22AWG)"]
+        IP9["GSU 73 AHRS<br/>harness GND (22AWG)"]
+        IPBAR["GS-IP Bus Bar<br/>(LONG path through<br/>IP structure to<br/>battery negative)"]
+        IP1 & IP2 & IP3 & IP4 & IP5 & IP6 & IP7 & IP8 & IP9 --> IPBAR
+    end
+
+    RPBAR -->|"short ground strap<br/>low resistance"| BATNEG["Battery<br/>Negative<br/>Terminal"]
+    IPBAR -->|"IP structure → fuselage<br/>→ firewall → aft fuselage<br/>HIGH RESISTANCE?"| BATNEG
+
+    style GSRP_GROUP fill:#d4edda,stroke:#28a745
+    style GSIP_GROUP fill:#f8d7da,stroke:#dc3545
+    style IPBAR fill:#d94a4a,color:#fff
+    style RPBAR fill:#2d8659,color:#fff
+    style BATNEG fill:#333,color:#fff
+```
+
+### AMM Chapter Cross-Reference
+
+The CH.92 schematics show power distribution. For complete G1000 LRU pin assignments, refer to these additional AMM chapters:
+
+| AMM Chapter | Section | Content | Key LRUs |
+|---|---|---|---|
+| CH.31 | Instruments / Displays | GDU 1050/1055/1060 wiring, connector pinouts | PFD, MFD |
+| CH.34 | Navigation | GIA 63W, GSU 73, GMU 44 wiring, connector pinouts | Avionics computers, AHRS, magnetometer |
+| CH.23 | Communications | GMA 1347, GTX 33, GDL 69A wiring, connector pinouts | Audio panel, transponder, datalink |
+| CH.24 | Electrical Power | Bus structure, circuit breaker assignments | Power distribution to all LRUs |
+| CH.92 | Wiring Diagrams | System-level schematics (what we have) | All — but at system level, not LRU pin level |
+
+## Diagnostic & Troubleshooting Procedure
+
+### Required Equipment
+
+| Item | Specification | Purpose |
+|---|---|---|
+| Digital multimeter | 4-digit, milliohm capable (e.g., Fluke 87V) | Resistance measurements |
+| Milliohm meter (preferred) | Kelvin 4-wire, 0.001 Ω resolution | Precise low-resistance measurement |
+| Test leads | Kelvin clips or sharp probes | Contact through corrosion/coating |
+| Torque wrench | Per AMM specs for ground stud nuts | Retorquing connections |
+| Isopropyl alcohol + abrasive pad | Scotch-Brite or equivalent | Cleaning contact surfaces |
+| Triplett VDL48 (or equivalent) | DC voltage data logger, 2-sec sampling | Post-repair verification flight test |
+
+### Step-by-Step Ground Path Resistance Test
+
+**Prerequisite:** Battery master OFF, all avionics OFF. Disconnect battery negative cable for safety during resistance measurements. All resistance measurements should use the lowest ohm range available (milliohm mode if equipped). For DMMs without milliohm mode, subtract lead resistance (short leads together and note the reading).
+
+```mermaid
+flowchart TB
+    START["<b>START</b><br/>Battery disconnected<br/>All power OFF"] --> STEP1
+
+    STEP1["<b>STEP 1: End-to-End Baseline</b><br/>Measure: GIA 63W GND pin → Battery negative terminal<br/>Expected: < 0.050 Ω<br/>If > 0.050 Ω: confirms ground path problem"] --> STEP1R{"> 0.050 Ω?"}
+    STEP1R -->|"YES — problem confirmed"| STEP2
+    STEP1R -->|"NO — ground path OK,<br/>check power side instead"| PWRSIDE["Investigate AVIONIC BUS<br/>power path: AV.BUS 25A CB,<br/>Avionic Relay contacts,<br/>LRU power pin connections"]
+
+    STEP2["<b>STEP 2: Segment 6 — Fuselage to Battery</b><br/>Measure: bare fuselage metal near IP → Battery negative post<br/>Expected: < 0.010 Ω<br/>This tests the fuselage structural path"] --> STEP2R{"> 0.010 Ω?"}
+    STEP2R -->|"YES"| FIX6["Check:<br/>• Battery negative cable terminals<br/>• Fuselage ground point corrosion<br/>• Firewall bonding"]
+    STEP2R -->|"NO"| STEP3
+
+    STEP3["<b>STEP 3: Segment 5 — IP Frame to Fuselage</b><br/>Measure: IP frame/structure → bare fuselage metal<br/>Expected: < 0.005 Ω<br/>This tests the IP-to-fuselage bond"] --> STEP3R{"> 0.005 Ω?"}
+    STEP3R -->|"YES"| FIX5["Check:<br/>• IP mounting bolts/bonding straps<br/>• Paint between IP frame and fuselage<br/>• Bonding jumper if installed"]
+    STEP3R -->|"NO"| STEP4
+
+    STEP4["<b>STEP 4: Segment 3+4 — GS-IP Stud to IP Frame</b><br/>Measure: each GS-IP stud → IP frame<br/>Expected: < 0.005 Ω per stud<br/>This tests stud connections + bus bar"] --> STEP4R{"> 0.005 Ω<br/>on any stud?"}
+    STEP4R -->|"YES"| FIX34["Check that stud:<br/>• Loose nut — retorque<br/>• Corrosion under ring terminal<br/>• Paint/anodize under terminal<br/>• Cracked ring terminal<br/>• Bus bar mounting bolts"]
+    STEP4R -->|"NO"| STEP5
+
+    STEP5["<b>STEP 5: Segment 1+2 — LRU GND Pin to GS-IP Stud</b><br/>Measure: GIA 63W GND pin (at connector) → GS-IP stud<br/>Repeat for GDU 1050, GDU 1055<br/>Expected: < 0.010 Ω per LRU<br/>This tests harness wire + connector pin"] --> STEP5R{"> 0.010 Ω<br/>on any LRU?"}
+    STEP5R -->|"YES"| FIX12["Check that LRU:<br/>• Connector pin corrosion<br/>• Backed-out pin in connector<br/>• Crimp integrity at ring terminal<br/>• Wire break inside insulation<br/>• Connector shell/lock engagement"]
+    STEP5R -->|"NO"| ALLGOOD["All segments within limits.<br/>Consider:<br/>• Intermittent fault (vibration-dependent)<br/>• Power-side resistance (AV.BUS CB,<br/>  Avionic Relay contacts)<br/>• Re-test with controlled vibration"]
+
+    style START fill:#333,color:#fff
+    style STEP1 fill:#4a90d9,color:#fff
+    style STEP2 fill:#4a90d9,color:#fff
+    style STEP3 fill:#4a90d9,color:#fff
+    style STEP4 fill:#4a90d9,color:#fff
+    style STEP5 fill:#4a90d9,color:#fff
+    style FIX6 fill:#e6a817,color:#000
+    style FIX5 fill:#e6a817,color:#000
+    style FIX34 fill:#d94a4a,color:#fff
+    style FIX12 fill:#d94a4a,color:#fff
+    style PWRSIDE fill:#2d8659,color:#fff
+    style ALLGOOD fill:#2d8659,color:#fff
+```
+
+### Resistance Thresholds & What They Mean
+
+| End-to-End Resistance | Voltage Drop at 20A | Interpretation |
+|---|---|---|
+| < 0.010 Ω | < 0.2 V | Normal — ground path is clean |
+| 0.010 – 0.025 Ω | 0.2 – 0.5 V | Marginal — explain minor offset, may worsen with vibration |
+| 0.025 – 0.050 Ω | 0.5 – 1.0 V | Degraded — consistent with observed ~1.4 V average offset |
+| 0.050 – 0.100 Ω | 1.0 – 2.0 V | Failed — consistent with observed worst-case dips to -5.6 V |
+| > 0.100 Ω | > 2.0 V | Severe — would cause persistent LOW VOLTS in flight |
+
+**Note:** The observed -1.36 V average offset at typical avionic bus loads (15–25 A) implies approximately **0.05–0.09 Ω** total ground path resistance. The worst-case -5.6 V transient dips during high-current events (radio TX at ~8A, autopilot servos) would occur when instantaneous current spikes combine with this resistance.
+
+### Visual Inspection Checklist
+
+Inspect every connection in the ground path, looking for these specific failure modes:
+
+**At each GS-IP ground stud:**
+- [ ] Nut torqued to AMM specification (check with calibrated torque wrench)
+- [ ] Lock washer present and not flattened/broken
+- [ ] Ring terminal fully seated flat against stud surface
+- [ ] No paint, primer, anodize, or sealant between ring terminal and stud/bus bar
+- [ ] Ring terminal not cracked, bent, or deformed
+- [ ] No green/white corrosion (aluminum) or green verdigris (copper)
+- [ ] No evidence of arcing or heat discoloration
+- [ ] Stud threads not stripped or cross-threaded
+- [ ] Multiple ring terminals on same stud: all making good contact (not stacked too high)
+
+**At each G1000 LRU connector (J5044, J5055, J63W-1, J63W-2, etc.):**
+- [ ] Connector fully seated and locked (CPA clip engaged if applicable)
+- [ ] No backed-out pins visible from rear of connector
+- [ ] Pins not corroded, bent, or recessed
+- [ ] Connector shell not cracked
+- [ ] Harness strain relief intact (wires not pulling on connector)
+- [ ] No moisture or contamination inside connector
+
+**At the ground bus bar:**
+- [ ] All mounting bolts tight
+- [ ] Contact surfaces clean and bright metal-to-metal
+- [ ] No cracks in bus bar
+- [ ] All stud connections to bar verified
+
+**At the IP frame-to-fuselage bond:**
+- [ ] Bonding strap/jumper present (if required by AMM)
+- [ ] Strap terminals clean and tight
+- [ ] No paint or sealant between bonding surfaces
+- [ ] Metal-to-metal contact confirmed
+
+### Priority Ranking (Most Likely Failure Points)
+
+Based on the data analysis (change-point at Feb 2024, second R&R did not resolve, G1000-specific):
+
+| Priority | Location | Why Most Likely | Test |
+|---|---|---|---|
+| **1** | **GS-IP ground studs** | Most common source of intermittent ground resistance in GA aircraft. Ring terminals loosen over time from vibration. Paint under terminals during manufacture or maintenance. | Step 4: Stud-to-frame resistance |
+| **2** | **Ground bus bar mounting** | Bolted joint between bus bar and IP structure can loosen. Dissimilar metal corrosion (copper bar on aluminum frame). | Step 4: Part of stud-to-frame test |
+| **3** | **IP frame-to-fuselage bond** | Structural bond or bonding strap. If the IP is semi-floating (shock-mounted), the ground depends on a bonding jumper that may have been disturbed. | Step 3: IP frame to fuselage |
+| **4** | **GIA 63W connector ground pins** | Connector pin corrosion or insufficient pin tension. The GIA is the primary voltage sensor — its ground pin is the most critical. | Step 5: LRU pin to stud |
+| **5** | **Harness ground wire crimp** | Factory crimp on ring terminal at the GS-IP stud end. Can crack internally without visible damage. | Step 5: LRU pin to stud |
+
+### Post-Repair Verification
+
+After corrective action, verify the repair with **both** a static test and a flight test:
+
+**Static Test:**
+1. Reconnect battery
+2. Repeat end-to-end resistance measurement (Step 1) — should be < 0.010 Ω
+3. Power on avionics, check G1000 voltage reading on ground (should read battery voltage ± 0.3 V)
+
+**Flight Test (critical — ground tests alone cannot reproduce the fault):**
+1. Install VDL48 on AUX POWER PLUG (same test configuration as original analysis)
+2. Conduct a flight of at least 30 minutes with varied electrical loads (radio transmissions, autopilot engagement, flap cycles)
+3. Compare G1000 `volt1` log against VDL48 log using the analysis scripts in this repository:
+   ```bash
+   python voltage_analysis.py
+   ```
+4. **Pass criteria:** Mean G1000-VDL offset < 0.3 V, no transient dips > 1.0 V, noise (std dev) < 0.30 V
+5. **Fail criteria:** If offset persists, the wrong connection was repaired — re-run diagnostic procedure from Step 1
+
 ## Historical Voltage Analysis (184 Flights)
 
 The single-flight analysis above was confirmed across **all 184 G1000 NXi flight logs** downloaded from FlySto.net, spanning July 14, 2023 (first flight after delivery) through February 13, 2026.
@@ -279,17 +589,6 @@ The data patterns are consistent with a high-resistance connection in the G1000'
 5. **Different magnitude between flights** — Flight 1 offset was -1.87 V vs Flight 2 at -0.99 V. Thermal expansion, vibration, or connector seating can alter contact resistance between flights.
 
 Using Ohm's law, even **0.05 ohms** of ground resistance at 20 A load produces a 1.0 V drop that only the G1000 sees through its ground path.
-
-## Recommended Actions
-
-Based on the wiring schematics, in priority order:
-
-1. **G1000 GDU/GIA ground pins at harness connectors** — Check for corrosion, backed-out pins, or loose contact in the GDU 1050/1060 and GIA 63W connectors (ground pins specifically)
-2. **Instrument panel ground studs (GS-IP series)** — Inspect for loose nut, corrosion, paint under ring terminals, or cracked ring terminals. These are where the G1000 harness grounds attach to the airframe
-3. **Ground bus bar to fuselage bond** — Check the structural attachment point where the instrument panel ground bus bar connects to the airframe
-4. **Firewall ground feedthrough** — Where instrument panel grounds transition to the engine compartment/battery ground
-5. **Measure resistance** from the G1000 ground pin (at the connector) to battery negative terminal — values above ~0.02-0.05 ohms would explain the observed offset
-6. **After repair**, repeat this test with the VDL48 to verify the offset is eliminated
 
 ## Repository Structure
 
