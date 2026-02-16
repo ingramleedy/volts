@@ -299,6 +299,10 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - Created highlighted inspection path Mermaid diagram color-coded by compartment and priority
 - Engine compartment included as suspect area: oil leak repair access (cylinder head, oil sump) required harness/ground strap manipulation that R&R #2 piston work did not
 - Key insight: even though ECU grounds through GS-RP and reads correctly, the GS-IP return path passes through the firewall area and could be affected by engine compartment work independently
+- Created `annotate_schematics.py` — overlays color-coded inspection highlights on original AMM schematic PNGs
+- Annotated 3 diagrams: bus structure (p622), main wiring (p1857), wiring detail (p1858)
+- Color coding: Red=IP, Orange=Engine Compartment, Yellow=Fuselage, Green=Relay Panel
+- Output: `bus_structure_annotated.png`, `wiring_diagram_annotated.png`, `wiring_detail_annotated.png`
 
 ### 2026-02-15: Complete Ground Path Documentation
 - Traced all G1000 ground return paths through AMM CH.92 schematics (D44-9224-30-01 through -05)
@@ -337,6 +341,12 @@ Bulk download of G1000 NXi CSV source logs from FlySto.net. Credentials from `FL
 python flysto_download.py --list          # List available logs
 python flysto_download.py                 # Download all G3000 CSVs
 python flysto_download.py --last 10       # Download last 10 logs
+```
+
+### annotate_schematics.py
+Annotates original AMM schematic PNGs with color-coded compartment zones and inspection callouts. Overlays highlights on bus structure (p622), main wiring diagram (p1857), and wiring detail (p1858).
+```bash
+python annotate_schematics.py
 ```
 
 ### generate_report.py
