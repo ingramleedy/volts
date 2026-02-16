@@ -32,8 +32,8 @@ Three independent measurements were taken on the same aircraft, on the same flig
 | Source | Where It Measures | Average Reading | Verdict |
 |--------|------------------|-----------------|---------|
 | **VDL48 data logger** (plugged into AUX POWER) | HOT BUS — direct battery | **28.3V** | Correct |
-| **ECU battery voltage** (engine computer) | ECU BUS — own ground to GS-RP | **27.8V** | Correct |
-| **G1000 volt1** | AVIONIC BUS — ground through GS-IP studs | **26.9V** | **Reads low** |
+| **ECU battery voltage** (engine computer) | ECU BUS — own ground to GS-RP (Ground Stud — Relay Panel) | **27.8V** | Correct |
+| **G1000 volt1** | AVIONIC BUS — ground through GS-IP (Ground Stud — Instrument Panel) studs | **26.9V** | **Reads low** |
 
 The VDL48 and ECU agree — the bus voltage is normal (~28V with alternator). The G1000 is the only instrument reading low.
 
@@ -65,6 +65,14 @@ Even from delivery, N238PS was reading **0.25V low** and had **4–5x more volta
 ### Where the Voltage Is Actually Measured
 
 The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit) on the avionics rack in the aft bay. Per the Garmin GEA 71 Installation Manual (190-00303-40) and AMM CH.92 schematic D44-9231-60-03_01 (Sheet 4/6, page 1910):
+
+**AMM Schematic — G1000 NXi GEA 71S Wiring (D44-9231-60-03_01, Sheet 4/6):**
+
+![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
+
+**Detail — GEA 71S Power and Ground Pins:**
+
+![GEA 71S power detail — Pin 35 (POWER) and Pin 20 (POWER GROUND to GS-IP-14)](output/_gea71s_power_detail.png)
 
 - The GEA 71S **measures its own power supply voltage internally** — there is no separate external sense wire
 - **Power input:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** from the Essential Bus through the **5A ENG INST** breaker
@@ -103,7 +111,7 @@ Essential Bus → 5A ENG INST breaker → wire 77015A22 → GEA 71S Pin 35 (POWE
 
 The GEA 71S grounds through **GS-IP-14**, which takes a long path through the instrument panel structure, fuselage, and airframe to reach the battery negative terminal.
 
-The ECU and alternator ground through the **GS-RP** (Relay Panel) ground studs, which have a short, direct path to battery negative. That's why the ECU reads correctly.
+The ECU and alternator ground through the **GS-RP** (Ground Stud — Relay Panel) studs, which have a short, direct path to battery negative. That's why the ECU reads correctly.
 
 ```
 GEA 71S → GS-IP-14 → IP bus bar → fuselage → battery negative  (reads low)
@@ -171,7 +179,7 @@ The G1000 LRU rack (GEA 71S, GIA 63W, GRS 79, etc.) is mounted in the **aft avio
 
 ### Ground Stud Locations (GS-IP Series)
 
-All G1000 components ground to the **GS-IP** (Instrument Panel) ground stud group. These are the specific studs and what's connected to each:
+All G1000 components ground to the **GS-IP** (Ground Stud — Instrument Panel) group. These are the specific studs and what's connected to each:
 
 | Ground Stud | What's Connected | Priority |
 |-------------|-----------------|----------|
