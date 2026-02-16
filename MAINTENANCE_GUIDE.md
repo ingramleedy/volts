@@ -120,7 +120,7 @@ A second engine R&R in Jul 2025 (piston crack) did **not** fix the problem, ruli
 | Feb 2024 | Replaced GSA 91 pitch servo | No improvement on voltage |
 | Apr 2024 | Replaced voltage regulator | No improvement |
 | Jun 2024 | Replaced voltage regulator again + repaired wire at P2208 | No improvement |
-| Jul 2024 | Replaced P2413 connector (repinned HSDB harness) | No improvement |
+| Jul 2024 | Replaced P2413 connector (repinned HSDB harness) | Fixed COM/NAV/GPS cycling issue — no improvement on voltage |
 | Feb 2025 | Replaced main alternator AND voltage regulator (3rd time) | No improvement |
 | Jul 2025 | Engine R&R #2 + new battery + GSA 91 pitch servo replaced again | No improvement |
 | Feb 2026 | Cleaned GDL 69A pins (CH.23) | No improvement — wrong unit |
@@ -128,6 +128,8 @@ A second engine R&R in Jul 2025 (piston crack) did **not** fix the problem, ruli
 None of these addressed the ground path. The alternator and regulators were never the problem — the ECU confirms the charging system works correctly.
 
 The Feb 2026 pin cleaning targeted the **GDL 69A** (SiriusXM datalink transceiver, CH.23). The voltage measurement comes from the **GEA 71S** (Engine/Airframe unit, connector P701) — its power ground pin (Pin 20, wire 77016A22N to GS-IP-14) was not inspected.
+
+**Note:** This aircraft has a history of connector/pin problems. In May 2023, the G1000 experienced repeated COM/NAV/GPS/AHRS cycling and autopilot disconnects during an IFR flight — that issue was resolved by cleaning pins and reseating the P2413 HSDB harness connector (Jul 2024). Connector issues are a known problem on this airframe. The voltage problem is the same type of issue — a bad connection — just at a different connector/stud that hasn't been addressed yet.
 
 ## What's Causing It
 
@@ -213,16 +215,6 @@ The **GEA 71S** — the unit that actually measures the voltage — is on the **
 - All GS-IP ground studs on the IP bus bar (see table below)
 - Look for anything that appears disturbed, loose, or not fully reconnected
 
-### Aft Fuselage Avionics Rack (CHECK SECOND)
-
-The GIA 63W avionics computers and GRS 79 AHRS are in the **aft fuselage avionics rack**. This is the same area where RACC relays were troubleshot during the Feb 2024 shop visit.
-
-**Inspect in the aft bay:**
-- **GIA 63W #1 connector 1P604** and **GIA 63W #2 connector 2P604** — check Pin 14 (power ground) on each
-- All other LRU connectors on the aft rack
-- Any ground studs in the aft bay
-- Check for tool marks, scuffing, or signs that connectors were pulled and reseated during the RACC troubleshooting
-
 ### Ground Stud Locations (GS-IP Series)
 
 All G1000 components ground to the **GS-IP** (Ground Stud — Instrument Panel) group. These are the specific studs and what's connected to each:
@@ -247,13 +239,11 @@ All G1000 components ground to the **GS-IP** (Ground Stud — Instrument Panel) 
 
 ### LRU Connectors to Inspect
 
-The voltage reading comes through these specific units. The GEA 71S is the actual sensor — its ground pin is the most critical:
+The voltage reading comes from the GEA 71S — its ground pin is the most critical. The displays (GDU) are on the instrument panel and share the same GS-IP bus bar:
 
 | Unit | Connector | Ground Pin | Wire | Ground Stud | What It Does |
 |------|-----------|-----------|------|-------------|-------------|
 | **GEA 71S** | P701 | **Pin 20 (POWER GROUND)** | **77016A22N (22 AWG)** | **GS-IP-14** | **THIS IS THE VOLTAGE SENSOR** — measures its own power supply internally |
-| **GIA 63W #1** | 1P604 | Pin 14 (POWER GROUND) | 23011A20N (20 AWG) | GS-IP-6 | Primary avionics computer — receives voltage data from GEA |
-| **GIA 63W #2** | 2P604 | Pin 14 (POWER GROUND) | 23001A20N (20 AWG) | GS-IP-6 | Redundant avionics computer |
 | **GDU 1050 PFD** | 1P1600 | Pin 27 (POWER GROUND) | 31106A22N (22 AWG) | GS-IP-4 | Primary flight display |
 | **GDU 1060 MFD** | 2P1601 | Pin 27 (POWER GROUND) | 31158A22N (22 AWG) | GS-IP-4 | Multi-function display |
 
