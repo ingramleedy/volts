@@ -338,12 +338,11 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 **After repair:**
 1. Repeat the end-to-end resistance measurement — should be < 0.010 Ω
 2. Power on avionics and check G1000 voltage reads within 0.3V of a meter at the AUX POWER plug
-3. **Flight test with VDL48** (same test setup as our Feb 8 analysis):
-   - Install VDL48 on AUX POWER plug
-   - Fly at least 30 minutes with varied loads (radio TX, autopilot, flaps)
-   - Compare G1000 log vs VDL48 log
-   - **Pass:** Mean offset < 0.3V, no dips > 1.0V, noise < 0.30V
-   - The analysis scripts in this repository can process the data automatically
+3. **Flight test** — fly at least 30 minutes with varied loads (radio TX, autopilot, flaps), then compare:
+   - **Option A — ECU data (easiest):** The AE300 ECU logs battery voltage every flight automatically. Download the ECU session log and compare against the G1000 log. No extra equipment needed.
+   - **Option B — VDL48 (independent reference):** Install VDL48 on AUX POWER plug, same setup as the Feb 8 analysis.
+   - **Pass criteria:** G1000 vs reference mean offset < 0.3V, no dips > 1.0V, noise < 0.30V
+   - The analysis scripts in this repository can process either data source automatically
 
 ## AMM References
 
