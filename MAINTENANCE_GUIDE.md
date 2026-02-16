@@ -70,10 +70,6 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 
 ![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
 
-**Detail — GEA 71S Power and Ground Pins:**
-
-![GEA 71S power detail — Pin 35 (POWER) and Pin 20 (POWER GROUND to GS-IP-14)](output/_gea71s_power_detail.png)
-
 - The GEA 71S **measures its own power supply voltage internally** — there is no separate external sense wire
 - **Power input:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** from the Essential Bus through the **5A ENG INST** breaker
 - **Ground reference:** Pin 20 (POWER GROUND) via wire **77016A22N** to ground stud **GS-IP-14**
