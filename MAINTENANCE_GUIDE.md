@@ -7,6 +7,21 @@
 
 ---
 
+## Table of Contents
+
+1. [The Problem](#the-problem)
+2. [How We Know It's Real](#how-we-know-its-real)
+3. [When It Started and How It's Getting Worse](#when-it-started-and-how-its-getting-worse)
+4. [What Has Already Been Tried](#what-has-already-been-tried-and-didnt-fix-it)
+5. [What's Causing It](#whats-causing-it)
+6. [Where to Look](#where-to-look)
+7. [How to Test](#how-to-test)
+8. [How to Verify the Fix](#how-to-verify-the-fix)
+9. [AMM References](#amm-references)
+10. [Summary](#summary)
+
+---
+
 ## The Problem
 
 The G1000 consistently reads **1–2 volts lower** than actual bus voltage, with transient dips up to **5.6 volts low** during high-current events. This causes false LOW VOLTS annunciations in flight even though the electrical system is charging normally.
@@ -45,13 +60,15 @@ The VDL48 and ECU agree — the bus voltage is normal (~28V with alternator). Th
 
 The offset exists on the ground with battery only. This rules out the alternator, voltage regulator, and charging system entirely.
 
-### Another DA40NG for Comparison (N541SA)
+## When It Started and How It's Getting Worse
 
-A FlySto voltage graph from another DA40NG (N541SA) shows rock-steady voltage at ~27.8V with barely any fluctuation. The G1000 is capable of reading stable, accurate voltage — the problem is specific to N238PS.
+### The Problem Existed From Day One
+
+Comparing N238PS to another DA40NG (N541SA) shows something was never right — even from the delivery flight:
 
 ![N541SA voltage — stable](docs/N541SA_flysto_voltage.png)
 
-N238PS has **never** been this stable — not even on the delivery flight. Comparing voltage stability across the entire history:
+N541SA's G1000 reads rock-steady voltage at ~27.8V with barely any fluctuation. N238PS has **never** been this stable:
 
 | Metric | N541SA | N238PS Brand New (Jul 2023) | N238PS Pre-Feb 2024 | N238PS Post-Feb 2024 |
 |--------|--------|---------------------------|--------------------|--------------------|
@@ -62,70 +79,9 @@ N238PS has **never** been this stable — not even on the delivery flight. Compa
 
 Even from delivery, N238PS was reading **0.25V low** and had **4–5x more voltage noise** than N541SA. This suggests a marginal ground connection has existed since the factory — the Feb 2024 shop visit then made it significantly worse.
 
-### Where the Voltage Is Actually Measured
+### The Change-Point: February 2024
 
-The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit), which is mounted on the **instrument panel shelf** (AMM 31-40-00, p.985, Figure 6). Per the Garmin GEA 71 Installation Manual (190-00303-40) and AMM CH.92 schematic D44-9231-60-03_01 (Sheet 4/6, page 1910):
-
-**GEA 71S Installation Location (AMM 31-40-00, Figure 6):**
-
-![GEA 71 / 71B Processor Installation — instrument panel shelf](docs/AMM_p986_GEA71_installation.png)
-
-**AMM Schematic — G1000 NXi GEA 71S Wiring (D44-9231-60-03_01, Sheet 4/6):**
-
-![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
-
-**Note:** The GIA 63W avionics computers (#1 and #2) are remotely located in the **aft fuselage avionics rack** (AMM p.495).
-
-- The GEA 71S **measures its own power supply voltage internally** — there is no separate external sense wire
-- **Power input:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** from the Essential Bus through the **5A ENG INST** breaker
-- **Ground reference:** Pin 20 (POWER GROUND) via wire **77016A22N** to ground stud **GS-IP-14**
-- The displayed voltage = what arrives at Pin 35 minus what's at Pin 20
-
-The G1000 configuration shows Analog In 5 with **Slope (m) = 1.0** and **Offset (b) = 0.0** — no software correction is applied. The G1000 displays exactly what the GEA 71S measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem. Adjusting the offset (b) parameter would only mask the symptom — the underlying problem would remain and continue to degrade.
-
-## What's Causing It
-
-**A high-resistance ground connection** somewhere in the GEA 71S's ground return path.
-
-The GEA 71S measures its own power supply voltage at **Pin 35** relative to its own ground at **Pin 20**. If there's extra resistance in the ground path, current flowing through that resistance creates a voltage drop that only the GEA sees:
-
-```
-V_displayed = V_actual - (I_load × R_bad_ground)
-```
-
-At 20 amps of avionics load, just **0.05 ohms** of extra ground resistance = **1.0 volt** of under-reading. That's all it takes.
-
-### The Voltage Measurement Path
-
-```
-Essential Bus → 5A ENG INST breaker → wire 77015A22 → GEA 71S Pin 35 (POWER)
-                                                          ↓
-                                               GEA measures voltage internally
-                                                          ↓
-                                          GEA 71S Pin 20 (POWER GROUND)
-                                                          ↓
-                                          wire 77016A22N → GS-IP-14 → bus bar → fuselage → battery negative
-                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                                           HIGH RESISTANCE somewhere in here
-```
-
-### Why Only the G1000 Reads Low
-
-The GEA 71S grounds through **GS-IP-14**, which takes a long path through the instrument panel structure, fuselage, and airframe to reach the battery negative terminal.
-
-The ECU and alternator ground through the **GS-RP** (Ground Stud — Relay Panel) studs, which have a short, direct path to battery negative. That's why the ECU reads correctly.
-
-```
-GEA 71S → GS-IP-14 → IP bus bar → fuselage → battery negative  (reads low)
-
-ECU     → GS-RP studs → short ground strap → battery negative   (reads correctly)
-```
-
-## When the Problem Got Worse
-
-The ground path was never perfect (see N541SA comparison above), but it got **significantly worse** after the Feb 2024 shop visit.
-
-Statistical analysis of **184 flight logs** (Jul 2023 – Feb 2026) detected a change-point on **February 29, 2024** (p < 0.001):
+Statistical analysis of **184 flight logs** (Jul 2023 – Feb 2026) pinpoints exactly when the readings shifted. A change-point was detected on **February 29, 2024** (p < 0.001):
 
 | Period | Mean G1000 Voltage | Voltage Noise |
 |--------|-------------------|---------------|
@@ -172,6 +128,67 @@ A second engine R&R in Jul 2025 (piston crack) did **not** fix the problem, ruli
 None of these addressed the ground path. The alternator and regulators were never the problem — the ECU confirms the charging system works correctly.
 
 The Feb 2026 pin cleaning targeted the **GDL 69A** (SiriusXM datalink transceiver, CH.23). The voltage measurement comes from the **GEA 71S** (Engine/Airframe unit, connector P701) — its power ground pin (Pin 20, wire 77016A22N to GS-IP-14) was not inspected.
+
+## What's Causing It
+
+**A high-resistance ground connection** somewhere in the GEA 71S's ground return path.
+
+### Where the Voltage Is Actually Measured
+
+The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit), which is mounted on the **instrument panel shelf** (AMM 31-40-00, p.985, Figure 6). Per the Garmin GEA 71 Installation Manual (190-00303-40) and AMM CH.92 schematic D44-9231-60-03_01 (Sheet 4/6, page 1910):
+
+**GEA 71S Installation Location (AMM 31-40-00, Figure 6):**
+
+![GEA 71 / 71B Processor Installation — instrument panel shelf](docs/AMM_p986_GEA71_installation.png)
+
+**AMM Schematic — G1000 NXi GEA 71S Wiring (D44-9231-60-03_01, Sheet 4/6):**
+
+![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
+
+**Note:** The GIA 63W avionics computers (#1 and #2) are remotely located in the **aft fuselage avionics rack** (AMM p.495).
+
+- The GEA 71S **measures its own power supply voltage internally** — there is no separate external sense wire
+- **Power input:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** from the Essential Bus through the **5A ENG INST** breaker
+- **Ground reference:** Pin 20 (POWER GROUND) via wire **77016A22N** to ground stud **GS-IP-14**
+- The displayed voltage = what arrives at Pin 35 minus what's at Pin 20
+
+The G1000 configuration shows Analog In 5 with **Slope (m) = 1.0** and **Offset (b) = 0.0** — no software correction is applied. The G1000 displays exactly what the GEA 71S measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem. Adjusting the offset (b) parameter would only mask the symptom — the underlying problem would remain and continue to degrade.
+
+### How a Bad Ground Creates a False Low Reading
+
+If there's extra resistance in the ground path, current flowing through that resistance creates a voltage drop that only the GEA sees:
+
+```
+V_displayed = V_actual - (I_load × R_bad_ground)
+```
+
+At 20 amps of avionics load, just **0.05 ohms** of extra ground resistance = **1.0 volt** of under-reading. That's all it takes.
+
+### The Voltage Measurement Path
+
+```
+Essential Bus → 5A ENG INST breaker → wire 77015A22 → GEA 71S Pin 35 (POWER)
+                                                          ↓
+                                               GEA measures voltage internally
+                                                          ↓
+                                          GEA 71S Pin 20 (POWER GROUND)
+                                                          ↓
+                                          wire 77016A22N → GS-IP-14 → bus bar → fuselage → battery negative
+                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                           HIGH RESISTANCE somewhere in here
+```
+
+### Why Only the G1000 Reads Low
+
+The GEA 71S grounds through **GS-IP-14**, which takes a long path through the instrument panel structure, fuselage, and airframe to reach the battery negative terminal.
+
+The ECU and alternator ground through the **GS-RP** (Ground Stud — Relay Panel) studs, which have a short, direct path to battery negative. That's why the ECU reads correctly.
+
+```
+GEA 71S → GS-IP-14 → IP bus bar → fuselage → battery negative  (reads low)
+
+ECU     → GS-RP studs → short ground strap → battery negative   (reads correctly)
+```
 
 ## Where to Look
 
