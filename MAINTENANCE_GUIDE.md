@@ -46,9 +46,9 @@ Three independent measurements were taken on the same aircraft, on the same flig
 
 | Source | Where It Measures | Average Reading | Verdict |
 |--------|------------------|-----------------|---------|
-| **VDL48 data logger** (plugged into AUX POWER) | HOT BUS — direct battery | **28.3V** | Correct |
-| **ECU battery voltage** (engine computer) | ECU BUS — own ground to GS-RP (Ground Stud — Relay Panel) | **27.8V** | Correct |
-| **G1000 volt1** | AVIONIC BUS — ground through GS-IP (Ground Stud — Instrument Panel) studs | **26.9V** | **Reads low** |
+| **VDL48 data logger** (plugged into AUX POWER) | Direct battery voltage | **28.3V** | Correct |
+| **ECU battery voltage** (engine computer) | Separate bus and ground path | **27.8V** | Correct |
+| **G1000 volt1** | Through instrument panel ground studs | **26.9V** | **Reads low** |
 
 The VDL48 and ECU agree — the bus voltage is normal (~28V with alternator). The G1000 is the only instrument reading low.
 
@@ -73,7 +73,7 @@ N541SA's G1000 reads rock-steady voltage at ~27.8V with barely any fluctuation. 
 | Metric | N541SA | N238PS Brand New (Jul 2023) | N238PS Pre-Feb 2024 | N238PS Post-Feb 2024 |
 |--------|--------|---------------------------|--------------------|--------------------|
 | Mean voltage | ~27.8V | 27.55V | 27.44V | 26.86V |
-| Noise (σ) | ~0.05–0.10V | 0.36V | 0.38V | 0.51V |
+| Noise | ~0.05–0.10V | 0.36V | 0.38V | 0.51V |
 | Peak-to-peak range | ~0.3V | 4.4V | 4.6V | 5.2V |
 | Time below 27V | ~0% | 6.2% | 6.2% | **53.5%** |
 
@@ -81,7 +81,7 @@ Even from delivery, N238PS was reading **0.25V low** and had **4–5x more volta
 
 ### The Change-Point: February 2024
 
-Statistical analysis of **184 flight logs** (Jul 2023 – Feb 2026) pinpoints exactly when the readings shifted. A change-point was detected on **February 29, 2024** (p < 0.001):
+Statistical analysis of **184 flight logs** (Jul 2023 – Feb 2026) pinpoints exactly when the readings shifted. A statistically significant change-point was detected on **February 29, 2024**:
 
 | Period | Mean G1000 Voltage | Voltage Noise |
 |--------|-------------------|---------------|
@@ -137,7 +137,7 @@ The Feb 2026 pin cleaning targeted the **GDL 69A** (SiriusXM datalink transceive
 
 ### Where the Voltage Is Actually Measured
 
-The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit), which is mounted on the **instrument panel shelf** (AMM 31-40-00, p.985, Figure 6). Per the Garmin GEA 71 Installation Manual (190-00303-40) and AMM CH.92 schematic D44-9231-60-03_01 (Sheet 4/6, page 1910):
+The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit), which is mounted on the **instrument panel shelf** (AMM 31-40-00, p.985, Figure 6):
 
 **GEA 71S Installation Location (AMM 31-40-00, Figure 6):**
 
@@ -147,14 +147,12 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 
 ![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
 
-**Note:** The GIA 63W avionics computers (#1 and #2) are remotely located in the **aft fuselage avionics rack** (AMM p.495).
-
 - The GEA 71S **measures its own power supply voltage internally** — there is no separate external sense wire
 - **Power input:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** from the Essential Bus through the **5A ENG INST** breaker
 - **Ground reference:** Pin 20 (POWER GROUND) via wire **77016A22N** to ground stud **GS-IP-14**
 - The displayed voltage = what arrives at Pin 35 minus what's at Pin 20
 
-The G1000 configuration shows Analog In 5 with **Slope (m) = 1.0** and **Offset (b) = 0.0** — no software correction is applied. The G1000 displays exactly what the GEA 71S measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem. Adjusting the offset (b) parameter would only mask the symptom — the underlying problem would remain and continue to degrade.
+No software calibration or correction is applied — the G1000 displays exactly what the GEA 71S hardware measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem. Adjusting the software offset would only mask the symptom — the underlying problem would remain and continue to degrade.
 
 ### How a Bad Ground Creates a False Low Reading
 
@@ -196,14 +194,12 @@ ECU     → GS-RP studs → separate ground path → battery negative           
 
 ### G1000 LRU Locations
 
-The G1000 units are split between two locations (per AMM 31-40-00):
+The units relevant to the voltage reading are all on the **instrument panel** (per AMM 31-40-00):
 
 | Unit | Location | AMM Reference |
 |------|----------|---------------|
-| **GEA 71S** (voltage sensor) | **Instrument panel shelf** | 31-40-00, p.985, Figure 6 |
+| **GEA 71S** (voltage sensor) | Instrument panel shelf | 31-40-00, p.985, Figure 6 |
 | **GDU 1050 PFD / GDU 1060 MFD** | Instrument panel (displays) | Visible |
-| **GIA 63W #1 & #2** (avionics computers) | **Aft fuselage avionics rack** | p.495 |
-| **GRS 77/79 AHRS** | Next to aft avionics rack | 31-40-00, p.985 |
 
 ### Instrument Panel
 
