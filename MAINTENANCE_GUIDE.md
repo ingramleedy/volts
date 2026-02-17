@@ -19,6 +19,7 @@
 8. [How to Verify the Fix](#how-to-verify-the-fix)
 9. [AMM References](#amm-references)
 10. [Summary](#summary)
+11. [Appendix A — DA40 NG Electrical System (AFM)](#appendix-a--da40-ng-electrical-system-afm)
 
 ---
 
@@ -305,7 +306,7 @@ The instrument panel frame connects to the fuselage structure. Check:
 
 ### ESS BUS Switch Test (Quick Isolation — No Tools Required)
 
-This test isolates the **power path** from the **ground path** using only a cockpit switch, with the engine running on the ground.
+This test isolates the **power path** from the **ground path** using only a cockpit switch on the ground.
 
 **Background:** The GEA 71S senses voltage from the **Essential Bus** (via Pin 46/47). In normal operation, the Essential Bus is fed from the Main Bus:
 
@@ -322,7 +323,7 @@ Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (sense)
 **Critically, the ground path does not change either way** — the GEA 71S voltage sense reference (Pin 47 / Pin 20) still returns through GS-IP-14 → bus bar → fuselage → battery negative.
 
 **Procedure:**
-1. Engine running at normal idle (alternator charging, bus voltage stable). Engine running provides alternator charging (~28V), higher current loads, and more realistic conditions — the offset is more pronounced under load.
+1. Avionics powered and G1000 running. Engine running is preferred (alternator charging ~28V, higher current loads make the offset more pronounced) but not required — the offset is visible on battery alone (~25V range, lighter loads). Either way answers the question.
 2. Note the G1000 voltage reading on the MFD
 3. Flip the **ESS BUS switch** ON
 4. Observe the G1000 voltage reading for 30–60 seconds
@@ -442,3 +443,61 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 ## Summary
 
 The G1000 reads low because of a high-resistance ground connection — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit. Three voltage regulators, two alternators, and two pitch servos have been replaced — none fixed it because the ground path was never addressed. Start at the **instrument panel shelf** with GEA 71S connector P701 (Pin 20) and ground stud GS-IP-14. Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 connectors on the instrument panel. Don't stop after finding one bad connection — the data shows there may be more than one marginal joint.
+
+---
+
+## Appendix A — DA40 NG Electrical System (AFM)
+
+*Source: DA40 NG AFM, Doc 6.01.15-E, Rev. 3, Section 7.10.1 — Electrical System (pp. 7-39 to 7-43)*
+
+### Power Generation
+
+The DA 40 NG has a 28 Volt DC system. Power generation is provided by a 70 Ampere alternator (generator) which is mounted on the bottom left side of the engine. The alternator is driven by a flat belt.
+
+The power output line of the alternator is connected to the ENG ECU bus via a 100 A fuse, which is installed in the instrument panel. The power output line also runs through the current sensor, which provides an indication of the power being supplied to the electrical system by the alternator including the current for battery charging.
+
+In the event of a main battery failure the field of the alternator is energized by two 12 V, 7.2 Ah sealed-lead-acid batteries (ECU backup batteries) which are installed behind the first ring frame. The ENGINE MASTER switch connects the ECU backup battery to the alternator voltage regulator via a 10 A fuse.
+
+### Storage
+
+Main battery power is stored in a 24 V, 13.6 Ah lead acid battery mounted behind the baggage compartment frame. The main battery is connected to the battery bus via the battery-relay which is installed in the relay junction box behind the baggage compartment frame.
+
+The battery relay is controlled with the ELECTRIC MASTER key switch which is located in the center of the instrument panel.
+
+In addition, two 12 V, 7.2 Ah sealed lead-acid batteries (ECU backup-batteries) are installed behind the first ring frame as a further source of electrical power for the Engine Control Unit (ECU B only).
+
+Under normal operating conditions the ECU backup batteries are charged by the ECU bus. In the event of an alternator failure and a depleted main battery the ECU backup batteries automatically supply electrical power to ECU B via a 32 A fuse. This prevents the engine from stopping in the unlikely event of an alternator failure and a totally discharged main battery.
+
+### Distribution
+
+Electrical power is distributed via the hot battery bus, the battery bus 1, the battery bus 2, the ECU bus, the main bus, the essential bus and the avionic bus.
+
+**Hot Battery Bus:**
+The hot battery bus is directly connected to the main battery, installed in the relay junction box and cannot be disconnected from the main battery. The hot battery bus provides power to the accessory power plug and ELT which are protected by their own fuses.
+
+**Battery Bus 1:**
+The battery bus 1 is connected to the main battery via the battery-relay which can be controlled by the ELECTRIC MASTER key switch. The battery bus 1 provides power to the battery bus 2 and heavy duty power to the starter. The battery bus 1 is also connected to the power input line of the external power plug.
+
+**Battery Bus 2:**
+The battery bus 2 is connected to the battery bus 1 via a 100 A fuse and provides power to the ECU bus via a 80 A fuse. It also provides power to the main bus via the power-relay which can be controlled by the ELECTRIC MASTER key switch and the ESSENTIAL BUS switch. The ELECTRIC MASTER key switch must be set to ON and the ESSENTIAL BUS switch must be set to OFF to connect the battery bus to the main bus.
+
+**ECU Bus:**
+The ECU bus is connected to the battery bus 2 via a 80 A fuse and provides power for the ECU A and ECU B and their fuel pumps. It is also connected to the power output line of the alternator via a 100 A fuse. It also provides power for charging the ECU backup battery. The ENGINE MASTER switch must be set to ON to activate the ECU A and ECU B via the ECU bus.
+
+**Main Bus:**
+The main bus is connected to the battery bus via the power-relay. It provides power to the consumers directly connected to the main bus and the avionic bus via the avionic master-relay. The AVIONIC MASTER switch must be set to ON to connect the main bus to the avionic bus. Under normal operating conditions the main bus is also connected to the essential bus via the essential tie-relay. In the event of an alternator failure the pilot must switch ON the ESSENTIAL BUS switch (refer to Section 3.4 - FAILURES IN THE ELECTRICAL SYSTEM). This separates the main bus from the battery bus and the essential bus and the equipment connected to the main bus no longer has power.
+
+**Essential Bus:**
+Under normal operating conditions the essential bus is connected to the main bus via the essential tie-relay. The essential bus provides power to the consumers connected to the essential bus. The AVIONIC MASTER switch must be set to ON to connect the essential bus to the avionic bus. In the event of an alternator failure the pilot must switch ON the ESSENTIAL BUS switch (refer to Section 3.4 - FAILURES IN THE ELECTRICAL SYSTEM). This separates the essential bus from the main bus. The essential bus is then connected to the battery bus 2 which provides battery power for a limited time to the equipment essential for safe flight and landing.
+
+### Consumers
+
+The individual consumers (e.g. radio, electrical fuel transfer pump, position lights, etc.) are connected to the appropriate bus via automatic circuit breakers.
+
+### Voltmeter
+
+The voltmeter shows the voltage of the essential bus. Under normal operating conditions the alternator voltage is shown, otherwise it is the voltage of the main battery.
+
+### Ammeter
+
+The ammeter displays the intensity of current which is supplied to the electrical system by the alternator, including the current for battery charging.
