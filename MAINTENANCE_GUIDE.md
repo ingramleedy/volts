@@ -167,6 +167,7 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 
 ![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
 
+- Per the AFM (Doc 6.01.15-E, Section 7.10.1, p.7-43): *"The voltmeter shows the voltage of the essential bus. Under normal operating conditions the alternator voltage is shown, otherwise it is the voltage of the main battery."*
 - The GEA 71S **senses bus voltage via a dedicated analog input** — Pin 46 (ANALOG IN 5 HI) and Pin 47 (ANALOG IN 5 LO), connected to the **Essential Bus**
 - **GEA power:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** through the **5A ENG INST** breaker
 - **Ground reference:** Pin 20 (POWER GROUND) via wire **77016A22N** to ground stud **GS-IP-14**
@@ -312,7 +313,7 @@ This test isolates the **power path** from the **ground path** using only a cock
 Battery → BATT BUS → Power Relay → MAIN BUS → Main Tie → Ess Tie Relay → ESSENTIAL BUS → GEA Pin 46 (sense)
 ```
 
-When the **ESS BUS switch** is activated, the Essential Bus is fed directly from Battery Bus 2, bypassing the Main Bus, Power Relay, Main Tie breaker, and Essential Tie Relay entirely:
+When the **ESS BUS switch** is activated, the Essential Bus is fed directly from Battery Bus 2, bypassing the Main Bus, Power Relay, Main Tie breaker, and Essential Tie Relay entirely. Per the AFM (Section 7.10.1, p.7-42): *"This separates the essential bus from the main bus. The essential bus is then connected to the battery bus 2."*
 
 ```
 Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (sense)
@@ -321,7 +322,7 @@ Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (sense)
 **Critically, the ground path does not change either way** — the GEA 71S voltage sense reference (Pin 47 / Pin 20) still returns through GS-IP-14 → bus bar → fuselage → battery negative.
 
 **Procedure:**
-1. Engine running at normal idle (alternator charging, bus voltage stable)
+1. Engine running at normal idle (alternator charging, bus voltage stable). Engine running provides alternator charging (~28V), higher current loads, and more realistic conditions — the offset is more pronounced under load.
 2. Note the G1000 voltage reading on the MFD
 3. Flip the **ESS BUS switch** ON
 4. Observe the G1000 voltage reading for 30–60 seconds
@@ -426,6 +427,7 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 
 | Reference | Content |
 |-----------|---------|
+| AFM Doc 6.01.15-E, Section 7.10.1 | Electrical system description, bus architecture, voltmeter/ammeter (pp. 7-39 to 7-43) |
 | AMM 24-60-00 | Bus structure, power distribution, troubleshooting table |
 | AMM 31-40-00, p.985-986 | GEA 71S location (instrument panel shelf), Figure 6 |
 | AMM CH.92, D44-9224-30-01X03 | Electrical system wiring diagram — **N238PS configuration**: [p1859](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png). Other variants: [p1857](docs/AMM_p1857_D44-9224-30-01_Electrical_System.png) · [p1858](docs/AMM_p1858_D44-9224-30-01_02_Electrical_System_Wiring.png) · [p1861](docs/AMM_p1861_D44-9224-30-05_Second_Alternator.png) |
