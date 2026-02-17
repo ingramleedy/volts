@@ -241,7 +241,7 @@ All G1000 components ground to the **GS-IP** (Ground Stud — Instrument Panel) 
 | **GS IP-6** | GIA 63W #1 (wire 23011A20N, 20 AWG) + GIA 63W #2 (wire 23001A20N, 20 AWG) | **CHECK SECOND** — both avionics computers share this one stud |
 | **GS IP-4** | GDU 1050 PFD + GDU 1060 MFD + GMA 1360 Audio + COM 1 | Check third — most heavily loaded stud (4 LRUs) but not the voltage sensor ground |
 | **GS IP-5** | GRS 79 AHRS #1 + AHRS #2 (via GS AVB bus bar) | Check fourth |
-| **GS IP-3** | GPS/NAV 1 + Wx 500 Stormscope | Check fifth |
+| **GS IP-3** | GPS/NAV 1 + Wx 500 Stormscope (not installed on N238PS) | Check fifth |
 | **GS IP-10** | GPS/NAV 2 | Lower priority |
 
 ### What to Look For at Each Ground Stud
