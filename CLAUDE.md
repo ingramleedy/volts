@@ -38,7 +38,7 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 - `Docs/G1000 DataLog Fields.pdf` - Garmin field reference (Appendix I: FDR Data Log Comparison, pages 94-98)
 - `Docs/AMM_p622_*_Bus_Structure_G1000.png` - Bus structure diagram from AMM 24-60-00 Figure 1
 - `Docs/AMM_p1857_*.png` through `AMM_p1861_*.png` - Electrical system wiring schematics extracted from DA40 NG AMM (Doc 6.02.15, CH.92), pages 1857-1861
-- `Docs/AMM_p1908_G1000_wiring.png` through `AMM_p1912_G1000_wiring.png` - G1000 NXi wiring diagrams (Drawing D44-9231-60-03_01, Sheets 2/6-6/6), 5100x3300 px each
+- `Docs/AMM_p1908_G1000_wiring.png` through `AMM_p1912_G1000_wiring.png` - G1000 NXi wiring diagrams (Drawing D44-9231-60-03, Sheets 2/6-6/6), 5100x3300 px each
 - `Docs/GEA71_InstallationManual.pdf` - Garmin GEA 71 Installation Manual (190-00303-40, Revision F). Pages 23-26 contain P701 and P702 connector pin function lists (78 pins each)
 - `Docs/Instrument Panel - Breakers.png` - AFM p.361 instrument panel layout showing circuit breaker positions grouped by bus (EECU BUS, ESSENTIAL BUS, MAIN BUS, AVIONICS BUS). Confirms ENG INST breaker (GEA 71S power) is on the Essential Bus.
 
@@ -106,11 +106,10 @@ The GEA 71 has two 78-pin connectors: **P701** and **P702**. Pin assignments fro
 | 37 | AIRCRAFT POWER 2 | In | Second power input |
 | **42** | **ANALOG IN 3 HI** | **In** | **ALT AMPS SENSOR OUT HI — differential current measurement** |
 | **43** | **ANALOG IN 3 LO** | **In** | **ALT AMPS SENSOR OUT LO — differential current measurement** |
-| **44** | **ANALOG IN 4 HI** | **In** | **Voltage-relevant — trace wiring from AMM schematic p1910** |
-| **45** | **ANALOG IN 4 LO** | **In** | **Voltage-relevant — trace wiring from AMM schematic p1910** |
-| **46** | **ANALOG IN 5 HI** | **In** | **BUS VOLTS ESSENTIAL BUS (HI) — wire 31288A22WH (shielded)** |
-| **47** | **ANALOG IN 5 LO** | **In** | **BUS VOLTS ESSENTIAL BUS (LO) — wire 31288A22BL (shielded)** |
-| **78** | **POWER GROUND** | **—** | **Second power ground pin** |
+| **44** | **ANALOG IN 4 HI** | **In** | **Wire 77015A22 (tied to Pin 35 power) — measures GEA supply voltage** |
+| **45** | **ANALOG IN 4 LO** | **In** | **Wire 77016A22N (tied to Pin 20 ground) → GS-IP-14 — GEA ground pin** |
+| **46** | **ANALOG IN 5 HI** | **In** | **BUS VOLTS ESSENTIAL BUS (HI) — wire 31299A22WH (shielded), 3A fuse in path (location unknown). Open fuse = 0V reading (not low).** |
+| **47** | **ANALOG IN 5 LO** | **In** | **BUS VOLTS ESSENTIAL BUS (LO) — wire 31299A22BL (shielded)** |
 
 ### P701 — All Pins (Complete Reference)
 
@@ -173,7 +172,7 @@ The GEA 71 has two 78-pin connectors: **P701** and **P702**. Pin assignments fro
 | 56-57 | ANALOG IN 3A HI/LO | In | |
 | 58-59 | ANALOG IN 4A HI/LO | In | |
 
-### ALT AMPS SENSOR Circuit (from AMM D44-9231-60-03_01 Sheet 4/6)
+### ALT AMPS SENSOR Circuit (from AMM D44-9231-60-03 Sheet 4/6)
 
 The alternator current is measured by a **Hall-effect current transducer** (J7700), NOT a resistive shunt:
 
@@ -452,19 +451,19 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - Noted AMM CH.31/34/23 cross-references for G1000 LRU-specific pin assignments (not in CH.92)
 
 ### 2026-02-16: G1000 NXi Ground Stud Inventory (from LRU Wiring Diagrams)
-- Extracted AMM pages 1908-1912 (Drawing D44-9231-60-03_01, G1000 NXi Phase III, Sheets 2/6-6/6) to `docs/`
+- Extracted AMM pages 1908-1912 (Drawing D44-9231-60-03, G1000 NXi Phase III, Sheets 2/6-6/6) to `docs/`
 - Processed 5100x3300 px schematics using parallel subagents to avoid API image dimension limits
 - Catalogued all G1000 power ground connections by LRU, connector, pin, wire number, gauge, and ground stud
 - **Key findings:**
   - **GS IP-6**: Both GIA 63W #1 (wire 23011A20N, pin 14 on 1P604) and GIA 63W #2 (wire 23001A20N, pin 14 on 2P604) share this single ground stud — the primary voltage sensors
-  - **GS IP-4**: Most loaded stud — GDU 1050 PFD (31106A22N), GDU 1060 MFD (31158A22N), GEA 71S (77015A22N), GMA 1360 (23201A20N), COM 1 (23001A20N) — 5 LRUs on one stud
+  - **GS IP-4**: Most loaded stud — GDU 1050 PFD (31106A22N), GDU 1060 MFD (31158A22N), GMA 1360 (23201A20N), COM 1 (23001A20N) — 4 LRUs on one stud
   - **GS IP-5**: Both GRS 79 AHRS units via GS AVB intermediate bus bar with 53V TVS diode protection
   - **GS IP-3**: GPS/NAV 1 (34001A22N) + Wx 500 Stormscope (34402A20N)
   - **GS IP-10**: GPS/NAV 2 (34101A22N) — isolated
-  - **GS IP-14**: GEA 71S current monitor (74005A22N)
+  - **GS-IP-14**: GEA 71S Pin 20 POWER GROUND + Pin 45 ANALOG IN 4 LO (both wire 77016A22N) + Pin 49 current monitor (74005A22N) — all GEA ground pins terminate here
   - **GS IP-8**: Config/power ground (31108A22N)
 - Updated Ground Stud Groups section in README with complete wire-level LRU ground inventory
-- Drawing reference: D44-9231-60-03_01, Doc 6.02.15, Rev. 5, 15 July 2024
+- Drawing reference: D44-9231-60-03, Doc 6.02.15, Rev. 5, 15 July 2024
 
 ### 2026-02-16: Owner Ground Test Documentation (Aug 2025 LOW VOLTS.docx)
 - Source: `LOW VOLTS.docx` and associated PDFs from Premier Aircraft maintenance folder (Aug 2025)

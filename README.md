@@ -324,9 +324,9 @@ flowchart TB
     style BATNEG fill:#333,color:#fff
 ```
 
-### G1000 NXi Ground Stud Inventory (from AMM CH.92, D44-9231-60-03_01)
+### G1000 NXi Ground Stud Inventory (from AMM CH.92, D44-9231-60-03)
 
-Complete mapping of all G1000 power ground connections extracted from the G1000 NXi wiring diagrams (AMM pages 1908-1912, Drawing D44-9231-60-03_01, Sheets 2/6 through 6/6, Rev. 5, 15 July 2024).
+Complete mapping of all G1000 power ground connections extracted from the G1000 NXi wiring diagrams (AMM pages 1908-1912, Drawing D44-9231-60-03, Sheets 2/6 through 6/6, Rev. 5, 15 July 2024).
 
 #### Power Ground Connections by LRU
 
@@ -339,8 +339,9 @@ Complete mapping of all G1000 power ground connections extracted from the G1000 
 | **GDU 1050 PFD** | 1P1600 | 27 | POWER GROUND | 31106A22N | 22 AWG | **GS IP-4** |
 | **GDU 1050 PFD** | 1P1600 | 98 | AIRCRAFT GROUND | 31101A24BL | 24 AWG | (signal ground) |
 | **GDU 1060 MFD** | 2P1601 | 27 | POWER GROUND | 31158A22N | 22 AWG | **GS IP-4** |
-| **GEA 71S** | P701 | 36 | POWER GROUND | 77015A22N | 22 AWG | **GS IP-4** |
-| **GEA 71S** | P701 | 49 | ANALOG/CURR MON LO | 74005A22N | 22 AWG | **GS IP-14** |
+| **GEA 71S** | P701 | 20 | POWER GROUND | 77016A22N | 22 AWG | **GS-IP-14** |
+| **GEA 71S** | P701 | 45 | ANALOG IN 4 LO (ground) | 77016A22N (tied to Pin 20) | 22 AWG | **GS-IP-14** |
+| **GEA 71S** | P701 | 49 | ANALOG/CURR MON LO | 74005A22N | 22 AWG | **GS-IP-14** |
 | **GRS 79 AHRS #1** | P791 | 34 | POWER GROUND | 34903A22N | 22 AWG | **GS IP-5** (via GS AVB) |
 | **GRS 79 AHRS #2** | P791 | 34 | POWER GROUND | 34901A22N | 22 AWG | **GS IP-5** |
 | **GMA 1360 Audio** | P3475 | -- | POWER GROUND | 23201A20N | 20 AWG | **GS IP-4** |
@@ -360,18 +361,18 @@ Complete mapping of all G1000 power ground connections extracted from the G1000 
 
 | Ground Stud | Components | Total Load | Priority |
 |-------------|-----------|------------|----------|
-| **GS IP-6** | GIA 63W #1 + GIA 63W #2 (both 20 AWG) | HIGH — both avionics computers | **CRITICAL** — primary voltage sensors |
-| **GS IP-4** | GDU 1050 PFD + GDU 1060 MFD + GEA 71S + GMA 1360 + COM 1 | HIGHEST — 5 LRUs share one stud | **HIGH** — most loaded stud |
+| **GS-IP-14** | GEA 71S Pin 20 (POWER GROUND) + Pin 45 (ANALOG IN 4 LO) + Pin 49 (current monitor) | HIGH — all GEA ground pins | **CRITICAL** — voltage sensor ground (all three GEA ground connections) |
+| **GS IP-6** | GIA 63W #1 + GIA 63W #2 (both 20 AWG) | HIGH — both avionics computers | **HIGH** — avionics computers |
+| **GS IP-4** | GDU 1050 PFD + GDU 1060 MFD + GMA 1360 + COM 1 | HIGH — 4 LRUs share one stud | **HIGH** — most loaded stud |
 | **GS IP-5** | GRS 79 AHRS #1 + GRS 79 AHRS #2 (via GS AVB bus bar) | MEDIUM | MEDIUM |
 | **GS IP-3** | GPS/NAV 1 + Wx 500 Stormscope | MEDIUM | MEDIUM |
 | **GS IP-10** | GPS/NAV 2 | LOW — single circuit | LOW |
-| **GS IP-14** | GEA 71S current monitor | LOW — signal level | LOW |
 | **GS IP-8** | Config/power ground | LOW | LOW |
 | **GS AVB** | Intermediate bus bar for GRS 79 + protection circuits (53V TVS diodes) | MEDIUM | MEDIUM |
 
 **Key findings from the schematic extraction:**
-1. **GS IP-6 is the single most important ground stud** — both GIA 63W units (the primary voltage sensors) share this one stud via 20 AWG wires
-2. **GS IP-4 is the most loaded stud** — five separate LRU ground wires terminate here (PFD, MFD, GEA, audio panel, COM 1)
+1. **GS-IP-14 is the single most important ground stud** — all three GEA 71S ground pins (20, 45, 49) terminate here. The GEA is the voltage sensor — its ground reference determines the displayed voltage
+2. **GS IP-4 is the most loaded stud** — four separate LRU ground wires terminate here (PFD, MFD, audio panel, COM 1)
 3. All power ground wires use the **"N" suffix** convention (e.g., 23011A20**N**) per Diamond's wire numbering
 4. Power grounds are **20-22 AWG**; signal grounds are **24 AWG**
 5. The **GS AVB** avionics ground bus bar is an intermediate collection point that routes to GS IP-5, with 53V TVS diode protection circuits

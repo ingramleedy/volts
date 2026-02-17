@@ -149,7 +149,7 @@ A second engine R&R in Jul 2025 (piston crack) did **not** fix the problem, ruli
 
 None of these addressed the ground path. The alternator and regulators were never the problem — the ECU confirms the charging system works correctly.
 
-The Feb 2026 pin cleaning targeted the **GDL 69A** (SiriusXM datalink transceiver, CH.23). The voltage measurement comes from the **GEA 71S** (Engine/Airframe unit, connector P701) — its power ground pin (Pin 20, wire 77016A22N to GS-IP-14) was not inspected.
+The Feb 2026 pin cleaning targeted the **GDL 69A** (SiriusXM datalink transceiver, CH.23). The voltage measurement comes from the **GEA 71S** (Engine/Airframe unit, connector P701) — its power ground pins (Pin 20 and Pin 45, wire 77016A22N to **GS-IP-14**) were not inspected.
 
 **Note:** This aircraft has a history of connector/pin problems. In May 2023, the G1000 experienced repeated COM/NAV/GPS/AHRS cycling and autopilot disconnects during an IFR flight — that issue was resolved by cleaning pins and reseating the P2413 HSDB harness connector (Jul 2024). Connector issues are a known problem on this airframe. The voltage problem is the same type of issue — a bad connection — just at a different connector/stud that hasn't been addressed yet.
 
@@ -165,16 +165,15 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 
 ![GEA 71 / 71B Processor Installation — instrument panel shelf](docs/AMM_p986_GEA71_installation.png)
 
-**AMM Schematic — G1000 NXi GEA 71S Wiring (D44-9231-60-03_01, Sheet 4/6):**
+**AMM Schematic — G1000 NXi GEA 71S Wiring (D44-9231-60-03, G1000 NXi Phase I & II, Sheet 4/6):**
 
 ![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
 
 - Per the AFM (Doc 6.01.15-E, Section 7.10.1, p.7-43): *"The voltmeter shows the voltage of the essential bus. Under normal operating conditions the alternator voltage is shown, otherwise it is the voltage of the main battery."*
-- The GEA 71S **senses bus voltage via a dedicated analog input** — Pin 46 (ANALOG IN 5 HI) and Pin 47 (ANALOG IN 5 LO), connected to the **Essential Bus** via shielded wires 31288A22WH/BL
+- The GEA 71S **senses bus voltage via a dedicated analog input** — Pin 46 (ANALOG IN 5 HI) and Pin 47 (ANALOG IN 5 LO), connected to the **Essential Bus** via shielded wires 31299A22WH/BL. A **3A fuse** protects the HI wire (31299A22WH); its physical location is not identified on the available AMM schematics. This fuse carries essentially no current (high-impedance analog input), so degraded fuse contacts would not cause the observed offset. An open fuse would produce a **0V reading**, not a low reading.
 - **GEA power:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** through the **5A ENG INST** breaker on the **Essential Bus**
-- **GEA power ground:** Pin 36 (per AMM) via wire **77015A22N** to ground stud **GS IP-4**; Pin 49 (ANALOG/CURR MON LO) via wire **74005A22N** to ground stud **GS-IP-14**
-- **Pins 44/45** (ANALOG IN 4 HI/LO) are also in the voltage measurement area on the schematic — trace these connections
-- The displayed voltage = what Pin 46 sees on the Essential Bus, relative to the GEA's ground reference. Any resistance on the ground pins (20, 36, 78) or sense low (47) shifts the reading down
+- **GEA power ground:** Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO) — both tied to wire **77016A22N** → ground stud **GS-IP-14**. Pin 49 (ANALOG/CURR MON LO) via wire **74005A22N** also to **GS-IP-14** (glow lamp circuit, probably unrelated)
+- The displayed voltage = what Pin 46 sees on the Essential Bus, relative to the GEA's ground reference. Any resistance on the ground pins (20, 45) or sense low (47) shifts the reading down
 
 No software calibration or correction is applied — the G1000 displays exactly what the GEA 71S hardware measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem. Adjusting the software offset would only mask the symptom — the underlying problem would remain and continue to degrade.
 
@@ -190,35 +189,27 @@ At 20 amps of avionics load, just **0.05 ohms** of extra ground resistance = **1
 
 ### The Voltage Measurement Path
 
-```
-Essential Bus ──→ GEA 71S Pin 46 (ANALOG IN 5 HI — voltage sense, wire 31288A22WH)
-                      ↓
-                  GEA measures V(Pin 46) - V(ground reference)
-                      ↓
-                  GEA 71S ground pins: Pin 36 → wire 77015A22N → GS IP-4
-                                       Pin 49 → wire 74005A22N → GS-IP-14
-                                       Pin 20/78 → POWER GROUND
-                      ↓
-                  GS-IP studs → bus bar → IP frame → fuselage → battery negative
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                  HIGH RESISTANCE somewhere in here
-```
+![GEA 71S Voltage Measurement Path](output/GEA71S_voltage_path.png)
+
+**Connector identification:** The GEA 71S has two receptacles — **J701** and **J702**. The harness plugs that mate to them are **P701** and **P702**. All voltage-related pins (20, 35, 44, 45, 46, 47) are on the **P701 / J701** connector. When testing, look for the harness plug labeled **P701** on the instrument panel shelf behind the GEA unit. The AMM schematic splits P701 across multiple drawing sections for clarity, but physically it is one connector.
+
+Both voltage channels share the same ground reference (Pin 20 / Pin 45 → wire 77016A22N → **GS-IP-14**). A high-resistance ground shifts **both** readings down equally.
 
 ### Why Only the G1000 Reads Low
 
-The GEA 71S grounds through **GS-IP-14**, which routes through the instrument panel bus bar, IP frame, and fuselage structure to reach the battery negative terminal. Every joint in that chain adds potential resistance.
+The GEA 71S grounds through **GS-IP-14** (power ground Pins 20 and 45, wire 77016A22N), which routes through the instrument panel bus bar, IP frame, and fuselage structure to reach the battery negative terminal. Every joint in that chain adds potential resistance.
 
 The ECU (located under the pilot's seat) grounds through the **GS-RP** (Ground Stud — Relay Panel) studs, which use a separate ground path to battery negative. The ECU reads correctly — its ground path doesn't share the instrument panel's bus bar, frame bonds, or GS-IP studs.
 
 ```
-GEA 71S → GS-IP-14 → IP bus bar → IP frame → fuselage → battery negative  (reads low)
+GEA 71S → GS-IP studs → IP bus bar → IP frame → fuselage → battery negative  (reads low)
 
 ECU     → GS-RP studs → separate ground path → battery negative            (reads correctly)
 ```
 
 ### How the Voltage Data Flows to the G1000 Displays
 
-The GEA 71S and ECU are completely independent measurement systems that communicate with the G1000 displays through separate digital data buses (per AMM CH.92 D44-9231-60-03_01 and Garmin 190-00303-40):
+The GEA 71S and ECU are completely independent measurement systems that communicate with the G1000 displays through separate digital data buses (per AMM CH.92 D44-9231-60-03 (G1000 NXi Phase I & II) and Garmin 190-00303-40):
 
 ```
 GEA 71S ──RS-485──→ GIA 63W ──HSDB──→ GDU displays   (bus voltage, amps, temps)
@@ -236,11 +227,11 @@ This means the G1000 has no way to cross-check the GEA's voltage reading against
 
 ### Instrument Panel
 
-The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf** (AMM 31-40-00, p.985). Its connector P701 and ground stud GS-IP-14 are both in this area.
+The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf** (AMM 31-40-00, p.985). Its harness connector **P701** (mates to receptacle **J701** on the unit) and ground stud **GS-IP-14** are in this area. The GEA also has a second connector pair (**P702 / J702**) but the voltage-related pins are all on P701.
 
 **Inspect:**
-- **GEA 71S connector P701** — is it fully seated with lock engaged? This is the voltage sensor unit. Check Pin 20 (power ground) and Pin 35 (aircraft power) specifically.
-- **Ground stud GS-IP-14** — this is where the GEA 71S power ground wire (77016A22N) terminates. Check for loose nut, corrosion, or paint under the ring terminal.
+- **GEA 71S harness plug P701** — is it fully seated with lock engaged on the J701 receptacle? This connector carries all voltage measurement pins. Check Pin 20 (power ground), Pin 45 (analog ground), and Pin 35 (aircraft power) specifically.
+- **Ground stud GS-IP-14** — this is where the GEA 71S power ground wires (Pin 20 and Pin 45, wire 77016A22N) terminate. Check for loose nut, corrosion, or paint under the ring terminals.
 - All GS-IP ground studs on the IP bus bar (see table below)
 - Look for anything that appears disturbed, loose, or not fully reconnected
 
@@ -250,11 +241,11 @@ All G1000 components ground to the **GS-IP** (Ground Stud — Instrument Panel) 
 
 | Ground Stud | What's Connected | Priority |
 |-------------|-----------------|----------|
-| **GS IP-14** | **GEA 71S** (wire 77016A22N, 22 AWG) — Pin 20 POWER GROUND | **CHECK FIRST** — this is the voltage sensor's ground reference |
+| **GS-IP-14** | **GEA 71S Pin 20 POWER GROUND + Pin 45 ANALOG IN 4 LO** (both wire 77016A22N) + Pin 49 glow lamp (wire 74005A22N) | **CHECK FIRST** — the voltage sensor's power ground (all GEA ground pins terminate here) |
 | **GS IP-6** | GIA 63W #1 (wire 23011A20N, 20 AWG) + GIA 63W #2 (wire 23001A20N, 20 AWG) | **CHECK SECOND** — both avionics computers share this one stud |
-| **GS IP-4** | GDU 1050 PFD + GDU 1060 MFD + GMA 1360 Audio + COM 1 (4 LRUs) | Check third — most heavily loaded stud |
+| **GS IP-4** | GDU 1050 PFD + GDU 1060 MFD + GMA 1360 Audio + COM 1 | Check third — most heavily loaded stud (4 LRUs) but not the voltage sensor ground |
 | **GS IP-5** | GRS 79 AHRS #1 + AHRS #2 (via GS AVB bus bar) | Check fourth |
-| **GS IP-3** | GPS/NAV 1 + Wx 500 Stormscope | Lower priority |
+| **GS IP-3** | GPS/NAV 1 + Wx 500 Stormscope | Check fifth |
 | **GS IP-10** | GPS/NAV 2 | Lower priority |
 
 ### What to Look For at Each Ground Stud
@@ -270,17 +261,18 @@ All G1000 components ground to the **GS-IP** (Ground Stud — Instrument Panel) 
 
 The voltage reading comes from the GEA 71S — its ground pin is the most critical. The displays (GDU) are on the instrument panel and share the same GS-IP bus bar:
 
-| Unit | Connector | Ground Pin | Wire | Ground Stud | What It Does |
-|------|-----------|-----------|------|-------------|-------------|
-| **GEA 71S** | P701 | **Pin 20 (POWER GROUND)** | **77016A22N (22 AWG)** | **GS-IP-14** | **THIS IS THE VOLTAGE SENSOR** — measures its own power supply internally |
-| **GDU 1050 PFD** | 1P1600 | Pin 27 (POWER GROUND) | 31106A22N (22 AWG) | GS-IP-4 | Primary flight display |
-| **GDU 1060 MFD** | 2P1601 | Pin 27 (POWER GROUND) | 31158A22N (22 AWG) | GS-IP-4 | Multi-function display |
+| Unit | Harness Plug → Unit Receptacle | Ground Pin | Wire | Ground Stud | What It Does |
+|------|-------------------------------|-----------|------|-------------|-------------|
+| **GEA 71S** | **P701 → J701** | **Pin 20 (POWER GROUND)** | **77016A22N (22 AWG)** | **GS-IP-14** | **THIS IS THE VOLTAGE SENSOR** — power ground reference for all measurements |
+| **GEA 71S** | **P701 → J701** | **Pin 45 (ANALOG IN 4 LO)** | **77016A22N (22 AWG)** (tied to Pin 20) | **GS-IP-14** | **Additional ground pin** — ground return for analog channel 4, same wire as Pin 20 |
+| **GDU 1050 PFD** | 1P1600 | Pin 27 (POWER GROUND) | 31106A22N (22 AWG) | GS IP-4 | Primary flight display |
+| **GDU 1060 MFD** | 2P1601 | Pin 27 (POWER GROUND) | 31158A22N (22 AWG) | GS IP-4 | Multi-function display |
 
-### GEA 71S P701 Pin Reference (Garmin 190-00303-40)
+### GEA 71S P701 / J701 Pin Reference (Garmin 190-00303-40)
 
-**P701 Connector — view looking at rear of unit:**
+**P701 harness plug — view looking at rear of connector:**
 
-![GEA 71 P701 Connector Pin Layout](docs/GEA71_P701_connector_pins.png)
+![P701 Connector](docs/P701%20Connector.png)
 
 Full pin listing: [GEA 71 Installation Manual (190-00303-40)](docs/GEA71_InstallationManual.pdf) — pages 23–26
 
@@ -290,28 +282,27 @@ When you have the GEA 71S connector P701 in hand, these are the pins relevant to
 
 | Pin | Function | Wire (from AMM CH.92) | Where It Goes | Why It Matters |
 |-----|----------|-----------------------|---------------|----------------|
-| **46** | **ANALOG IN 5 HI** | **31288A22WH** (shielded) | **BUS VOLTS ESSENTIAL BUS (HI)** | **Voltage sense high — what's being measured** |
-| **47** | **ANALOG IN 5 LO** | **31288A22BL** (shielded) | **BUS VOLTS ESSENTIAL BUS (LO)** | **Voltage sense low — reference for the measurement** |
-| **44** | **ANALOG IN 4 HI** | (trace from schematic) | (trace from schematic) | **Adjacent analog input — check connection** |
-| **45** | **ANALOG IN 4 LO** | (trace from schematic) | (trace from schematic) | **Adjacent analog input — check connection** |
+| **46** | **ANALOG IN 5 HI** | **31299A22WH** (shielded) | **Essential Bus via 3A fuse (HI)** | **Voltage sense high — what's being measured.** A 3A fuse protects this wire. If the fuse were open, the reading would be **0 volts** (no signal), not a low reading — so the fuse is not the cause of our ~1.4V offset. The fuse location is not shown on the AMM schematic. |
+| **47** | **ANALOG IN 5 LO** | **31299A22BL** (shielded) | **BUS VOLTS ESSENTIAL BUS (LO)** | **Voltage sense low — reference for the measurement** |
+| **44** | **ANALOG IN 4 HI** | **77015A22** (tied to Pin 35) | **GEA power supply** (same wire as AIRCRAFT POWER) | **Measures GEA's own supply voltage (Essential Bus)** |
+| **45** | **ANALOG IN 4 LO** | **77016A22N** (tied to Pin 20) | **GS-IP-14** (ground) | **GEA ground pin — same wire as Pin 20, shares ground path** |
 | **35** | **AIRCRAFT POWER 1** | **77015A22** | **Essential Bus via ENG INST 5A** | **GEA power supply — affects internal voltage reference** |
-| **20** | **POWER GROUND** | **77016A22N** | **Ground stud** | **GEA ground reference — if high-R, ALL readings shift** |
-| **78** | **POWER GROUND** | — | **Ground stud** | **Second power ground — same ground network** |
+| **20** | **POWER GROUND** | **77016A22N** | **GS-IP-14** | **GEA ground reference — if high-R, ALL readings shift** |
 | 37 | AIRCRAFT POWER 2 | — | Second power input | Redundant power |
 
 **Other GEA pins (for reference):**
 
 | Pin | Function | Wire | Where It Goes |
 |-----|----------|------|---------------|
-| 48 | ANALOG/CURR MON IN 3A HI | 31006A22 | Current monitor |
-| 49 | ANALOG/CURR MON IN 3A LO | 74005A22N | **GS-IP-14** |
+| 48 | ANALOG/CURR MON IN 3A HI | 31006A22 | Glow lamp current monitor |
+| 49 | ANALOG/CURR MON IN 3A LO | 74005A22N | **GS-IP-14** (glow lamp ground — probably unrelated to voltage) |
 | 42 | ANALOG IN 3 HI | 24331A22WH | Alt amps sensor OUT HI |
 | 43 | ANALOG IN 3 LO | 24331A22BL | Alt amps sensor OUT LO |
 | 14 | +10V TRANSDUCER POWER | 24331A22OR | Powers alt amps sensor |
 | 11 | TRANSDUCER GROUND | — | Ground return for current sensor |
 | 5–8 | RS 485 1A/1B, 2A/2B | 77010/77011 | Digital data bus to GIA computers |
 
-**Note:** Pin 49 (ANALOG/CURR MON IN 3A LO) goes to **GS-IP-14** via wire 74005A22N — this is visible on the AMM schematic. The amps reading uses a separate **Hall-effect current transducer** (J7700) with its own power (Pin 14) and differential output (Pins 42/43).
+**GEA ground pins summary:** The GEA 71S has two ground connections on the AMM schematic: **Pin 20** (POWER GROUND) and **Pin 45** (ANALOG IN 4 LO — ground return for analog channel 4). Both are tied to the same wire **77016A22N** and terminate at **GS-IP-14**. Pin 49 (glow lamp current monitor LO, wire 74005A22N) also goes to GS-IP-14 but is a separate circuit, probably unrelated to voltage. Pin 36 and Pin 78 (POWER GROUND in Garmin generic manual) are not shown on the DA40NG AMM schematic and are not wired. The amps reading uses a separate **Hall-effect current transducer** (J7700) with its own power (Pin 14) and differential output (Pins 42/43).
 
 **At each connector, check for:**
 - Backed-out pins (look from the rear of the connector)
@@ -351,7 +342,7 @@ When the **ESS BUS switch** is activated, the Essential Bus is fed directly from
 Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (sense)
 ```
 
-**Critically, the ground path does not change either way** — the GEA 71S voltage sense reference (Pin 47 / Pin 20) still returns through GS-IP-14 → bus bar → fuselage → battery negative.
+**Critically, the ground path does not change either way** — the GEA 71S ground pins (20, 45) still return through the GS-IP studs → bus bar → fuselage → battery negative.
 
 **Procedure:**
 1. Avionics powered and G1000 running. Engine running is preferred (alternator charging ~28V, higher current loads make the offset more pronounced) but not required — the offset is visible on battery alone (~25V range, lighter loads). Either way answers the question.
@@ -364,7 +355,7 @@ Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (sense)
 
 | Result | What It Means | Where to Look |
 |--------|---------------|---------------|
-| **Voltage stays the same (still reads low)** | **Ground path confirmed** — the power source changed but the reading didn't, so the drop is on the ground side. | GS-IP-14 ground stud, GEA P701 ground pins, IP bus bar, IP-to-fuselage bond. Proceed to resistance measurements below. |
+| **Voltage stays the same (still reads low)** | **Ground path confirmed** — the power source changed but the reading didn't, so the drop is on the ground side. | **GS-IP-14** ground stud, GEA P701 ground pins (20, 45), IP bus bar, IP-to-fuselage bond. Proceed to resistance measurements below. |
 | Voltage improves noticeably (reads closer to 28V) | **Power path resistance** — the normal Main Bus → Essential Bus path has degraded contacts. The bypassed components carry all Essential Bus current, so even modest contact resistance produces a measurable drop. | **Essential Tie Relay contacts**, **Main Tie 30A breaker contacts**, **Power Relay contacts**, Main Bus bar connections. Inspect relay contact surfaces for pitting/corrosion. Check breaker resistance (should be < 0.005 Ω across contacts). |
 | Voltage improves partially | **Both paths contribute** — resistance on the power side AND the ground side. | Inspect both: relay/breaker contacts in the power path, AND GS-IP ground studs and GEA connector pins. |
 
@@ -401,7 +392,7 @@ Based on all prior analysis (variable offset with load, elevated noise, worse un
 
 **Test 1 — End-to-End (most important, do this first):**
 - **Black probe:** Connected via extension wire to the **disconnected battery negative cable lug** in the aft bay (see setup above). REL should already be set from the zeroing step.
-- **Red probe:** Touch the back of **pin 20** on connector P701 (the aircraft-side harness connector for the GEA 71S, on the instrument panel shelf). This is the power ground pin — the ground reference for the voltage measurement. If the connector is mated to the unit, you'll need to back-probe or disconnect it to access the pin.
+- **Red probe:** Touch the back of **pin 20** on harness plug **P701** (the aircraft-side plug that mates to J701 on the GEA 71S, located on the instrument panel shelf). This is the power ground pin — the ground reference for the voltage measurement. If P701 is mated to the unit, you'll need to back-probe or disconnect it from J701 to access the pin.
 - This measures the entire ground path at once. If it reads good (< 0.050 Ω), the ground path is fine and the problem is elsewhere. If high, continue with Tests 2–5 to find which segment has the resistance.
 
 **Test 2 — Fuselage Path:**
@@ -422,8 +413,8 @@ Based on all prior analysis (variable offset with load, elevated noise, worse un
 - Test each stud individually: **GS IP-14** (GEA voltage sensor ground — most critical), GS IP-6, GS IP-4, GS IP-5, GS IP-3, GS IP-10. If one reads high while others read near-zero, that's your culprit — clean all surfaces and retorque.
 
 **Test 5 — Each LRU Ground Wire:**
-- **Red probe:** The **ground pin** at the aircraft-side harness connector — start with **P701 pin 20** (GEA 71S, the voltage sensor).
-- **Black probe:** The **GS-IP stud** that wire runs to — **GS IP-14** for the GEA 71S.
+- **Red probe:** The **ground pin** at the aircraft-side harness plug — start with **P701 pin 20** (the harness plug for the GEA 71S — mates to J701 on the unit).
+- **Black probe:** The **GS-IP stud** that wire runs to — **GS-IP-14** for the GEA 71S.
 - Tests the wire, crimp, and connector pin between the LRU and its ground stud. Repeat for each connector on the instrument panel.
 
 ### Isolation Strategy
@@ -465,15 +456,16 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 | AMM 24-60-00 | Bus structure, power distribution, troubleshooting table |
 | AMM 31-40-00, p.985-986 | GEA 71S location (instrument panel shelf), Figure 6 |
 | AMM CH.92, D44-9224-30-01X03 | Electrical system wiring diagram — **N238PS configuration**: [p1859](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png). Other variants: [p1857](docs/AMM_p1857_D44-9224-30-01_Electrical_System.png) · [p1858](docs/AMM_p1858_D44-9224-30-01_02_Electrical_System_Wiring.png) · [p1861](docs/AMM_p1861_D44-9224-30-05_Second_Alternator.png) |
-| AMM CH.92, D44-9231-60-03_01 | G1000 NXi wiring diagrams (Sheets 2-6): [p1908](docs/AMM_p1908_G1000_wiring.png) · [p1909](docs/AMM_p1909_G1000_wiring.png) · [p1910](docs/AMM_p1910_G1000_wiring.png) · [p1911](docs/AMM_p1911_G1000_wiring.png) · [p1912](docs/AMM_p1912_G1000_wiring.png) |
+| AMM CH.92, D44-9231-60-03 | G1000 NXi wiring diagrams (Phase I & II, Sheets 2-6): [p1908](docs/AMM_p1908_G1000_wiring.png) · [p1909](docs/AMM_p1909_G1000_wiring.png) · [p1910](docs/AMM_p1910_G1000_wiring.png) · [p1911](docs/AMM_p1911_G1000_wiring.png) · [p1912](docs/AMM_p1912_G1000_wiring.png) |
 | AMM CH.31 | GDU 1050/1060 connector pinouts |
 | AMM CH.34 | GIA 63W connector pinouts |
 | AMM CH.23 | GMA, GTX, GDL connector pinouts |
 | [Garmin 190-00303-40](docs/GEA71_InstallationManual.pdf) | GEA 71 Installation Manual — P701/P702 connector pin function lists (pages 23-26) |
+| [Concorde 5-0324 Rev G](docs/5-0324-rg-manual.pdf) | RG-series battery manual — State of Charge vs Open Circuit Voltage table (p.13): 24V battery at 25.8V+ = 100% SOC, 25.2V = 75%, 24.6V = 50%, 24.0V = 25%, 23.4V = 0% |
 
 ## Summary
 
-The G1000 reads low because of a high-resistance ground connection — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit. Three voltage regulators, two alternators, and two pitch servos have been replaced — none fixed it because the ground path was never addressed. Start at the **instrument panel shelf** with GEA 71S connector P701 (Pin 20) and ground stud GS-IP-14. Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 connectors on the instrument panel. Don't stop after finding one bad connection — the data shows there may be more than one marginal joint.
+The G1000 reads low because of a high-resistance ground connection — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit. Three voltage regulators, two alternators, and two pitch servos have been replaced — none fixed it because the ground path was never addressed. Start at the **instrument panel shelf** with GEA 71S connector P701 (ground pins 20 and 45, wire 77016A22N) and ground stud **GS-IP-14** (where both GEA power ground pins terminate). Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 connectors on the instrument panel. Don't stop after finding one bad connection — the data shows there may be more than one marginal joint.
 
 ---
 
