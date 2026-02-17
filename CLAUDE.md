@@ -40,6 +40,7 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 - `Docs/AMM_p1857_*.png` through `AMM_p1861_*.png` - Electrical system wiring schematics extracted from DA40 NG AMM (Doc 6.02.15, CH.92), pages 1857-1861
 - `Docs/AMM_p1908_G1000_wiring.png` through `AMM_p1912_G1000_wiring.png` - G1000 NXi wiring diagrams (Drawing D44-9231-60-03_01, Sheets 2/6-6/6), 5100x3300 px each
 - `Docs/GEA71_InstallationManual.pdf` - Garmin GEA 71 Installation Manual (190-00303-40, Revision F). Pages 23-26 contain P701 and P702 connector pin function lists (78 pins each)
+- `Docs/Instrument Panel - Breakers.png` - AFM p.361 instrument panel layout showing circuit breaker positions grouped by bus (EECU BUS, ESSENTIAL BUS, MAIN BUS, AVIONICS BUS). Confirms ENG INST breaker (GEA 71S power) is on the Essential Bus.
 
 ## Analysis Approach
 
@@ -105,10 +106,10 @@ The GEA 71 has two 78-pin connectors: **P701** and **P702**. Pin assignments fro
 | 37 | AIRCRAFT POWER 2 | In | Second power input |
 | **42** | **ANALOG IN 3 HI** | **In** | **ALT AMPS SENSOR OUT HI — differential current measurement** |
 | **43** | **ANALOG IN 3 LO** | **In** | **ALT AMPS SENSOR OUT LO — differential current measurement** |
-| 44 | ANALOG IN 4 HI | In | |
-| 45 | ANALOG IN 4 LO | In | |
-| **46** | **ANALOG IN 5 HI** | **In** | **BUS VOLTS sense HI** |
-| **47** | **ANALOG IN 5 LO** | **In** | **BUS VOLTS sense LO** |
+| **44** | **ANALOG IN 4 HI** | **In** | **Voltage-relevant — trace wiring from AMM schematic p1910** |
+| **45** | **ANALOG IN 4 LO** | **In** | **Voltage-relevant — trace wiring from AMM schematic p1910** |
+| **46** | **ANALOG IN 5 HI** | **In** | **BUS VOLTS ESSENTIAL BUS (HI) — wire 31288A22WH (shielded)** |
+| **47** | **ANALOG IN 5 LO** | **In** | **BUS VOLTS ESSENTIAL BUS (LO) — wire 31288A22BL (shielded)** |
 | **78** | **POWER GROUND** | **—** | **Second power ground pin** |
 
 ### P701 — All Pins (Complete Reference)
@@ -219,7 +220,7 @@ The DA40 NG has seven buses (per AMM 24-60-00 Figure 1 and 24-00-00 Figure 1):
 - **HOT BUS** - Always-on bus, direct battery connection (AUX POWER PLUG is here, 5A fuse)
 - **ECU BUS** / **ECU B BUS** - Engine control units (separate from avionics path, 100A fuse from BATT BUS)
 
-**Important:** The G1000 is on the AVIONIC BUS, NOT the Essential Bus. The Avionic Master switch lives on the Essential Bus but only controls the Avionic Relay coil -- it does not carry the power. The AVIONIC BUS and ESSENTIAL BUS are sibling buses that both branch independently from the MAIN BUS.
+**Important:** Most G1000 LRUs (GDU displays, GIA computers) are on the AVIONIC BUS. However, the **GEA 71S** (the unit that measures and reports bus voltage) is powered from the **ESSENTIAL BUS** via the 5A ENG INST breaker. The Avionic Master switch lives on the Essential Bus but only controls the Avionic Relay coil -- it does not carry the power. The AVIONIC BUS and ESSENTIAL BUS are sibling buses that both branch independently from the MAIN BUS.
 
 ### Power Path to G1000
 ```
@@ -228,6 +229,10 @@ MAIN BATTERY (B1, 24V/13.6Ah)
   -> Power Relay (PWR 60A breaker) -> MAIN BUS
   -> AV. BUS 25A breaker -> AVIONIC RELAY -> AVIONIC BUS
   -> individual circuit breakers -> G1000 GDU/GIA units
+
+GEA 71S (voltage sensor) is on the ESSENTIAL BUS, not the AVIONIC BUS:
+  MAIN BUS -> MAIN TIE 30A -> Ess Tie Relay -> ESS TIE 30A -> ESSENTIAL BUS
+  -> ENG INST 5A breaker -> GEA 71S Pin 35 (AIRCRAFT POWER)
 ```
 
 ### VDL48 Connection Point

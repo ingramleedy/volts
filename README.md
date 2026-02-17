@@ -15,7 +15,7 @@ To investigate, a Triplett VDL48 voltage data logger was connected directly to t
 |---|---|---|
 | **Route** | KBOW to KSPG | KSPG to KBOW |
 | **Time (UTC)** | 15:51 – 16:47 | 18:10 – 19:25 |
-| **Duration** | ~56 min | ~75 min |
+| **Duration** | K~56 min | ~75 min |
 
 The VDL48 recorded continuously across both flights and the ~85-minute ground stop between them, capturing three distinct phases: Flight 1, engine-off idle, and Flight 2.
 
@@ -117,6 +117,7 @@ flowchart TB
         MAINBUS -->|"AV. BUS 25A"| AVRELAY
         MAINBUS -->|"MAIN TIE 30A"| ESSTIE["Ess Tie\nRelay"]
         ESSTIE -->|"ESS TIE 30A"| ESSBUS["ESSENTIAL BUS"]
+        ESSBUS -->|"ENG INST 5A"| GEA71S["GEA 71S\n(Voltage Sensor)"]
         ESSBUS -.->|"controls coil only"| AVRELAY
         AVBUS --> GDU1050["GDU 1050\nPFD"]
         AVBUS --> GDU1055["GDU 1055\nMFD"]
@@ -151,7 +152,7 @@ flowchart TB
     style BATMINDER fill:#888,color:#fff,stroke-dasharray: 5 5
 ```
 
-**Note:** The G1000 is on the **AVIONIC BUS**, which is fed from the **MAIN BUS** (not the Essential Bus). The Avionic Master switch lives on the Essential Bus but only controls the Avionic Relay coil -- it does not carry power. The AMM trouble-shooting table (24-60-00, p627) confirms: "There is 28 VDC on the main bus (if G1000 is installed)... but not on the avionic bus" as the first fault condition, indicating the G1000's power originates from the MAIN BUS.
+**Note:** Most G1000 LRUs (GDU displays, GIA computers) are on the **AVIONIC BUS**, which is fed from the **MAIN BUS**. However, the **GEA 71S** (the unit that measures and reports bus voltage) is powered from the **Essential Bus** via the **5A ENG INST** breaker. The Avionic Master switch lives on the Essential Bus but only controls the Avionic Relay coil — it does not carry power. The AMM trouble-shooting table (24-60-00, p627) confirms: "There is 28 VDC on the main bus (if G1000 is installed)... but not on the avionic bus" as the first fault condition, indicating the G1000 displays' power originates from the MAIN BUS.
 
 ### Ground Return Paths
 

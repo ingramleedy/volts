@@ -20,6 +20,7 @@
 9. [AMM References](#amm-references)
 10. [Summary](#summary)
 11. [Appendix A — DA40 NG Electrical System (AFM)](#appendix-a--da40-ng-electrical-system-afm)
+12. [Appendix B — Instrument Panel Circuit Breaker Layout (AFM)](#appendix-b--instrument-panel-circuit-breaker-layout-afm)
 
 ---
 
@@ -169,10 +170,11 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 ![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
 
 - Per the AFM (Doc 6.01.15-E, Section 7.10.1, p.7-43): *"The voltmeter shows the voltage of the essential bus. Under normal operating conditions the alternator voltage is shown, otherwise it is the voltage of the main battery."*
-- The GEA 71S **senses bus voltage via a dedicated analog input** — Pin 46 (ANALOG IN 5 HI) and Pin 47 (ANALOG IN 5 LO), connected to the **Essential Bus**
-- **GEA power:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** through the **5A ENG INST** breaker
-- **Ground reference:** Pin 20 (POWER GROUND) via wire **77016A22N** to ground stud **GS-IP-14**
-- The displayed voltage = what Pin 46 sees on the Essential Bus, relative to the Pin 47/Pin 20 ground reference
+- The GEA 71S **senses bus voltage via a dedicated analog input** — Pin 46 (ANALOG IN 5 HI) and Pin 47 (ANALOG IN 5 LO), connected to the **Essential Bus** via shielded wires 31288A22WH/BL
+- **GEA power:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** through the **5A ENG INST** breaker on the **Essential Bus**
+- **GEA power ground:** Pin 36 (per AMM) via wire **77015A22N** to ground stud **GS IP-4**; Pin 49 (ANALOG/CURR MON LO) via wire **74005A22N** to ground stud **GS-IP-14**
+- **Pins 44/45** (ANALOG IN 4 HI/LO) are also in the voltage measurement area on the schematic — trace these connections
+- The displayed voltage = what Pin 46 sees on the Essential Bus, relative to the GEA's ground reference. Any resistance on the ground pins (20, 36, 78) or sense low (47) shifts the reading down
 
 No software calibration or correction is applied — the G1000 displays exactly what the GEA 71S hardware measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem. Adjusting the software offset would only mask the symptom — the underlying problem would remain and continue to degrade.
 
@@ -189,15 +191,17 @@ At 20 amps of avionics load, just **0.05 ohms** of extra ground resistance = **1
 ### The Voltage Measurement Path
 
 ```
-Essential Bus ──→ GEA 71S Pin 46 (ANALOG IN 5 HI — voltage sense)
+Essential Bus ──→ GEA 71S Pin 46 (ANALOG IN 5 HI — voltage sense, wire 31288A22WH)
                       ↓
-                  GEA measures V(Pin 46) - V(Pin 47)
+                  GEA measures V(Pin 46) - V(ground reference)
                       ↓
-                  GEA 71S Pin 47 (ANALOG IN 5 LO) / Pin 20 (POWER GROUND)
+                  GEA 71S ground pins: Pin 36 → wire 77015A22N → GS IP-4
+                                       Pin 49 → wire 74005A22N → GS-IP-14
+                                       Pin 20/78 → POWER GROUND
                       ↓
-                  wire 77016A22N → GS-IP-14 → bus bar → fuselage → battery negative
-                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                   HIGH RESISTANCE somewhere in here
+                  GS-IP studs → bus bar → IP frame → fuselage → battery negative
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  HIGH RESISTANCE somewhere in here
 ```
 
 ### Why Only the G1000 Reads Low
@@ -282,21 +286,32 @@ Full pin listing: [GEA 71 Installation Manual (190-00303-40)](docs/GEA71_Install
 
 When you have the GEA 71S connector P701 in hand, these are the pins relevant to the voltage problem:
 
-| Pin | Function | What It Does |
-|-----|----------|-------------|
-| **20** | **POWER GROUND** | **Ground reference for voltage measurement — this is the suspect pin** |
-| **78** | **POWER GROUND** | **Second power ground — same ground network** |
-| **35** | **AIRCRAFT POWER 1** | Power input from Essential Bus (5A ENG INST breaker) |
-| 37 | AIRCRAFT POWER 2 | Second power input |
-| 46 | ANALOG IN 5 HI | Bus voltage sense (high side) |
-| 47 | ANALOG IN 5 LO | Bus voltage sense (low side) |
-| 42 | ANALOG IN 3 HI | Alt amps sensor signal (not affected by bad ground) |
-| 43 | ANALOG IN 3 LO | Alt amps sensor signal (not affected by bad ground) |
-| 14 | +10V TRANSDUCER POWER | Powers the alternator current sensor |
-| 11–13 | TRANSDUCER GROUND | Ground return for current sensor |
-| 5–8 | RS 485 1A/1B, 2A/2B | Digital data bus to GIA computers |
+**Voltage measurement circuit (inspect all of these):**
 
-The amps reading on the G1000 MFD uses a separate **Hall-effect current transducer** with its own power (Pin 14) and differential output (Pins 42/43). The bad ground at Pin 20 does **not** affect the amp reading — only the voltage reading.
+| Pin | Function | Wire (from AMM CH.92) | Where It Goes | Why It Matters |
+|-----|----------|-----------------------|---------------|----------------|
+| **46** | **ANALOG IN 5 HI** | **31288A22WH** (shielded) | **BUS VOLTS ESSENTIAL BUS (HI)** | **Voltage sense high — what's being measured** |
+| **47** | **ANALOG IN 5 LO** | **31288A22BL** (shielded) | **BUS VOLTS ESSENTIAL BUS (LO)** | **Voltage sense low — reference for the measurement** |
+| **44** | **ANALOG IN 4 HI** | (trace from schematic) | (trace from schematic) | **Adjacent analog input — check connection** |
+| **45** | **ANALOG IN 4 LO** | (trace from schematic) | (trace from schematic) | **Adjacent analog input — check connection** |
+| **35** | **AIRCRAFT POWER 1** | **77015A22** | **Essential Bus via ENG INST 5A** | **GEA power supply — affects internal voltage reference** |
+| **20** | **POWER GROUND** | **77016A22N** | **Ground stud** | **GEA ground reference — if high-R, ALL readings shift** |
+| **78** | **POWER GROUND** | — | **Ground stud** | **Second power ground — same ground network** |
+| 37 | AIRCRAFT POWER 2 | — | Second power input | Redundant power |
+
+**Other GEA pins (for reference):**
+
+| Pin | Function | Wire | Where It Goes |
+|-----|----------|------|---------------|
+| 48 | ANALOG/CURR MON IN 3A HI | 31006A22 | Current monitor |
+| 49 | ANALOG/CURR MON IN 3A LO | 74005A22N | **GS-IP-14** |
+| 42 | ANALOG IN 3 HI | 24331A22WH | Alt amps sensor OUT HI |
+| 43 | ANALOG IN 3 LO | 24331A22BL | Alt amps sensor OUT LO |
+| 14 | +10V TRANSDUCER POWER | 24331A22OR | Powers alt amps sensor |
+| 11 | TRANSDUCER GROUND | — | Ground return for current sensor |
+| 5–8 | RS 485 1A/1B, 2A/2B | 77010/77011 | Digital data bus to GIA computers |
+
+**Note:** Pin 49 (ANALOG/CURR MON IN 3A LO) goes to **GS-IP-14** via wire 74005A22N — this is visible on the AMM schematic. The amps reading uses a separate **Hall-effect current transducer** (J7700) with its own power (Pin 14) and differential output (Pins 42/43).
 
 **At each connector, check for:**
 - Backed-out pins (look from the rear of the connector)
@@ -517,3 +532,85 @@ The voltmeter shows the voltage of the essential bus. Under normal operating con
 ### Ammeter
 
 The ammeter displays the intensity of current which is supplied to the electrical system by the alternator, including the current for battery charging.
+
+---
+
+## Appendix B — Instrument Panel Circuit Breaker Layout (AFM)
+
+*Source: DA40 NG AFM, Doc 6.01.15-E, Rev. 3, Section 7.10, p.361 — Instrument Panel*
+
+![DA40 NG Instrument Panel — Circuit Breaker Layout by Bus](docs/Instrument%20Panel%20-%20Breakers.png)
+
+The circuit breakers are physically grouped by bus on the instrument panel. This layout shows which bus each breaker belongs to:
+
+### EECU BUS (Top Row)
+
+| Breaker | Rating | Circuit |
+|---------|--------|---------|
+| EECU A | — | Engine Control Unit A |
+| EECU B | — | Engine Control Unit B |
+| EECU A | — | Engine Control Unit A (backup) |
+| EECU B | — | Engine Control Unit B (backup) |
+| FUEL PUMP A | — | Fuel Pump A |
+| FUEL PUMP B | — | Fuel Pump B |
+
+### ESSENTIAL BUS (Second Group)
+
+| Breaker | Rating | Circuit | Relevance |
+|---------|--------|---------|-----------|
+| HORIZON | — | Standby horizon | |
+| AHRS | — | Attitude/Heading Reference | |
+| ADC | — | Air Data Computer | |
+| COM 1 | 5A | COM 1 transceiver | GPS/NAV 1 ground → GS IP-3 |
+| GPS/NAV 1 | 5A | GPS/NAV 1 | Ground → GS IP-3 |
+| **ENG INST** | **5A** | **GEA 71S — airframe sensors (bus voltage, alt amps, pitot heat, fuel level/temp, doors, fuel lever, start switch, fuel xfer, glow lamp, engine water, alt warning)** | **Powers the GEA 71S, which is the unit that measures bus voltage** |
+| XPDR | — | Transponder (GTX 33) | |
+| FLAPS | — | Flap motor | |
+| PITOT | — | Pitot heat | |
+| FLOOD | — | Flood lights | |
+
+### MAIN BUS (Lower Group)
+
+| Breaker | Rating | Circuit |
+|---------|--------|---------|
+| PWR | 60A | Power Relay (Main Bus power) |
+| MFD | — | GDU 1060 Multi-Function Display |
+| STROBE | — | Strobe lights |
+| POSITION | — | Position lights |
+| AV BUS | 25A | Avionic Bus (through Avionic Relay) |
+| AV/CDU FAN | — | Avionics cooling fan |
+| START | — | Starter |
+| TAXI/MAP | — | Taxi/map lights |
+| INST. LT | — | Instrument lights |
+| XFER PUMP | — | Fuel transfer pump |
+| AUTO PILOT | — | Autopilot servos |
+| ADF | — | ADF (if installed) |
+| WX500 | — | Stormscope |
+| TAS | — | Traffic Advisory System |
+
+### AVIONICS BUS (Right Group)
+
+| Breaker | Rating | Circuit | Relevance |
+|---------|--------|---------|-----------|
+| COM 2 | 5A | COM 2 transceiver | |
+| GPS/NAV 2 | 5A | GPS/NAV 2 | Ground → GS IP-10 |
+| AUDIO | — | GMA 1360 Audio Panel | |
+| DME | — | DME (if installed) | |
+
+### Center Controls
+
+| Control | Type | Function |
+|---------|------|----------|
+| MASTER CONTROL | Key switch | Electric Master — controls battery relay + power relay |
+| ESS BUS | Toggle switch | Emergency — connects Essential Bus directly to Battery Bus 2 |
+| MAIN TIE | Breaker (30A) | Connects Main Bus to Essential Bus via Essential Tie Relay |
+| LANDING | — | Landing light |
+| PFD | — | GDU 1050 Primary Flight Display |
+
+### Key Observation
+
+The **ENG INST** breaker (which powers the GEA 71S voltage sensor) is physically located in the **Essential Bus** group on the instrument panel, confirming the GEA 71S is powered from the Essential Bus — not the Avionic Bus. This means:
+
+1. The GEA 71S stays powered even when the Avionic Master is OFF
+2. When the ESS BUS switch is activated (emergency mode), the GEA 71S switches to direct Battery Bus 2 power along with all other Essential Bus loads
+3. The GEA 71S power path is: Main Bus → Main Tie 30A → Ess Tie Relay → ESS TIE 30A → Essential Bus → ENG INST 5A → GEA 71S
