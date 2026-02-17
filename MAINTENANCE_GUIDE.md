@@ -302,6 +302,41 @@ The instrument panel frame connects to the fuselage structure. Check:
 
 ## How to Test
 
+### ESS BUS Switch Test (Quick Isolation — No Tools Required)
+
+This test isolates the **power path** from the **ground path** using only a cockpit switch, with the engine running on the ground.
+
+**Background:** In normal operation, the Essential Bus (which powers the GEA 71S) is fed from the Main Bus:
+
+```
+Battery → BATT BUS → Power Relay → MAIN BUS → Main Tie → Ess Tie Relay → ESSENTIAL BUS → GEA 71S
+```
+
+When the **ESS BUS switch** is activated, the Essential Bus is fed directly from Battery Bus 2, bypassing the Main Bus, Power Relay, Main Tie breaker, and Essential Tie Relay entirely:
+
+```
+Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA 71S
+```
+
+**Critically, the ground path does not change either way** — the GEA 71S still returns through Pin 20 → GS-IP-14 → bus bar → fuselage → battery negative.
+
+**Procedure:**
+1. Engine running at normal idle (alternator charging, bus voltage stable)
+2. Note the G1000 voltage reading on the MFD
+3. Flip the **ESS BUS switch** ON
+4. Observe the G1000 voltage reading for 30–60 seconds
+5. Return the ESS BUS switch to normal
+
+**Interpreting results:**
+
+| Result | What It Means |
+|--------|---------------|
+| **Voltage stays the same (still reads low)** | **Ground path confirmed** — the power source changed but the reading didn't, so the drop is on the ground side. Proceed to resistance measurements at GS-IP-14. |
+| Voltage improves noticeably (reads closer to 28V) | Some resistance is in the power path (Main Bus relay contacts, Main Tie breaker, Essential Tie Relay) |
+| Voltage improves partially | Both the power path and ground path contribute resistance |
+
+Based on all prior analysis (ECU and VDL48 both read correctly, variable offset with load, elevated noise), we expect the reading to **stay low** — confirming the ground path.
+
 ### Resistance Measurements
 
 **Setup:** Battery master OFF, **battery negative cable physically disconnected from the battery post**.
