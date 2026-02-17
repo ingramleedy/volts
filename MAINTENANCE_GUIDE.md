@@ -212,6 +212,22 @@ GEA 71S → GS-IP-14 → IP bus bar → IP frame → fuselage → battery negati
 ECU     → GS-RP studs → separate ground path → battery negative            (reads correctly)
 ```
 
+### How the Voltage Data Flows to the G1000 Displays
+
+The GEA 71S and ECU are completely independent measurement systems that communicate with the G1000 displays through separate digital data buses (per AMM CH.92 D44-9231-60-03_01 and Garmin 190-00303-40):
+
+```
+GEA 71S ──RS-485──→ GIA 63W ──HSDB──→ GDU displays   (bus voltage, amps, temps)
+ECU     ──RS-232──→ GIA 63W ──HSDB──→ GDU displays   (engine: RPM, fuel, oil, EGT/CHT)
+```
+
+- The **GEA 71S** sends airframe measurements (including the voltage reading) to both GIA computers via **RS-485** (P701 pins 5–8, differential pairs)
+- The **ECU (AE300)** sends engine parameters to a GIA via **RS-232** (serial, separate connection)
+- The GEA does not interface with the ECU — they are independent paths into the GIA
+- The voltage displayed on the MFD comes **only** from the GEA, not from the ECU. The ECU's own battery voltage reading (channel 808) is stored in the ECU's internal data log but is never shown on the G1000 displays
+
+This means the G1000 has no way to cross-check the GEA's voltage reading against the ECU's — it simply displays what the GEA reports. The only way to see the ECU's battery voltage is by downloading the ECU data log separately (via AE300-Wizard), which is how we discovered the discrepancy.
+
 ## Where to Look
 
 ### Instrument Panel
