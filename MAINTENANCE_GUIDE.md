@@ -149,7 +149,7 @@ A second engine R&R in Jul 2025 (piston crack) did **not** fix the problem, ruli
 
 None of these addressed the ground path. The alternator and regulators were never the problem — the ECU confirms the charging system works correctly.
 
-The Feb 2026 pin cleaning targeted the **GDL 69A** (SiriusXM datalink transceiver, CH.23). The voltage measurement comes from the **GEA 71S** (Engine/Airframe unit, connector P701) — its power ground pins (Pin 20 and Pin 45, wire 77016A22N to **GS-IP-14**) were not inspected.
+The Feb 2026 pin cleaning targeted the **GDL 69A** (SiriusXM datalink transceiver, CH.23). The voltage measurement comes from the **GEA 71S** (Engine/Airframe unit, connector P701) — its power ground pins (Pin 20 and Pin 45, wire 77016A22N to **GS-IP-14**) were not inspected, nor were the voltage sense pins (Pin 46 and Pin 47, wires 31299A22WH/BL to the Essential Bus).
 
 **Note:** This aircraft has a history of connector/pin problems. In May 2023, the G1000 experienced repeated COM/NAV/GPS/AHRS cycling and autopilot disconnects during an IFR flight — that issue was resolved by cleaning pins and reseating the P2413 HSDB harness connector (Jul 2024). Connector issues are a known problem on this airframe. The voltage problem is the same type of issue — a bad connection — just at a different connector/stud that hasn't been addressed yet.
 
