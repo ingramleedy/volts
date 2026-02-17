@@ -60,7 +60,7 @@ The VDL48 and ECU agree — the bus voltage is normal (~28V with alternator). Th
 | **AE300 ECU data logs** | Extracted from the ECU's built-in data logger via USB using **AE300-Wizard** software (Austro Engine's download tool). The encrypted `.ae3` binary log files were then decrypted and parsed into readable CSV using **AustroViewer** ([github.com/ingramleedy/AustroViewer](https://github.com/ingramleedy/AustroViewer), private repo). The ECU records 16 channels including battery voltage (channel 808) every engine run automatically. | 1 second | **265 sessions**, Oct 2023 – Feb 2026 |
 | **VDL48 voltage logger** | Triplett VDL48 standalone data logger plugged into AUX POWER plug (HOT BUS, direct battery) | 2 seconds | **2 flights** on Feb 8, 2026 (3.5 hours flight time + 1.4 hours ground idle) |
 
-- The **G1000 logs** `volt1` — the bus voltage displayed on the PFD/MFD, measured by the GEA 71S at its power pins
+- The **G1000 logs** `volt1` — the bus voltage displayed on the PFD/MFD, measured by the GEA 71S via its voltage sense input (Pin 46/47) from the Essential Bus
 - The **ECU logs** `Battery Voltage` (channel 808) — the AE300 engine computer's own battery voltage reading, measured through a separate bus (ECU BUS) and separate ground path (GS-RP studs)
 - The **VDL48** measures voltage at the AUX POWER plug on the HOT BUS — a direct connection to the battery through only a 5A fuse, no relays or breakers. This gives the cleanest reference of actual bus voltage.
 
@@ -167,10 +167,10 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 
 ![GEA 71S wiring schematic from AMM page 1910](docs/AMM_p1910_G1000_wiring.png)
 
-- The GEA 71S **measures its own power supply voltage internally** — there is no separate external sense wire
-- **Power input:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** from the Essential Bus through the **5A ENG INST** breaker
+- The GEA 71S **senses bus voltage via a dedicated analog input** — Pin 46 (ANALOG IN 5 HI) and Pin 47 (ANALOG IN 5 LO), connected to the **Essential Bus**
+- **GEA power:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** through the **5A ENG INST** breaker
 - **Ground reference:** Pin 20 (POWER GROUND) via wire **77016A22N** to ground stud **GS-IP-14**
-- The displayed voltage = what arrives at Pin 35 minus what's at Pin 20
+- The displayed voltage = what Pin 46 sees on the Essential Bus, relative to the Pin 47/Pin 20 ground reference
 
 No software calibration or correction is applied — the G1000 displays exactly what the GEA 71S hardware measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem. Adjusting the software offset would only mask the symptom — the underlying problem would remain and continue to degrade.
 
@@ -187,15 +187,15 @@ At 20 amps of avionics load, just **0.05 ohms** of extra ground resistance = **1
 ### The Voltage Measurement Path
 
 ```
-Essential Bus → 5A ENG INST breaker → wire 77015A22 → GEA 71S Pin 35 (POWER)
-                                                          ↓
-                                               GEA measures voltage internally
-                                                          ↓
-                                          GEA 71S Pin 20 (POWER GROUND)
-                                                          ↓
-                                          wire 77016A22N → GS-IP-14 → bus bar → fuselage → battery negative
-                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                                           HIGH RESISTANCE somewhere in here
+Essential Bus ──→ GEA 71S Pin 46 (ANALOG IN 5 HI — voltage sense)
+                      ↓
+                  GEA measures V(Pin 46) - V(Pin 47)
+                      ↓
+                  GEA 71S Pin 47 (ANALOG IN 5 LO) / Pin 20 (POWER GROUND)
+                      ↓
+                  wire 77016A22N → GS-IP-14 → bus bar → fuselage → battery negative
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                   HIGH RESISTANCE somewhere in here
 ```
 
 ### Why Only the G1000 Reads Low
@@ -306,19 +306,19 @@ The instrument panel frame connects to the fuselage structure. Check:
 
 This test isolates the **power path** from the **ground path** using only a cockpit switch, with the engine running on the ground.
 
-**Background:** In normal operation, the Essential Bus (which powers the GEA 71S) is fed from the Main Bus:
+**Background:** The GEA 71S senses voltage from the **Essential Bus** (via Pin 46/47). In normal operation, the Essential Bus is fed from the Main Bus:
 
 ```
-Battery → BATT BUS → Power Relay → MAIN BUS → Main Tie → Ess Tie Relay → ESSENTIAL BUS → GEA 71S
+Battery → BATT BUS → Power Relay → MAIN BUS → Main Tie → Ess Tie Relay → ESSENTIAL BUS → GEA Pin 46 (sense)
 ```
 
 When the **ESS BUS switch** is activated, the Essential Bus is fed directly from Battery Bus 2, bypassing the Main Bus, Power Relay, Main Tie breaker, and Essential Tie Relay entirely:
 
 ```
-Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA 71S
+Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (sense)
 ```
 
-**Critically, the ground path does not change either way** — the GEA 71S still returns through Pin 20 → GS-IP-14 → bus bar → fuselage → battery negative.
+**Critically, the ground path does not change either way** — the GEA 71S voltage sense reference (Pin 47 / Pin 20) still returns through GS-IP-14 → bus bar → fuselage → battery negative.
 
 **Procedure:**
 1. Engine running at normal idle (alternator charging, bus voltage stable)
