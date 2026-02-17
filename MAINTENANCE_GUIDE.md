@@ -167,9 +167,9 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 
 - Per the AFM (Doc 6.01.15-E, Section 7.10.1, p.7-43): *"The voltmeter shows the voltage of the essential bus. Under normal operating conditions the alternator voltage is shown, otherwise it is the voltage of the main battery."*
 - The GEA 71S **senses bus voltage via a dedicated analog input** — Pin 46 (ANALOG IN 5 HI) and Pin 47 (ANALOG IN 5 LO), connected to the **Essential Bus** via shielded wires 31299A22WH/BL. A **3A fuse** protects the HI wire (31299A22WH); its physical location is not identified on the available AMM schematics. This fuse carries essentially no current (high-impedance analog input), so degraded fuse contacts would not cause the observed offset. An open fuse would produce a **0V reading**, not a low reading.
-- **GEA power:** Pin 35 (AIRCRAFT POWER) via wire **77015A22** through the **5A ENG INST** breaker on the **Essential Bus**
-- **GEA power ground:** Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO) — both tied to wire **77016A22N** → ground stud **GS-IP-14**. Pin 49 (ANALOG/CURR MON LO) via wire **74005A22N** also to **GS-IP-14** (glow lamp circuit, probably unrelated)
-- The displayed voltage = what Pin 46 sees on the Essential Bus, relative to the GEA's ground reference. Any resistance on the ground pins (20, 45) or sense low (47) shifts the reading down
+- **GEA power:** Pin 35 (AIRCRAFT POWER) and Pin 44 (ANALOG IN 4 HI) are connected to each other on wire **77015A22**, routed through the **5A ENG INST** breaker on the **Essential Bus**. Pin 44 lets the GEA self-sense its own supply voltage.
+- **GEA power ground:** Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO) are connected to each other on wire **77016A22N** → ground stud **GS-IP-14**. Pin 49 (ANALOG/CURR MON LO) via wire **74005A22N** also to **GS-IP-14** (glow lamp circuit, probably unrelated)
+- The displayed voltage = what Pin 46 (ANALOG IN 5 HI — voltage sense) sees on the Essential Bus, relative to the GEA's ground reference at Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO). Any resistance on ground Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO), or sense low Pin 47 (ANALOG IN 5 LO) shifts the reading down
 
 No software calibration or correction is applied — the G1000 displays exactly what the GEA 71S hardware measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem. Adjusting the software offset would only mask the symptom — the underlying problem would remain and continue to degrade.
 
