@@ -240,6 +240,26 @@ The voltage reading comes from the GEA 71S — its ground pin is the most critic
 | **GDU 1050 PFD** | 1P1600 | Pin 27 (POWER GROUND) | 31106A22N (22 AWG) | GS-IP-4 | Primary flight display |
 | **GDU 1060 MFD** | 2P1601 | Pin 27 (POWER GROUND) | 31158A22N (22 AWG) | GS-IP-4 | Multi-function display |
 
+### GEA 71S P701 Pin Reference (Garmin 190-00303-40)
+
+When you have the GEA 71S connector P701 in hand, these are the pins relevant to the voltage problem:
+
+| Pin | Function | What It Does |
+|-----|----------|-------------|
+| **20** | **POWER GROUND** | **Ground reference for voltage measurement — this is the suspect pin** |
+| **78** | **POWER GROUND** | **Second power ground — same ground network** |
+| **35** | **AIRCRAFT POWER 1** | Power input from Essential Bus (5A ENG INST breaker) |
+| 37 | AIRCRAFT POWER 2 | Second power input |
+| 46 | ANALOG IN 5 HI | Bus voltage sense (high side) |
+| 47 | ANALOG IN 5 LO | Bus voltage sense (low side) |
+| 42 | ANALOG IN 3 HI | Alt amps sensor signal (not affected by bad ground) |
+| 43 | ANALOG IN 3 LO | Alt amps sensor signal (not affected by bad ground) |
+| 14 | +10V TRANSDUCER POWER | Powers the alternator current sensor |
+| 11–13 | TRANSDUCER GROUND | Ground return for current sensor |
+| 5–8 | RS 485 1A/1B, 2A/2B | Digital data bus to GIA computers |
+
+The amps reading on the G1000 MFD uses a separate **Hall-effect current transducer** with its own power (Pin 14) and differential output (Pins 42/43). The bad ground at Pin 20 does **not** affect the amp reading — only the voltage reading.
+
 **At each connector, check for:**
 - Backed-out pins (look from the rear of the connector)
 - Corrosion on pin or socket contacts

@@ -39,6 +39,7 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 - `Docs/AMM_p622_*_Bus_Structure_G1000.png` - Bus structure diagram from AMM 24-60-00 Figure 1
 - `Docs/AMM_p1857_*.png` through `AMM_p1861_*.png` - Electrical system wiring schematics extracted from DA40 NG AMM (Doc 6.02.15, CH.92), pages 1857-1861
 - `Docs/AMM_p1908_G1000_wiring.png` through `AMM_p1912_G1000_wiring.png` - G1000 NXi wiring diagrams (Drawing D44-9231-60-03_01, Sheets 2/6-6/6), 5100x3300 px each
+- `Docs/GEA71_InstallationManual.pdf` - Garmin GEA 71 Installation Manual (190-00303-40, Revision F). Pages 23-26 contain P701 and P702 connector pin function lists (78 pins each)
 
 ## Analysis Approach
 
@@ -79,6 +80,123 @@ The G1000 `volt1` reading comes through the GEA 71B (Engine/Airframe Interface U
 - **Filter Coeff:** 0.1000 — moderate smoothing
 - **Trans Func Type:** Linear (`Displayed = m × Raw + b`)
 - With m=1.0 and b=0.0, the G1000 displays exactly what arrives at the GEA input pin — the offset is hardware (ground path resistance), not calibration
+
+## GEA 71 Connector Pin Assignments (from Garmin Installation Manual 190-00303-40)
+
+The GEA 71 has two 78-pin connectors: **P701** and **P702**. Pin assignments from the Garmin GEA 71 Installation Manual (190-00303-40, Rev F), pages 23-26. The DA40 NG uses the GEA 71S variant; pin functions are compatible.
+
+### P701 — Key Pins for Voltage Investigation
+
+| Pin | Function | I/O | Notes |
+|-----|----------|-----|-------|
+| 5 | RS 485 1 A | I/O | HSDB to GIA #1 |
+| 6 | RS 485 1 B | I/O | HSDB to GIA #1 |
+| 7 | RS 485 2 A | I/O | HSDB to GIA #2 |
+| 8 | RS 485 2 B | I/O | HSDB to GIA #2 |
+| 11 | TRANSDUCER POWER OUT LO (GROUND) | — | Ground return for external transducers (ALT AMPS SENSOR) |
+| 12 | TRANSDUCER POWER OUT LO (GROUND) | — | Same as pin 11 |
+| 13 | TRANSDUCER POWER OUT LO (GROUND) | — | Same as pin 11 |
+| **14** | **+10 VDC TRANSDUCER POWER OUT** | **Out** | **Powers ALT AMPS SENSOR (Hall-effect current transducer)** |
+| 15 | +5 VDC TRANSDUCER POWER OUT | Out | |
+| 16 | +12 VDC TRANSDUCER POWER OUT | Out | |
+| 19 | SIGNAL GROUND | — | |
+| **20** | **POWER GROUND** | **—** | **Wire 77016A22N → GS-IP-14. THE BAD GROUND — voltage sensor reference** |
+| **35** | **AIRCRAFT POWER 1** | **In** | **Wire 77015A22 from Essential Bus via 5A ENG INST breaker** |
+| 37 | AIRCRAFT POWER 2 | In | Second power input |
+| **42** | **ANALOG IN 3 HI** | **In** | **ALT AMPS SENSOR OUT HI — differential current measurement** |
+| **43** | **ANALOG IN 3 LO** | **In** | **ALT AMPS SENSOR OUT LO — differential current measurement** |
+| 44 | ANALOG IN 4 HI | In | |
+| 45 | ANALOG IN 4 LO | In | |
+| **46** | **ANALOG IN 5 HI** | **In** | **BUS VOLTS sense HI** |
+| **47** | **ANALOG IN 5 LO** | **In** | **BUS VOLTS sense LO** |
+| **78** | **POWER GROUND** | **—** | **Second power ground pin** |
+
+### P701 — All Pins (Complete Reference)
+
+| Pin | Function | I/O | Pin | Function | I/O |
+|-----|----------|-----|-----|----------|-----|
+| 1 | CONFIG MODULE GROUND | — | 40 | CONFIG MODULE DATA | I/O |
+| 2 | DIGITAL IN* 1 | In | 41 | DIGITAL IN* 3 | In |
+| 3 | DIGITAL IN* 2 | In | 42 | ANALOG IN 3 HI | In |
+| 4 | SIGNAL GROUND | — | 43 | ANALOG IN 3 LO | In |
+| 5 | RS 485 1 A | I/O | 44 | ANALOG IN 4 HI | In |
+| 6 | RS 485 1 B | I/O | 45 | ANALOG IN 4 LO | In |
+| 7 | RS 485 2 A | I/O | 46 | ANALOG IN 5 HI | In |
+| 8 | RS 485 2 B | I/O | 47 | ANALOG IN 5 LO | In |
+| 9 | GEA SYSTEM ID PROGRAM* 1 | In | 48 | ENGINE TEMP ANALOG IN 7 HI | In |
+| 10 | GEA SYSTEM ID PROGRAM* 2 | In | 49 | ENGINE TEMP ANALOG IN 7 LO | In |
+| 11 | TRANSDUCER POWER OUT LO (GND) | — | 50 | ENGINE TEMP ANALOG IN 8 HI | In |
+| 12 | TRANSDUCER POWER OUT LO (GND) | — | 51 | ENGINE TEMP ANALOG IN 8 LO | In |
+| 13 | TRANSDUCER POWER OUT LO (GND) | — | 52 | ENGINE TEMP ANALOG IN 9 HI | In |
+| 14 | +10 VDC TRANSDUCER POWER OUT | Out | 53 | ENGINE TEMP ANALOG IN 9 LO | In |
+| 15 | +5 VDC TRANSDUCER POWER OUT | Out | 54 | ENGINE TEMP ANALOG IN 10 HI | In |
+| 16 | +12 VDC TRANSDUCER POWER OUT | Out | 55 | ENGINE TEMP ANALOG IN 10 LO | In |
+| 17 | ENGINE TEMP ANALOG IN 6 HI | In | 56 | ENGINE TEMP ANALOG IN 11 HI | In |
+| 18 | ENGINE TEMP ANALOG IN 6 LO | In | 57 | ENGINE TEMP ANALOG IN 11 LO | In |
+| 19 | SIGNAL GROUND | — | 58 | ENGINE TEMP ANALOG IN 12 HI | In |
+| 20 | POWER GROUND | — | 59 | ENGINE TEMP ANALOG IN 12 LO | In |
+| 21 | CONFIG MODULE POWER | Out | 60 | CONFIG MODULE CLOCK | Out |
+| 22 | ANALOG IN 1 HI | In | 61 | DIGITAL IN* 4 | In |
+| 23 | ANALOG IN 1 LO | In | 62 | ANALOG IN 6 HI | In |
+| 24 | ANALOG IN 2 HI | In | 63 | ANALOG IN 6 LO | In |
+| 25 | ANALOG IN 2 LO | In | 64 | ANALOG IN 7 HI | In |
+| 26 | ENGINE TEMP ANALOG IN 1 HI | In | 65 | ANALOG IN 7 LO | In |
+| 27 | ENGINE TEMP ANALOG IN 1 LO | In | 66 | ANALOG IN 8 HI | In |
+| 28 | ENGINE TEMP ANALOG IN 2 HI | In | 67 | ANALOG IN 8 LO | In |
+| 29 | ENGINE TEMP ANALOG IN 2 LO | In | 68 | THERMOCOUPLE REF IN HI | In |
+| 30 | ENGINE TEMP ANALOG IN 3 HI | In | 69 | THERMOCOUPLE REF IN LO | In |
+| 31 | ENGINE TEMP ANALOG IN 3 LO | In | 70 | DISCRETE IN* 1 | In |
+| 32 | SIGNAL GROUND | — | 71 | DISCRETE IN* 2 | In |
+| 33 | ENGINE TEMP ANALOG IN 4 HI | In | 72 | ANALOG IN 9 HI | In |
+| 34 | ENGINE TEMP ANALOG IN 4 LO | In | 73 | ANALOG IN 9 LO | In |
+| 35 | AIRCRAFT POWER 1 | In | 74 | ANALOG IN 10 HI | In |
+| 36 | ENGINE TEMP ANALOG IN 5 HI | In | 75 | ANALOG IN 10 LO | In |
+| 37 | AIRCRAFT POWER 2 | In | 76 | DISCRETE IN* 3 | In |
+| 38 | ENGINE TEMP ANALOG IN 5 LO | In | 77 | GEA REMOTE POWER OFF | In |
+| 39 | SIGNAL GROUND | — | 78 | POWER GROUND | — |
+
+### P702 — Key Pins
+
+| Pin | Function | I/O | Notes |
+|-----|----------|-----|-------|
+| 11-13 | TRANSDUCER POWER OUT LO (GROUND) | — | Transducer ground (A channel) |
+| 14 | +10 VDC TRANSDUCER POWER OUT A | Out | Transducer power (A channel) |
+| 15 | +5 VDC TRANSDUCER POWER OUT A | Out | |
+| 16 | +12 VDC TRANSDUCER POWER OUT A | Out | |
+| 44-45 | ANALOG/CURRENT MONITOR IN 1A HI/LO | In | Current monitor input pair |
+| 46-47 | ANALOG/CURRENT MONITOR IN 2A HI/LO | In | Current monitor input pair |
+| 48-49 | ANALOG/CURRENT MONITOR IN 3A HI/LO | In | Current monitor input pair |
+| 50-51 | ANALOG/CURRENT MONITOR IN 4A HI/LO | In | Current monitor input pair |
+| 52-53 | ANALOG IN 1A HI/LO | In | |
+| 54-55 | ANALOG IN 2A HI/LO | In | |
+| 56-57 | ANALOG IN 3A HI/LO | In | |
+| 58-59 | ANALOG IN 4A HI/LO | In | |
+
+### ALT AMPS SENSOR Circuit (from AMM D44-9231-60-03_01 Sheet 4/6)
+
+The alternator current is measured by a **Hall-effect current transducer** (J7700), NOT a resistive shunt:
+
+```
+GEA 71S P701                    ALT AMPS SENSOR (J7700)
+─────────────                   ───────────────────────
+Pin 14 (+10V TRANSDUCER PWR) ──→  V+    (RED,  wire 24331A22OR)
+Pin 42 (ANALOG IN 3 HI)     ←──  OUT HI (WHT,  wire 24331A22WH)
+Pin 43 (ANALOG IN 3 LO)     ←──  OUT LO (BLK,  wire 24331A22BL)
+Pin 11 (TRANSDUCER LO/GND)  ──→  GND
+```
+
+- Differential output (HI vs LO) means the bad ground at Pin 20 does NOT affect the amp reading
+- The transducer has its own power supply (+10V) and ground (Pin 11), isolated from the POWER GROUND path
+- The G1000 MFD amps display is accurate even with the ground path problem — but amps are not logged to CSV
+
+### GEA 71S Data Flow
+
+```
+ECU (AE300) ──RS-232──→ GIA 63W ──HSDB──→ GDU displays     (engine parameters: digital, unaffected by ground)
+GEA 71S ────RS-485───→ GIA 63W ──HSDB──→ GDU displays     (airframe measurements: voltage, amps, temps)
+```
+
+The GEA 71S does not interface directly with the ECU. Engine parameters flow from the ECU to a GIA 63W via RS-232, then to the displays via HSDB (Ethernet/RS-485). The GEA sends its own airframe measurements (voltage, amps, pitot heat) to the GIAs via RS-485 on pins 5/6 and 7/8.
 
 ## Owner Ground Test (Aug 18, 2025)
 
@@ -372,6 +490,19 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - Confirms the G1000 is capable of reading steady, accurate voltage when ground paths are healthy
 - Rules out Garmin firmware or sensor design as the cause — issue is aircraft-specific to N238PS
 - Added to README as external comparison reference supporting the high-resistance ground hypothesis
+
+### 2026-02-17: GEA 71 Pin Assignments & Current Sensing Analysis
+- Extracted pages 23-26 from Garmin GEA 71 Installation Manual (190-00303-40, Rev F) as PNGs
+- Documented complete P701 (78 pins) and P702 (78 pins) connector pin function lists
+- Confirmed Pin 42/43 (ANALOG IN 3 HI/LO) = ALT AMPS SENSOR differential input
+- Confirmed Pin 46/47 (ANALOG IN 5 HI/LO) = BUS VOLTS sense
+- Confirmed Pin 14 = +10V transducer power for Hall-effect current sensor (J7700)
+- Confirmed Pin 20 and Pin 78 = POWER GROUND (two ground pins, both route to GS-IP-14)
+- Traced ALT AMPS SENSOR circuit: Hall-effect transducer with differential output, isolated from power ground — G1000 MFD amp reading is unaffected by the bad ground path
+- Confirmed GEA 71S does not interface directly with ECU — engine data flows ECU → GIA (RS-232) → displays; GEA sends airframe data to GIAs via RS-485 (pins 5-8)
+- G1000 CSV logs do not record amps (only volt1/volt2); ECU logs do not record aircraft electrical current (only fuel system solenoid currents)
+- Added pin reference table to MAINTENANCE_GUIDE.md for mechanics working on the P701 connector
+- Added complete pin assignments and ALT AMPS SENSOR circuit to CLAUDE.md
 
 ## Scripts
 
