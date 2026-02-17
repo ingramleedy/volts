@@ -80,7 +80,7 @@ The offset exists on the ground with battery only. This rules out the alternator
 
 The ground path drops ~1.4V regardless of battery condition. But the higher the starting bus voltage, the more headroom the G1000 has before hitting the 25V LOW VOLTS threshold. A fully charged battery with alternator running keeps the bus at ~28V, so the G1000 reads ~26.6V — above the threshold most of the time. If the battery is weak or undercharged, the bus sits lower and the G1000 dips below 25V more easily.
 
-A **BatteryMinder** trickle charger and keeps the battery fully maintained between flights. This maximizes voltage headroom and keeps the G1000 reading within operational margins most of the time — but it's a workaround, not a fix. HIGH-current transient loads (radio TX, autopilot servos, flaps) still cause dips that break through even that margin, which is what triggers the LOW VOLTS annunciations seen in the FlySto screenshots above.
+A **BatteryMinder** trickle charger was installed and keeps the battery fully maintained between flights when returned to the home hangar. However, when away from the home hangar this isn't used. When maintained, this maximizes voltage headroom and keeps the G1000 reading within operational margins most of the time — but it's a workaround, not a fix. High-current transient loads (radio TX, autopilot servos, flaps) still cause dips that break through even that margin, which is what triggers the LOW VOLTS annunciations seen in the FlySto screenshots above.
 
 ## When It Started and How It's Getting Worse
 
