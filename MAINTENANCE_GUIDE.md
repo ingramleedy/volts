@@ -52,6 +52,20 @@ Three independent measurements were taken on the same aircraft, on the same flig
 
 The VDL48 and ECU agree — the bus voltage is normal (~28V with alternator). The G1000 is the only instrument reading low.
 
+### How the Data Was Collected
+
+| Data Source | Collection Method | Sample Rate | Coverage |
+|-------------|------------------|-------------|----------|
+| **G1000 NXi flight logs** | CSV files downloaded from [FlySto.net](https://flysto.net) (cloud-synced via GSR 56 datalink) | 1 second | **184 flights**, Jul 2023 – Feb 2026 (entire aircraft history since delivery) |
+| **AE300 ECU data logs** | Extracted from ECU flash memory via USB using AustroView software | 1 second | **265 sessions**, Oct 2023 – Feb 2026 |
+| **VDL48 voltage logger** | Triplett VDL48 standalone data logger plugged into AUX POWER plug (HOT BUS, direct battery) | 2 seconds | **2 flights** on Feb 8, 2026 (3.5 hours flight time + 1.4 hours ground idle) |
+
+- The **G1000 logs** `volt1` — the bus voltage displayed on the PFD/MFD, measured by the GEA 71S at its power pins
+- The **ECU logs** `Battery Voltage` (channel 808) — the AE300 engine computer's own battery voltage reading, measured through a separate bus (ECU BUS) and separate ground path (GS-RP studs)
+- The **VDL48** measures voltage at the AUX POWER plug on the HOT BUS — a direct connection to the battery through only a 5A fuse, no relays or breakers. This gives the cleanest reference of actual bus voltage.
+
+All three sources were time-aligned and compared using paired statistical analysis. The full analysis scripts and raw data are available in the project repository at [github.com/ingramleedy/volts](https://github.com/ingramleedy/volts).
+
 ### Ground Test (Aug 18, 2025 — battery only, no engine)
 
 | Condition | Meter at AUX POWER | G1000 Display | Difference |
