@@ -242,6 +242,12 @@ The voltage reading comes from the GEA 71S — its ground pin is the most critic
 
 ### GEA 71S P701 Pin Reference (Garmin 190-00303-40)
 
+**P701 Connector — view looking at rear of unit:**
+
+![GEA 71 P701 Connector Pin Layout](docs/GEA71_P701_connector_pins.png)
+
+Full pin listing: [GEA 71 Installation Manual (190-00303-40)](docs/GEA71_InstallationManual.pdf) — pages 23–26
+
 When you have the GEA 71S connector P701 in hand, these are the pins relevant to the voltage problem:
 
 | Pin | Function | What It Does |
@@ -378,6 +384,7 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 | AMM CH.31 | GDU 1050/1060 connector pinouts |
 | AMM CH.34 | GIA 63W connector pinouts |
 | AMM CH.23 | GMA, GTX, GDL connector pinouts |
+| [Garmin 190-00303-40](docs/GEA71_InstallationManual.pdf) | GEA 71 Installation Manual — P701/P702 connector pin function lists (pages 23-26) |
 
 ## Summary
 
