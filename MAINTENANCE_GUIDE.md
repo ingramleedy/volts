@@ -187,18 +187,22 @@ At 20 amps of avionics load, just **0.05 ohms** of extra ground resistance = **1
 
 ![GEA 71S Voltage Measurement Path](output/GEA71S_voltage_path.png)
 
+*Solid lines = documented on AMM CH.92 schematics. Dashed lines = inferred path (standard aircraft grounding practice, not shown on available schematics).*
+
 **Connector identification:** The GEA 71S has two receptacles — **J701** and **J702**. The harness plugs that mate to them are **P701** and **P702**. All voltage-related pins (Pin 20 (POWER GROUND), Pin 35 (AIRCRAFT POWER), Pin 44 (ANALOG IN 4 HI), Pin 45 (ANALOG IN 4 LO), Pin 46 (ANALOG IN 5 HI), Pin 47 (ANALOG IN 5 LO)) are on the **P701 / J701** connector. When testing, look for the harness plug labeled **P701** on the instrument panel shelf behind the GEA unit. The AMM schematic splits P701 across multiple drawing sections for clarity, but physically it is one connector.
 
 Both voltage channels share the same ground reference (Pin 20 (POWER GROUND) / Pin 45 (ANALOG IN 4 LO) → wire 77016A22N → **GS-IP-14**). A high-resistance ground shifts **both** readings down equally.
 
 ### Why Only the G1000 Reads Low
 
-The GEA 71S grounds through **GS-IP-14** (power ground Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N), which routes through the instrument panel bus bar, IP frame, and fuselage structure to reach the battery negative terminal. Every joint in that chain adds potential resistance.
+The GEA 71S grounds through **GS-IP-14** (power ground Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N), which must return to the battery negative terminal through the instrument panel ground bus bar, IP frame structure, and fuselage. The exact routing from the GS-IP bus bar to battery negative is not shown on the AMM CH.92 wiring schematics (see [Documentation Status](#documentation-status) below) — but current must complete this circuit, and every joint in the chain adds potential resistance.
 
 The ECU (located under the pilot's seat) grounds through the **GS-RP** (Ground Stud — Relay Panel) studs, which use a separate ground path to battery negative. The ECU reads correctly — its ground path doesn't share the instrument panel's bus bar, frame bonds, or GS-IP studs.
 
 ```
 GEA 71S → GS-IP studs → IP bus bar → IP frame → fuselage → battery negative  (reads low)
+          ^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          documented     inferred — not on AMM CH.92 schematics
 
 ECU     → GS-RP studs → separate ground path → battery negative            (reads correctly)
 ```
@@ -308,7 +312,7 @@ When you have the GEA 71S connector P701 in hand, these are the pins relevant to
 
 ### Ground Bus Bar
 
-The GS-IP studs connect to a ground bus bar mounted on the instrument panel frame. Check:
+The GS-IP studs connect to a ground bus bar mounted on the instrument panel frame. The bus bar and its connection to the IP frame are not shown on the AMM CH.92 wiring schematics but are standard aircraft construction — visually confirm when panels are open. Check:
 - Bus bar mounting bolts tight
 - Clean metal-to-metal contact between bus bar and IP frame
 - No cracks in the bus bar
@@ -319,6 +323,22 @@ The instrument panel frame connects to the fuselage structure. Check:
 - Bonding strap present and tight (if required by AMM)
 - No paint between bonding surfaces
 - Metal-to-metal contact confirmed
+
+### Documentation Status
+
+The ground return path described in this guide has two levels of documentation:
+
+| Path Segment | Source | Status |
+|---|---|---|
+| GEA 71S pins → wire 77016A22N → **GS-IP-14** | AMM CH.92, D44-9231-60-03 (pages 1908-1912) | **Documented on schematic** |
+| All G1000 LRU ground pins → GS-IP studs | AMM CH.92, D44-9231-60-03 (pages 1908-1912) | **Documented on schematic** |
+| GS-IP vs GS-RP ground stud groups (separate paths) | AMM CH.92, D44-9224-30-01X03 | **Documented on schematic** |
+| GS-IP studs → IP ground bus bar | Implied by schematic layout and naming | **Inferred** — not explicitly traced |
+| IP ground bus bar → IP frame → fuselage → battery negative | Standard aircraft grounding practice | **Inferred** — not on any AMM schematic we have |
+
+The CH.92 wiring diagrams show the ground symbol at the GS-IP studs and stop there — they do not trace the structural return path from the instrument panel back to the battery negative terminal. The AMM chapters that would document the bonding and structural ground path (CH.51/52 Structures, CH.71 Power Plant) have not been extracted for this project.
+
+**This does not weaken the diagnosis or the test procedure.** The end-to-end resistance measurement (Test 1) measures the actual resistance from GEA Pin 20 (POWER GROUND) to battery negative regardless of how the path is routed. Tests 2–5 then segment that path to isolate where the resistance is. The measurements will find the problem whether or not we have a schematic showing every joint.
 
 ## How to Test
 
@@ -338,7 +358,7 @@ When the **ESS BUS switch** is activated, the Essential Bus is fed directly from
 Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (ANALOG IN 5 HI)
 ```
 
-**Critically, the ground path does not change either way** — the GEA 71S ground pins (Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO)) still return through the GS-IP studs → bus bar → fuselage → battery negative.
+**Critically, the ground path does not change either way** — the GEA 71S ground pins (Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO)) still return through the GS-IP studs → structural ground path → battery negative.
 
 **Procedure:**
 1. Avionics powered and G1000 running. Engine running is preferred (alternator charging ~28V, higher current loads make the offset more pronounced) but not required — the offset is visible on battery alone (~25V range, lighter loads). Either way answers the question.
