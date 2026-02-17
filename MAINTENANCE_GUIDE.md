@@ -330,13 +330,15 @@ Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (sense)
 
 **Interpreting results:**
 
-| Result | What It Means |
-|--------|---------------|
-| **Voltage stays the same (still reads low)** | **Ground path confirmed** — the power source changed but the reading didn't, so the drop is on the ground side. Proceed to resistance measurements at GS-IP-14. |
-| Voltage improves noticeably (reads closer to 28V) | Some resistance is in the power path (Main Bus relay contacts, Main Tie breaker, Essential Tie Relay) |
-| Voltage improves partially | Both the power path and ground path contribute resistance |
+| Result | What It Means | Where to Look |
+|--------|---------------|---------------|
+| **Voltage stays the same (still reads low)** | **Ground path confirmed** — the power source changed but the reading didn't, so the drop is on the ground side. | GS-IP-14 ground stud, GEA P701 ground pins, IP bus bar, IP-to-fuselage bond. Proceed to resistance measurements below. |
+| Voltage improves noticeably (reads closer to 28V) | **Power path resistance** — the normal Main Bus → Essential Bus path has degraded contacts. The bypassed components carry all Essential Bus current, so even modest contact resistance produces a measurable drop. | **Essential Tie Relay contacts**, **Main Tie 30A breaker contacts**, **Power Relay contacts**, Main Bus bar connections. Inspect relay contact surfaces for pitting/corrosion. Check breaker resistance (should be < 0.005 Ω across contacts). |
+| Voltage improves partially | **Both paths contribute** — resistance on the power side AND the ground side. | Inspect both: relay/breaker contacts in the power path, AND GS-IP ground studs and GEA connector pins. |
 
-Based on all prior analysis (ECU and VDL48 both read correctly, variable offset with load, elevated noise), we expect the reading to **stay low** — confirming the ground path.
+Both the ECU and VDL48 bypass the Main Bus → Essential Bus path entirely (ECU is on ECU BUS from Battery Bus 2; VDL48 is on HOT BUS direct from battery), which is why both read higher regardless of whether the problem is power-side or ground-side.
+
+Based on all prior analysis (variable offset with load, elevated noise, worse under vibration), we expect the reading to **stay low** — confirming the ground path. But this test removes the guesswork.
 
 ### Resistance Measurements
 
