@@ -78,7 +78,7 @@ The offset exists on the ground with battery only. This rules out the alternator
 
 The ground path drops ~1.4V regardless of battery condition. But the higher the starting bus voltage, the more headroom the G1000 has before hitting the 25V LOW VOLTS threshold. A fully charged battery with alternator running keeps the bus at ~28V, so the G1000 reads ~26.6V — above the threshold most of the time. If the battery is weak or undercharged, the bus sits lower and the G1000 dips below 25V more easily.
 
-The owner installed a **BatteryMinder** trickle charger and keeps the battery fully maintained between flights. This maximizes voltage headroom and keeps the G1000 reading within operational margins most of the time — but it's a workaround, not a fix. HIGH-current transient loads (radio TX, autopilot servos, flaps) still cause dips that break through even that margin, which is what triggers the LOW VOLTS annunciations seen in the FlySto screenshots above.
+A **BatteryMinder** trickle charger and keeps the battery fully maintained between flights. This maximizes voltage headroom and keeps the G1000 reading within operational margins most of the time — but it's a workaround, not a fix. HIGH-current transient loads (radio TX, autopilot servos, flaps) still cause dips that break through even that margin, which is what triggers the LOW VOLTS annunciations seen in the FlySto screenshots above.
 
 ## When It Started and How It's Getting Worse
 
@@ -393,8 +393,8 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 |-----------|---------|
 | AMM 24-60-00 | Bus structure, power distribution, troubleshooting table |
 | AMM 31-40-00, p.985-986 | GEA 71S location (instrument panel shelf), Figure 6 |
-| AMM CH.92, D44-9224-30-01 through -05 | Electrical system wiring diagrams (power distribution) |
-| AMM CH.92, D44-9231-60-03_01 | G1000 NXi wiring diagrams (Sheets 2-6, pages 1908-1912) |
+| AMM CH.92, D44-9224-30-01 through -05 | Electrical system wiring diagrams (power distribution): [p1857](docs/AMM_p1857_D44-9224-30-01_Electrical_System.png) · [p1858](docs/AMM_p1858_D44-9224-30-01_02_Electrical_System_Wiring.png) · [p1859](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png) · [p1861](docs/AMM_p1861_D44-9224-30-05_Second_Alternator.png) |
+| AMM CH.92, D44-9231-60-03_01 | G1000 NXi wiring diagrams (Sheets 2-6): [p1908](docs/AMM_p1908_G1000_wiring.png) · [p1909](docs/AMM_p1909_G1000_wiring.png) · [p1910](docs/AMM_p1910_G1000_wiring.png) · [p1911](docs/AMM_p1911_G1000_wiring.png) · [p1912](docs/AMM_p1912_G1000_wiring.png) |
 | AMM CH.31 | GDU 1050/1060 connector pinouts |
 | AMM CH.34 | GIA 63W connector pinouts |
 | AMM CH.23 | GMA, GTX, GDL connector pinouts |
