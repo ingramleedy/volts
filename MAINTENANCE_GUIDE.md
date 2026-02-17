@@ -57,7 +57,7 @@ The VDL48 and ECU agree — the bus voltage is normal (~28V with alternator). Th
 | Data Source | Collection Method | Sample Rate | Coverage |
 |-------------|------------------|-------------|----------|
 | **G1000 NXi flight logs** | Automatically collected every flight by the **Flight Stream 510 (AirSync)** and uploaded to [FlySto.net](https://flysto.net). CSV source files downloaded from FlySto. | 1 second | **184 flights**, Jul 2023 – Feb 2026 (entire aircraft history since delivery) |
-| **AE300 ECU data logs** | Extracted from the ECU's built-in data logger via USB using **AustroView** — an open-source tool ([github.com/ingramleedy/AustroView](https://github.com/ingramleedy/AustroView)) that decrypts and parses the AE300's `.ae3` binary log files into readable CSV. The ECU records 16 channels including battery voltage (channel 808) every engine run automatically. | 1 second | **265 sessions**, Oct 2023 – Feb 2026 |
+| **AE300 ECU data logs** | Extracted from the ECU's built-in data logger via USB using **AustroView** — an open-source tool ([github.com/ingramleedy/AustroViewer](https://github.com/ingramleedy/AustroViewer)) that decrypts and parses the AE300's `.ae3` binary log files into readable CSV. The ECU records 16 channels including battery voltage (channel 808) every engine run automatically. | 1 second | **265 sessions**, Oct 2023 – Feb 2026 |
 | **VDL48 voltage logger** | Triplett VDL48 standalone data logger plugged into AUX POWER plug (HOT BUS, direct battery) | 2 seconds | **2 flights** on Feb 8, 2026 (3.5 hours flight time + 1.4 hours ground idle) |
 
 - The **G1000 logs** `volt1` — the bus voltage displayed on the PFD/MFD, measured by the GEA 71S at its power pins
