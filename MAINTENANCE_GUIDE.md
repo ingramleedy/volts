@@ -159,11 +159,7 @@ The Feb 2026 pin cleaning targeted the **GDL 69A** (SiriusXM datalink transceive
 
 ### Where the Voltage Is Actually Measured
 
-The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit), which is mounted on the **instrument panel shelf** (AMM 31-40-00, p.985, Figure 6):
-
-**GEA 71S Installation Location (AMM 31-40-00, Figure 6):**
-
-![GEA 71 / 71B Processor Installation — instrument panel shelf](docs/AMM_p986_GEA71_installation.png)
+The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit), mounted on the **instrument panel shelf** behind the MFD (AMM 31-40-00, p.985, Figure 6). It is the bottom-left unit on the shelf, accessible by removing the lower instrument panel cover.
 
 **AMM Schematic — G1000 NXi GEA 71S Wiring (D44-9231-60-03, G1000 NXi Phase I & II, Sheet 4/6):**
 
