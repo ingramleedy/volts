@@ -777,21 +777,26 @@ The 0.19V offset is within normal measurement tolerance — essentially a health
 
 ### Why GPU Power Reads Differently
 
-The EPU wiring (from D44-9224-30-01X03) reveals the explanation:
+The EPU wiring (from D44-9224-30-01X03):
 
 | EPU Pin | Wire | Gauge | Connects To |
 |---------|------|-------|-------------|
 | Positive | 24403A6 | 6 AWG | BATT BUS (through EPU RELAY) |
 | **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft fuselage — adjacent to battery) |
 
-Per AMM installation drawings (24-31, 24-40, 24-60), the **relay panel, battery, EPU plug, and battery relay are all co-located in the aft fuselage**. GS-RP ground studs and the battery B1 negative terminal are adjacent, connected by short straps. Since GS-RP and the battery negative are in the same area, the GPU does not provide a significantly shorter alternate ground path — return current from GS-IP still must travel the full length of wire 24008A4N to reach the aft area.
+**The GPU does NOT bypass the fault.** The G1000's ground path goes through GS-IP → wire 24008A4N → aft area regardless of whether battery or GPU provides the power. Per AMM installation drawings (24-31, 24-40, 24-60), GS-RP and battery B1 negative are co-located in the aft fuselage — return current from GS-IP still must travel the full length of wire 24008A4N to reach the aft area.
 
-The near-zero offset with GPU is most likely because the **fault is intermittent and currently in good contact on the ground** (no vibration, stable temperature). The shop also could not reproduce the voltage drop on a ground run (Feb 15, 2026). The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground.
+**The ECU proves the aft ground network (GS-RP ↔ battery negative) is healthy.** The AE300 ECU grounds through GS-RP and reads ~27.8V — essentially correct, matching the VDL48 reference. If the battery negative terminal were disconnected or high-resistance from GS-RP, the ECU would also read low (any resistance between battery negative and GS-RP × total return current = voltage drop seen by ALL GS-RP-grounded devices). The ECU reads correctly, so GS-RP and its connections to battery negative are not the problem.
+
+**The fault is between GS-RP and GS-IP** — specifically in wire 24008A4N, its terminations, the GS-IP bus bar connections, or the GEA 71S ground path from GS-IP-14. The GPU test does not bypass this path.
+
+The near-zero offset with GPU is most likely because the **fault is intermittent and currently in good contact on the ground** (no vibration, stable temperature). The shop also could not reproduce the voltage drop on a ground run (Feb 15, 2026). The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Aug 2025 battery test (1.5V offset) and Feb 2026 GPU test (0.19V offset) are 6 months apart — contact resistance varies over time.
 
 This test confirms:
 1. The G1000 **can read correctly** — the GEA hardware and firmware are functioning properly
 2. The offset is a **ground path issue**, not calibration
 3. The fault is **intermittent/vibration-sensitive** — reproduces in flight but not on the ground
+4. The **aft ground network (GS-RP, battery negative) is healthy** — ECU proves this; the fault is in the GS-IP path
 
 ### ESS BUS Switch Test
 
