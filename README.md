@@ -681,7 +681,7 @@ The engine was removed again in Apr–Jul 2025 for a piston crack (AD 2024-19-10
 
 The problem **did not resolve** after the second R&R. Voltage remains ~0.4 V below the pre-fault baseline and noise actually increased slightly. This **rules out the firewall pass-through connectors** as the fault location — they were reconnected during R&R #2 with no improvement.
 
-**Narrowed failure location:** The ECU (under the pilot's seat) grounds through GS-IP-3 and GS-IP-4 (per D44-9274-10-00, p1936-1937) — the same GS-IP bus bar and wire 24008A4N as the G1000 — and reads correctly. This rules out the shared ground infrastructure. The fault is isolated to the GEA 71S's own ground connection: **GS-IP-14 stud**, **wire 77016A22N**, or **GEA P701 Pin 20 contact** — all in the instrument panel area and NOT disturbed during either R&R.
+**Narrowed failure location:** The ECU (under the pilot's seat) grounds through GS-IP-3 and GS-IP-4 (per D44-9274-10-00, p1936-1937) — the same GS-IP bus bar and wire 24008A4N as the G1000 — and reads correctly. This rules out the shared ground infrastructure. Two primary suspects remain, both unique to the GEA 71S: (1) **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL terminates at an unknown ground point (generic ground symbol on schematic); since the GEA reads Pin 46 minus Pin 47, this is the voltage measurement reference; (2) **GS-IP-14 / Pin 20 (POWER GROUND)** — wire 77016A22N. Both are in the instrument panel area and were NOT disturbed during either R&R. **The physical termination of wire 31299A22BL must be traced by the shop.**
 
 ### What Changed During R&R #1 That Did NOT Happen During R&R #2?
 
@@ -788,7 +788,13 @@ The EPU wiring (from D44-9224-30-01X03):
 
 **The ECU proves the shared GS-IP ground infrastructure is healthy.** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, essentially correct. Since the ECU shares the GS-IP bus bar, wire 24008A4N, and aft ground termination with the G1000, all of that infrastructure is proven healthy.
 
-**The fault is isolated to the GEA 71S's own ground connection** — specifically GS-IP-14 (the stud where GEA Pin 20 terminates), wire 77016A22N (from P701 Pin 20 to GS-IP-14), or the P701 connector Pin 20 contact itself.
+**Two primary suspects — both unique to the GEA 71S:**
+
+1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential measurement), Pin 47 is the actual voltage reference. Any resistance at this ground directly causes a low reading.
+
+2. **GS-IP-14 / Pin 20 (POWER GROUND)** — wire 77016A22N from P701 Pin 20 to GS-IP-14. This is the GEA's power ground. If the measurement is truly differential, Pin 20 may not directly affect the reading, but could cause ADC common-mode issues if it floats too far from Pin 47.
+
+**The key unknown is where wire 31299A22BL (Pin 47) physically terminates.**
 
 The near-zero offset with GPU is most likely because the **fault is intermittent and currently in good contact on the ground** (no vibration, stable temperature). The shop also could not reproduce the voltage drop on a ground run (Feb 15, 2026). The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Aug 2025 battery test (1.5V offset) and Feb 2026 GPU test (0.19V offset) are 6 months apart — contact resistance varies over time.
 
@@ -796,7 +802,8 @@ This test confirms:
 1. The G1000 **can read correctly** — the GEA hardware and firmware are functioning properly
 2. The offset is a **ground path issue**, not calibration
 3. The fault is **intermittent/vibration-sensitive** — reproduces in flight but not on the ground
-4. The **shared GS-IP ground infrastructure is healthy** — ECU uses the same GS-IP bus bar and wire 24008A4N and reads correctly; the fault is at **GS-IP-14** specifically
+4. The **shared GS-IP ground infrastructure is healthy** — ECU uses the same GS-IP bus bar and wire 24008A4N and reads correctly
+5. The fault is at the **GEA 71S's own connections** — Pin 47 Essential Bus ground (unknown termination) or GS-IP-14 / Pin 20
 
 ### ESS BUS Switch Test
 

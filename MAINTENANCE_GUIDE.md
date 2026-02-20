@@ -90,7 +90,13 @@ The GPU does NOT bypass the fault. The G1000's ground path goes through GS-IP (G
 
 **The ECU proves the shared GS-IP ground infrastructure is healthy:** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, correct. Since the ECU shares the GS-IP bus bar, wire 24008A4N, and aft ground termination with the G1000, all of that is proven healthy.
 
-**The fault is isolated to the GEA 71S's own ground connection** — GS-IP-14 (where GEA Pin 20 terminates), wire 77016A22N, or the P701 connector Pin 20 contact.
+**Two primary suspects — both unique to the GEA 71S:**
+
+1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential), Pin 47 is the voltage measurement reference. Any resistance at this ground directly causes a low reading.
+
+2. **GS-IP-14 / Pin 20 (POWER GROUND)** — wire 77016A22N. The GEA's power ground. May affect the reading through ADC common-mode issues if it floats far from Pin 47.
+
+**The key unknown is where wire 31299A22BL (Pin 47) physically terminates. The shop must trace this wire.**
 
 The near-zero offset with GPU is most likely because the **fault is intermittent and in good contact on the ground** (no vibration, stable temperature). This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run." The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Feb 8 flight data (-1.4V average, -5.6V worst) was only 12 days earlier. The Aug 2025 battery test (1.5V offset) and Feb 2026 GPU test (0.19V offset) are 6 months apart — contact resistance varies over time.
 
@@ -187,7 +193,8 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 - The GEA 71S **senses bus voltage via a dedicated analog input** — Pin 46 (ANALOG IN 5 HI) and Pin 47 (ANALOG IN 5 LO), connected to the **Essential Bus** via shielded wires 31299A22WH/BL. A **3A fuse** protects the HI wire (31299A22WH); its physical location is not identified on the available AMM schematics. This fuse carries essentially no current (high-impedance analog input), so degraded fuse contacts would not cause the observed offset. An open fuse would produce a **0V reading**, not a low reading.
 - **GEA power:** Pin 35 (AIRCRAFT POWER) and Pin 44 (ANALOG IN 4 HI) are connected to each other on wire **77015A22**, routed through the **5A ENG INST** breaker on the **Essential Bus**. Pin 44 lets the GEA self-sense its own supply voltage.
 - **GEA power ground:** Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO) are connected to each other on wire **77016A22N** → ground stud **GS-IP-14**. Pin 49 (ANALOG/CURR MON LO) via wire **74005A22N** also to **GS-IP-14** (glow lamp circuit, probably unrelated)
-- The displayed voltage = what Pin 46 (ANALOG IN 5 HI — voltage sense) sees on the Essential Bus, relative to the GEA's ground reference at Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO). Any resistance on ground Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO), or sense low Pin 47 (ANALOG IN 5 LO) shifts the reading down
+- **The displayed voltage = Pin 46 (HI) minus Pin 47 (LO)** — a differential measurement. Pin 47 is the measurement reference. Any resistance at Pin 47's ground termination directly shifts the reading down. Pin 20 (POWER GROUND) powers the GEA unit but may not directly affect the differential reading — however, if Pin 20 floats too far from Pin 47, the ADC common-mode range can be exceeded, causing erratic readings (matching the high noise observed in the flight data).
+- **Critical unknown:** Pin 47 (wire 31299A22BL) connects to the low side of the Essential Bus, but the Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol at its termination. **The physical ground point where wire 31299A22BL terminates is unknown and must be traced by the shop.**
 
 No software calibration or correction is applied — the G1000 displays exactly what the GEA 71S hardware measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem. Adjusting the software offset would only mask the symptom — the underlying problem would remain and continue to degrade.
 
@@ -219,19 +226,29 @@ This is the master electrical system schematic for the MAM40-858 conversion (N23
 
 ### Why Only the G1000 Reads Low
 
-The GEA 71S grounds through **GS-IP-14** (power ground Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N), which returns to the battery negative terminal through the GS-IP bus bar and a dedicated **wire 24008A4N (4 AWG)** that runs through the firewall to battery B1 negative (per D44-9224-30-01X03 Sheet 1/1). Every joint in this chain adds potential resistance.
+The GEA 71S measures voltage as a **differential reading: Pin 46 (ANALOG IN 5 HI) minus Pin 47 (ANALOG IN 5 LO)**. Pin 47 is the measurement reference — it connects to the low side of the Essential Bus via wire 31299A22BL (shielded). The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol at Pin 47's termination — **the physical ground point is unknown and must be traced**.
 
-The ECU (located under the pilot's seat) grounds through **GS-IP-3 and GS-IP-4** (per AMM p1936-1937, Drawing D44-9274-10-00) — the same instrument panel ground bus as the G1000. The ECU reads correctly (~27.8V), proving the shared GS-IP bus bar, wire 24008A4N, and aft ground termination are all healthy. The fault is isolated to the GEA 71S's own ground at GS-IP-14.
+The GEA also has a power ground at **GS-IP-14** (Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N), which returns to battery negative through the GS-IP bus bar and wire 24008A4N (4 AWG).
+
+The ECU (located under the pilot's seat) grounds through **GS-IP-3 and GS-IP-4** (per AMM p1936-1937, Drawing D44-9274-10-00) — the same instrument panel ground bus as the G1000. The ECU reads correctly (~27.8V), proving the shared GS-IP bus bar, wire 24008A4N, and aft ground termination are all healthy. The fault is isolated to connections unique to the GEA 71S.
 
 ```
-GEA 71S → GS-IP-14 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1 neg  (reads LOW)
-          ^^^^^^^^
-          FAULT HERE — Pin 20/45, wire 77016A22N
-          This stud/wire is unique to the GEA 71S
+VOLTAGE MEASUREMENT PATH (differential — this is what determines the reading):
+Pin 46 (HI) ← wire 31299A22WH ← Essential Bus positive (via fuse)
+Pin 47 (LO) ← wire 31299A22BL ← Essential Bus ground (UNKNOWN termination)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                  SUSPECT #1 — trace this wire to find
+                                  where it grounds. Generic ground symbol
+                                  on schematic D44-9224-30-01X03.
 
-ECU     → GS-IP-3/4 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1 neg  (reads correctly)
+GEA POWER GROUND PATH:
+GEA 71S → GS-IP-14 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1 neg
+          ^^^^^^^^
+          SUSPECT #2 — Pin 20/45, wire 77016A22N
+
+PROVEN HEALTHY (ECU uses these and reads correctly):
+ECU     → GS-IP-3/4 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1 neg
           ^^^^^^^^^    ^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-          THESE are shared with the GEA and proven healthy by ECU data
           D44-9274-10-00 (p1936-1937)   D44-9224-30-01X03
 ```
 
@@ -258,10 +275,12 @@ This means the G1000 has no way to cross-check the GEA's voltage reading against
 The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf** (AMM 31-40-00, p.985). Its harness connector **P701** (mates to receptacle **J701** on the unit) and ground stud **GS-IP-14** are in this area. The GEA also has a second connector pair (**P702 / J702**) but the voltage-related pins are all on P701.
 
 **Inspect:**
-- **GEA 71S harness plug P701** — is it fully seated with lock engaged on the J701 receptacle? This connector carries all voltage measurement pins. Check Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO), and Pin 35 (AIRCRAFT POWER) specifically.
+- **TRACE wire 31299A22BL (Pin 47, ANALOG IN 5 LO)** — this is the voltage sense reference wire. Per the G1000 wiring diagram (D44-9231-60-03), it connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol. **Find where this wire physically terminates** — that ground connection is the #1 suspect. Check for loose connection, corrosion, or paint under the ring terminal at the termination point.
+- **GEA 71S harness plug P701** — is it fully seated with lock engaged on the J701 receptacle? Check Pin 47 (ANALOG IN 5 LO), Pin 46 (ANALOG IN 5 HI), Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO), and Pin 35 (AIRCRAFT POWER) specifically.
 - **Ground stud GS-IP-14** — this is where the GEA 71S power ground wires (Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N) terminate. Check for loose nut, corrosion, or paint under the ring terminals.
-- All GS-IP ground studs on the IP bus bar (see table below)
 - Look for anything that appears disturbed, loose, or not fully reconnected
+
+**Note:** The ECU (under the pilot's seat) grounds through GS-IP-3 and GS-IP-4 and reads correctly, so the shared GS-IP bus bar, wire 24008A4N, and other GS-IP studs are proven healthy. Focus on the GEA-specific connections above.
 
 ### Ground Stud Locations (GS-IP Series)
 
@@ -269,7 +288,8 @@ All G1000 components ground to the **GS-IP** group. These are the specific studs
 
 | Ground Stud | What's Connected | Priority |
 |-------------|-----------------|----------|
-| **GS-IP-14** | **GEA 71S Pin 20 (POWER GROUND) + Pin 45 (ANALOG IN 4 LO)** (both wire 77016A22N) + Pin 49 (ANALOG/CURR MON LO) glow lamp (wire 74005A22N) | **CHECK FIRST** — the voltage sensor's power ground (all GEA ground pins terminate here) |
+| **Pin 47 ground** | **GEA Pin 47 (ANALOG IN 5 LO)** — wire 31299A22BL → Essential Bus ground (unknown physical termination) | **TRACE AND CHECK FIRST** — this is the voltage measurement reference (GEA reads Pin 46 minus Pin 47). Where this wire terminates is the #1 suspect. |
+| **GS-IP-14** | **GEA 71S Pin 20 (POWER GROUND) + Pin 45 (ANALOG IN 4 LO)** (both wire 77016A22N) + Pin 49 (ANALOG/CURR MON LO) glow lamp (wire 74005A22N) | **CHECK SECOND** — the voltage sensor's power ground (all GEA power ground pins terminate here) |
 | **GS IP-6 (Ground Stud - Instrument Panel #6)** | GIA 63W #1 (wire 23011A20N, 20 AWG) + GIA 63W #2 (wire 23001A20N, 20 AWG) | **CHECK SECOND** — both avionics computers share this one stud |
 | **GS IP-4 (Ground Stud - Instrument Panel #4)** | GDU 1050 PFD + GDU 1060 MFD + GMA 1360 Audio + COM 1 | Check third — most heavily loaded stud (4 LRUs) but not the voltage sensor ground |
 | **GS IP-5 (Ground Stud - Instrument Panel #5)** | GRS 79 AHRS #1 + AHRS #2 (via GS AVB bus bar) | Check fourth |
@@ -311,7 +331,7 @@ When you have the GEA 71S connector P701 in hand, these are the pins relevant to
 | Pin | Function | Wire (from AMM CH.92) | Where It Goes | Why It Matters |
 |-----|----------|-----------------------|---------------|----------------|
 | **46** | **ANALOG IN 5 HI** | **31299A22WH** (shielded) | **Essential Bus via 3A fuse (HI)** | **Voltage sense high — what's being measured.** A 3A fuse protects this wire. If the fuse were open, the reading would be **0 volts** (no signal), not a low reading — so the fuse is not the cause of our ~1.4V offset. The fuse location is not shown on the AMM schematic. |
-| **47** | **ANALOG IN 5 LO** | **31299A22BL** (shielded) | **BUS VOLTS ESSENTIAL BUS (LO)** | **Voltage sense low — reference for the measurement** |
+| **47** | **ANALOG IN 5 LO** | **31299A22BL** (shielded) | **Essential Bus ground (LO)** | **PRIMARY SUSPECT — Voltage sense low / measurement reference. The GEA reads Pin 46 minus Pin 47, so this pin's ground connection directly determines the reading. Per G1000 wiring diagram (D44-9231-60-03), connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows a generic ground symbol — the physical termination point is unknown. TRACE THIS WIRE to find where it grounds.** |
 | **44** | **ANALOG IN 4 HI** | **77015A22** (tied to Pin 35 (AIRCRAFT POWER)) | **GEA power supply** (same wire as AIRCRAFT POWER) | **Measures GEA's own supply voltage (Essential Bus)** |
 | **45** | **ANALOG IN 4 LO** | **77016A22N** (tied to Pin 20 (POWER GROUND)) | **GS-IP-14** (ground) | **GEA ground pin — same wire as Pin 20 (POWER GROUND), shares ground path** |
 | **35** | **AIRCRAFT POWER 1** | **77015A22** | **Essential Bus via ENG INST 5A** | **GEA power supply — affects internal voltage reference** |
