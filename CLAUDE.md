@@ -215,12 +215,18 @@ Static ground test performed after Jul 2025 annual (new battery, VR previously r
 - Premier mechanic Raymond independently confirmed variance from cigarette lighter connector
 - FlySto LOW VOLTS events: 18s, 85s, 5s below 25V during landing/taxi phases
 
-### Feb 20, 2026 (GPU (Ground Power Unit) Power)
-Ground test with external GPU connected through EPU plug (AN2551):
-- **AUX POWER PLUG (HOT BUS):** Meter reads 28.79V
-- **G1000 display:** 28.6V → **only 0.19V offset**
-- This is within normal measurement tolerance and expected voltage drop from HOT BUS → Essential Bus through relay/breaker contacts
-- **Dramatic improvement** vs Aug 2025 battery test (1.5V offset) and in-flight data (1.4V average offset)
+### Feb 20, 2026 (Battery vs GPU — Same Session)
+Two back-to-back tests on the same day, same ground conditions:
+
+| Condition | Meter at AUX POWER | G1000 Display | Offset |
+|-----------|-------------------|---------------|--------|
+| **Battery only**, G1000 on, no engine | **25.3V** | **24.0V** | **-1.3V** |
+| **GPU connected**, G1000 on | **28.79V** | **28.6V** | **-0.19V** |
+
+- Same aircraft, same day — the only variable is battery vs GPU power source
+- The 1.3V offset is present on battery and gone on GPU in the same session — eliminates any intermittency argument
+- The **24.0V G1000 reading on battery** is right at the LOW VOLTS threshold (24V per Garmin G1000 System Maintenance Manual) — any additional load triggers the annunciation
+- The Aug 2025 battery-only test showed similar offset (23.7V vs 25.2V = -1.5V), confirming persistent condition
 
 **Why the GPU test reads nearly correctly — the GPU may bypass the fault at Pin 47's ground:** The EPU (External Power Unit) negative cable connects to **GS-RP (Ground Stud - Relay Panel)** via wire 24405A6N (6 AWG), providing a second current sink in the aft fuselage. If Pin 47's Essential Bus ground (wire 31299A22BL) terminates at a structural/airframe ground point (consistent with the generic ground symbol on D44-9224-30-01X03), that point may have a **lower-impedance path to GS-RP through the airframe** than to battery negative through the degraded connection. The GPU at GS-RP effectively "pulls down" Pin 47's ground reference to the correct potential, and the GEA reads correctly.
 

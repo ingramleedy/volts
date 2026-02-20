@@ -87,13 +87,18 @@ All three sources were time-aligned and compared using paired statistical analys
 
 The offset exists on the ground with battery only. This rules out the alternator, voltage regulator, and charging system entirely.
 
-### Ground Test (Feb 20, 2026 — GPU (Ground Power Unit) power, no engine)
+### Ground Tests (Feb 20, 2026 — battery vs GPU, same session)
+
+Two tests performed back-to-back on the same day, same conditions:
 
 | Condition | Meter at AUX POWER | G1000 Display | Difference |
 |-----------|-------------------|---------------|------------|
-| GPU connected, G1000 on | **28.79V** | **28.6V** | **-0.19V** |
+| Battery only, G1000 on, no engine | **25.3V** | **24.0V** | **-1.3V** |
+| GPU (Ground Power Unit) connected, G1000 on | **28.79V** | **28.6V** | **-0.19V** |
 
-Only **0.19V offset** — within normal measurement tolerance. Compare to 1.5V offset with battery (Aug 2025) and 1.4V average in flight.
+**Same aircraft, same day, same ground conditions** — the only variable is battery vs GPU power source. The 1.3V offset is present on battery and gone on GPU in the same session. This eliminates any argument about intermittency or contact resistance changing over time.
+
+The **24.0V G1000 reading on battery** is right at the LOW VOLTS annunciation threshold (24V per the Garmin G1000 System Maintenance Manual). Any additional electrical load would push it below threshold and trigger the annunciation — which is exactly what happens in flight.
 
 **Why the GPU test reads nearly correctly — and why it does NOT point to the battery negative terminal:**
 

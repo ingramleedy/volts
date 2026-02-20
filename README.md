@@ -777,15 +777,18 @@ The voltage measurement path was investigated through the GEA 71B (Engine/Airfra
 - The underlying high-resistance ground connection would continue to degrade, potentially causing other issues (noise on signal grounds, erratic sensor readings)
 - The correct fix is to repair the ground path so that `m=1.0, b=0.0` reads correctly
 
-## GPU (Ground Power Unit) Ground Test (February 20, 2026)
+## Ground Tests (February 20, 2026 — Battery vs GPU, Same Session)
 
-A follow-up ground test was conducted with an external GPU connected through the EPU (External Power Unit) plug (AN2551).
+Two back-to-back tests were performed on the same day under identical ground conditions. The only variable was the power source: battery vs external GPU (Ground Power Unit) through the EPU (External Power Unit) plug (AN2551).
 
 | Condition | Meter at AUX POWER | G1000 Display | Offset |
 |-----------|-------------------|---------------|--------|
+| **Battery only**, G1000 on, no engine | **25.3V** | **24.0V** | **-1.3V** |
 | **GPU connected**, G1000 on | **28.79V** | **28.6V** | **-0.19V** |
 
-The 0.19V offset is within normal measurement tolerance — essentially a healthy reading. This is a dramatic improvement vs the **1.5V offset with battery** (Aug 2025) and **1.4V average in flight**.
+**Same aircraft, same day, same ground conditions** — the 1.3V offset is present on battery and essentially gone on GPU. This eliminates any argument about intermittency or contact resistance changing over time; the fault is consistently present on battery power and consistently absent on GPU power.
+
+The **24.0V G1000 reading on battery** sits right at the LOW VOLTS annunciation threshold (24V per the Garmin G1000 System Maintenance Manual). Any additional electrical load would trigger the annunciation — which is exactly what happens in flight. The Aug 2025 battery-only test showed a similar offset (23.7V displayed vs 25.2V actual = -1.5V), confirming this is a persistent condition.
 
 ### Why GPU Power Reads Differently
 
