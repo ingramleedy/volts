@@ -182,7 +182,7 @@ flowchart BT
     style STARTGND fill:#2d8659,color:#fff
 ```
 
-The relay panel and engine compartment components (battery, alternator, starter, ECU) use separate **GS-RP (Ground Stud - Relay Panel) ground studs** that return directly to battery negative, bypassing the instrument panel ground bus entirely. This is why only the G1000 reads low.
+The relay panel and engine compartment components (battery, alternator, starter) use separate **GS-RP (Ground Stud - Relay Panel) ground studs** that return directly to battery negative. However, the **ECU (located under the pilot's seat) grounds to GS-IP-3 and GS-IP-4** (per AMM p1936-1937, Drawing D44-9274-10-00) — the same instrument panel ground bus as the G1000. The ECU reads correctly, which proves the shared GS-IP infrastructure (bus bar, wire 24008A4N) is healthy. The fault is isolated to the GEA 71S's own ground at **GS-IP-14**.
 
 ### Why Three Instruments Disagree
 
@@ -190,7 +190,7 @@ The relay panel and engine compartment components (battery, alternator, starter,
 flowchart LR
     BUS["Actual Bus Voltage\n~28.3V"]
     BUS --> VDL["VDL48\nHOT BUS + good ground\nReads: 28.3V"]
-    BUS --> ECU["ECU\nECU BUS + GS-RP ground\nReads: 28.3V"]
+    BUS --> ECU["ECU\nECU BUS + GS-IP-3/4 ground\nReads: 28.3V"]
     BUS --> G1000["G1000\nAVIONIC BUS + GS-IP ground\nReads: 26.9V"]
     G1000 ---|"V_drop = I x R_ground"| BADGND["High-R Ground\n~0.05 ohms"]
 
@@ -573,7 +573,7 @@ The oil leak repair during R&R #1 required accessing the cylinder head cover (to
 | **P2208 connector area** | Wire terminal repaired Jun 2024 — check quality of repair | Visual + milliohm: repaired terminal resistance | < 0.010 Ω |
 | **GEA 71 sensor wire pass-throughs** | Sensor wires from engine to GEA 71 behind IP pass through firewall | Visual: seals intact, no chafing at firewall | No damage |
 
-**Why check here even though ECU reads correctly:** The ECU's GS-RP ground path is a *different* ground path than the G1000's GS-IP path. The GS-IP return uses a dedicated **wire 24008A4N (4 AWG)** that runs from the instrument panel through the firewall to battery B1 negative (per D44-9224-30-01X03). GS-RP uses separate short ground straps in the engine compartment. The **battery negative terminal** is where wire 24008A4N terminates alongside the GS-RP connections — if 24008A4N's ring terminal is loose, corroded, or buried under other terminals, it would increase resistance in the GS-IP return while leaving GS-RP unaffected.
+**Note on ECU ground path:** The ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** (per AMM p1936-1937, D44-9274-10-00) — the same instrument panel ground bus as the G1000. Since the ECU reads correctly, the shared GS-IP bus bar, wire 24008A4N, and aft termination are proven healthy. Engine compartment ground straps and harness routing are still worth inspecting as they may affect the power side or other connections, but the ECU data rules out wire 24008A4N and the GS-IP bus bar as the fault location.
 
 **Visual inspection checklist:**
 - [ ] All engine ground straps clean, tight, correct torque per AMM
@@ -585,7 +585,7 @@ The oil leak repair during R&R #1 required accessing the cylinder head cover (to
 
 #### RELAY PANEL / FUSE PANEL (Low Priority — Comparison Reference)
 
-The relay panel houses GS-RP ground studs and the power distribution relays. The ECU grounds through GS-RP and reads correctly, so this area is unlikely to be the fault location. However, the Avionic Relay (which powers the AVIONIC BUS that feeds the G1000) lives here and could affect the power side.
+The relay panel houses GS-RP ground studs and the power distribution relays. The Avionic Relay (which powers the AVIONIC BUS that feeds the G1000) lives here and could affect the power side.
 
 | Item | What to Check | Test Method | Pass Criteria |
 |---|---|---|---|
@@ -681,7 +681,7 @@ The engine was removed again in Apr–Jul 2025 for a piston crack (AD 2024-19-10
 
 The problem **did not resolve** after the second R&R. Voltage remains ~0.4 V below the pre-fault baseline and noise actually increased slightly. This **rules out the firewall pass-through connectors** as the fault location — they were reconnected during R&R #2 with no improvement.
 
-**Narrowed failure location:** The GS-IP ground return uses a dedicated wire 24008A4N (4 AWG) from the GS-IP bus bar to battery B1 negative (per D44-9224-30-01X03). Since R&R #2 disturbed the battery terminal end but did not fix the problem, the most likely failure points are at the **GS-IP bus bar end** of wire 24008A4N, the **GS-IP-14 stud**, or the **GEA P701 connector** — all of which are in the instrument panel and were NOT disturbed during either R&R. The battery negative terminal should still be inspected (it may have been improperly reconnected during both R&Rs).
+**Narrowed failure location:** The ECU (under the pilot's seat) grounds through GS-IP-3 and GS-IP-4 (per D44-9274-10-00, p1936-1937) — the same GS-IP bus bar and wire 24008A4N as the G1000 — and reads correctly. This rules out the shared ground infrastructure. The fault is isolated to the GEA 71S's own ground connection: **GS-IP-14 stud**, **wire 77016A22N**, or **GEA P701 Pin 20 contact** — all in the instrument panel area and NOT disturbed during either R&R.
 
 ### What Changed During R&R #1 That Did NOT Happen During R&R #2?
 
@@ -704,7 +704,7 @@ The Pettitt change-point test pinpoints February 2024 with extremely high statis
 
 **Analysis:** The oil leak repair required specific engine compartment access (cylinder head cover, oil sump) that the piston replacement did not. Any wiring, harness routing, or ground connections disturbed specifically for oil leak access would NOT have been re-done during R&R #2. Additionally, the subsequent cascade of troubleshooting repairs after R&R #1 (3 voltage regulators, 2 alternators, P2413 repinning, P2208 wire repair) each involved further work in the engine compartment and behind the instrument panel, potentially worsening a marginal connection.
 
-**Key constraint — the ECU test:** The ECU grounds through GS-RP (relay panel / engine compartment side) and reads correctly throughout the entire period. This means the GS-RP ground studs and engine compartment ground straps have good connections. The G1000's ground path uses a separate **dedicated wire 24008A4N (4 AWG)** from the GS-IP bus bar through the firewall to battery B1 negative (per D44-9224-30-01X03). This wire's terminal at the battery negative is disturbed during every engine R&R, but since R&R #2 did not fix the problem, the fault is more likely at the **GS-IP bus bar end** of this wire or at the **GS-IP-14 stud** — both of which are in the instrument panel and were NOT disturbed during either R&R.
+**Key constraint — the ECU test:** The ECU (under the pilot's seat) grounds through **GS-IP-3 and GS-IP-4** (per AMM p1936-1937, D44-9274-10-00) and reads correctly throughout the entire period. Since the ECU shares the GS-IP bus bar, wire 24008A4N, and aft ground termination with the G1000 — and reads correctly — all of that shared infrastructure is proven healthy. The fault is isolated to the GEA 71S's own ground connection at **GS-IP-14** (wire 77016A22N, P701 Pin 20), which was NOT disturbed during either R&R.
 
 **Bottom line:** The fault was most likely introduced as **collateral damage during the R&R #1 maintenance window** — most likely at the GS-IP bus bar or stud connections behind the instrument panel. The battery negative terminal of wire 24008A4N should also be inspected (it was reconnected during both R&Rs — possibly improperly each time). The compartment-by-compartment inspection below covers all possibilities.
 
@@ -786,9 +786,9 @@ The EPU wiring (from D44-9224-30-01X03):
 
 **The GPU does NOT bypass the fault.** The G1000's ground path goes through GS-IP → wire 24008A4N → aft area regardless of whether battery or GPU provides the power. Per AMM installation drawings (24-31, 24-40, 24-60), GS-RP and battery B1 negative are co-located in the aft fuselage — return current from GS-IP still must travel the full length of wire 24008A4N to reach the aft area.
 
-**The ECU proves the aft ground network (GS-RP ↔ battery negative) is healthy.** The AE300 ECU grounds through GS-RP and reads ~27.8V — essentially correct, matching the VDL48 reference. If the battery negative terminal were disconnected or high-resistance from GS-RP, the ECU would also read low (any resistance between battery negative and GS-RP × total return current = voltage drop seen by ALL GS-RP-grounded devices). The ECU reads correctly, so GS-RP and its connections to battery negative are not the problem.
+**The ECU proves the shared GS-IP ground infrastructure is healthy.** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, essentially correct. Since the ECU shares the GS-IP bus bar, wire 24008A4N, and aft ground termination with the G1000, all of that infrastructure is proven healthy.
 
-**The fault is between GS-RP and GS-IP** — specifically in wire 24008A4N, its terminations, the GS-IP bus bar connections, or the GEA 71S ground path from GS-IP-14. The GPU test does not bypass this path.
+**The fault is isolated to the GEA 71S's own ground connection** — specifically GS-IP-14 (the stud where GEA Pin 20 terminates), wire 77016A22N (from P701 Pin 20 to GS-IP-14), or the P701 connector Pin 20 contact itself.
 
 The near-zero offset with GPU is most likely because the **fault is intermittent and currently in good contact on the ground** (no vibration, stable temperature). The shop also could not reproduce the voltage drop on a ground run (Feb 15, 2026). The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Aug 2025 battery test (1.5V offset) and Feb 2026 GPU test (0.19V offset) are 6 months apart — contact resistance varies over time.
 
@@ -796,7 +796,7 @@ This test confirms:
 1. The G1000 **can read correctly** — the GEA hardware and firmware are functioning properly
 2. The offset is a **ground path issue**, not calibration
 3. The fault is **intermittent/vibration-sensitive** — reproduces in flight but not on the ground
-4. The **aft ground network (GS-RP, battery negative) is healthy** — ECU proves this; the fault is in the GS-IP path
+4. The **shared GS-IP ground infrastructure is healthy** — ECU uses the same GS-IP bus bar and wire 24008A4N and reads correctly; the fault is at **GS-IP-14** specifically
 
 ### ESS BUS Switch Test
 

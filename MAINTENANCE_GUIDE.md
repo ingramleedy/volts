@@ -63,7 +63,7 @@ The VDL48 and ECU agree — the bus voltage is normal (~28V with alternator). Th
 | **VDL48 voltage logger** | Triplett VDL48 standalone data logger plugged into AUX POWER plug (HOT BUS, direct battery) | 2 seconds | **2 flights** on Feb 8, 2026 (3.5 hours flight time + 1.4 hours ground idle) |
 
 - The **G1000 logs** `volt1` — the bus voltage displayed on the PFD/MFD, measured by the GEA 71S via its voltage sense input (Pin 46 (ANALOG IN 5 HI) / Pin 47 (ANALOG IN 5 LO)) from the Essential Bus
-- The **ECU logs** `Battery Voltage` (channel 808) — the AE300 engine computer's own battery voltage reading, measured through a separate bus (ECU BUS) and separate power ground path (GS-RP (Ground Stud - Relay Panel) studs)
+- The **ECU logs** `Battery Voltage` (channel 808) — the AE300 engine computer's own battery voltage reading, measured through a separate bus (ECU BUS) but sharing the **same instrument panel ground path** (GS-IP-3 and GS-IP-4 studs, per AMM p1936-1937, Drawing D44-9274-10-00)
 - The **VDL48** measures voltage at the AUX POWER plug on the HOT BUS — a direct connection to the battery through only a 5A fuse, no relays or breakers. This gives the cleanest reference of actual bus voltage.
 
 All three sources were time-aligned and compared using paired statistical analysis. The full analysis scripts and raw data are available in the project repository at [github.com/ingramleedy/volts](https://github.com/ingramleedy/volts).
@@ -88,9 +88,9 @@ Only **0.19V offset** — within normal measurement tolerance. Compare to 1.5V o
 
 The GPU does NOT bypass the fault. The G1000's ground path goes through GS-IP (Ground Stud - Instrument Panel) → wire 24008A4N → aft area regardless of power source. The EPU (External Power Unit) negative connects to **GS-RP** via wire 24405A6N (6 AWG), but GS-RP and battery B1 negative are co-located in the aft fuselage — return current still travels the full length of 24008A4N either way.
 
-**The ECU proves the aft ground network is healthy:** The AE300 ECU grounds through GS-RP and reads ~27.8V — correct, matching the VDL48 reference. If the battery negative terminal were disconnected or high-resistance from GS-RP, the ECU would also read low. It doesn't — so GS-RP and its connections to battery negative are not the problem.
+**The ECU proves the shared GS-IP ground infrastructure is healthy:** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, correct. Since the ECU shares the GS-IP bus bar, wire 24008A4N, and aft ground termination with the G1000, all of that is proven healthy.
 
-**The fault is between GS-RP and GS-IP** — in wire 24008A4N, its terminations, the GS-IP bus bar, or the GEA 71S ground path from GS-IP-14.
+**The fault is isolated to the GEA 71S's own ground connection** — GS-IP-14 (where GEA Pin 20 terminates), wire 77016A22N, or the P701 connector Pin 20 contact.
 
 The near-zero offset with GPU is most likely because the **fault is intermittent and in good contact on the ground** (no vibration, stable temperature). This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run." The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Feb 8 flight data (-1.4V average, -5.6V worst) was only 12 days earlier. The Aug 2025 battery test (1.5V offset) and Feb 2026 GPU test (0.19V offset) are 6 months apart — contact resistance varies over time.
 
@@ -221,15 +221,18 @@ This is the master electrical system schematic for the MAM40-858 conversion (N23
 
 The GEA 71S grounds through **GS-IP-14** (power ground Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N), which returns to the battery negative terminal through the GS-IP bus bar and a dedicated **wire 24008A4N (4 AWG)** that runs through the firewall to battery B1 negative (per D44-9224-30-01X03 Sheet 1/1). Every joint in this chain adds potential resistance.
 
-The ECU (located under the pilot's seat) grounds through the **GS-RP** studs, which use separate short ground straps in the engine compartment directly to battery negative. The ECU reads correctly — its ground path doesn't share the instrument panel's bus bar, GS-IP studs, or wire 24008A4N.
+The ECU (located under the pilot's seat) grounds through **GS-IP-3 and GS-IP-4** (per AMM p1936-1937, Drawing D44-9274-10-00) — the same instrument panel ground bus as the G1000. The ECU reads correctly (~27.8V), proving the shared GS-IP bus bar, wire 24008A4N, and aft ground termination are all healthy. The fault is isolated to the GEA 71S's own ground at GS-IP-14.
 
 ```
-GEA 71S → GS-IP-14 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1 neg  (reads low)
-          ^^^^^^^^   ^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-          Pin 20/45   all documented on AMM CH.92 schematics
-          77016A22N   D44-9231-60-03   D44-9224-30-01X03
+GEA 71S → GS-IP-14 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1 neg  (reads LOW)
+          ^^^^^^^^
+          FAULT HERE — Pin 20/45, wire 77016A22N
+          This stud/wire is unique to the GEA 71S
 
-ECU     → GS-RP studs → short ground straps → battery negative                (reads correctly)
+ECU     → GS-IP-3/4 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1 neg  (reads correctly)
+          ^^^^^^^^^    ^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          THESE are shared with the GEA and proven healthy by ECU data
+          D44-9274-10-00 (p1936-1937)   D44-9224-30-01X03
 ```
 
 ### How the Voltage Data Flows to the G1000 Displays
