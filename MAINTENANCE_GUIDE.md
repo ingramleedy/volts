@@ -76,6 +76,23 @@ All three sources were time-aligned and compared using paired statistical analys
 
 The offset exists on the ground with battery only. This rules out the alternator, voltage regulator, and charging system entirely.
 
+### Ground Test (Feb 20, 2026 — GPU power, no engine)
+
+| Condition | Meter at AUX POWER | G1000 Display | Difference |
+|-----------|-------------------|---------------|------------|
+| GPU connected, G1000 on | **28.79V** | **28.6V** | **-0.19V** |
+
+Only **0.19V offset** — within normal measurement tolerance. Compare to 1.5V offset with battery (Aug 2025) and 1.4V average in flight.
+
+**Why the GPU test reads nearly correctly:** The EPU negative cable connects to **GS-RP** (relay panel ground studs, near the firewall) via wire 24405A6N (6 AWG). The battery B1 is mounted **aft** (behind the baggage compartment). With battery power, the battery negative is the current *sink* — all return current must travel through 24008A4N to the aft battery terminal. With GPU power, the GPU negative at GS-RP (near the firewall) is the current *sink*, and return current takes the **path of least resistance**:
+
+1. 24008A4N → aft to battery negative → wire from aft back to GS-RP (long round trip, through any fault)
+2. Airframe structure from instrument panel → firewall → GS-RP (shorter path, **bypasses 24008A4N and battery terminal**)
+
+More current takes the shorter structural path, reducing the voltage drop across any fault in the wired path.
+
+This is also consistent with the intermittent nature of the fault — no vibration on the ground means the connection may currently be in good contact. The shop also could not reproduce the drop on a ground run (Feb 15, 2026).
+
 ### Why the Battery Matters (but isn't the cause)
 
 The ground path drops ~1.4V regardless of battery condition. But the higher the starting bus voltage, the more headroom the G1000 has before hitting the 25V LOW VOLTS threshold. A fully charged battery with alternator running keeps the bus at ~28V, so the G1000 reads ~26.6V — above the threshold most of the time. If the battery is weak or undercharged, the bus sits lower and the G1000 dips below 25V more easily.
@@ -187,24 +204,31 @@ At 20 amps of avionics load, just **0.05 ohms** of extra ground resistance = **1
 
 ![GEA 71S Voltage Measurement Path](output/GEA71S_voltage_path.png)
 
-*Solid lines = documented on AMM CH.92 schematics. Dashed lines = inferred path (standard aircraft grounding practice, not shown on available schematics).*
+*Solid lines = documented on AMM CH.92 schematics. The complete ground return path from GS-IP bus bar to battery B1 negative is now confirmed as wire 24008A4N (4 AWG) per D44-9224-30-01X03.*
 
 **Connector identification:** The GEA 71S has two receptacles — **J701** and **J702**. The harness plugs that mate to them are **P701** and **P702**. All voltage-related pins (Pin 20 (POWER GROUND), Pin 35 (AIRCRAFT POWER), Pin 44 (ANALOG IN 4 HI), Pin 45 (ANALOG IN 4 LO), Pin 46 (ANALOG IN 5 HI), Pin 47 (ANALOG IN 5 LO)) are on the **P701 / J701** connector. When testing, look for the harness plug labeled **P701** on the instrument panel shelf behind the GEA unit. The AMM schematic splits P701 across multiple drawing sections for clarity, but physically it is one connector.
 
 Both voltage channels share the same ground reference (Pin 20 (POWER GROUND) / Pin 45 (ANALOG IN 4 LO) → wire 77016A22N → **GS-IP-14**). A high-resistance ground shifts **both** readings down equally.
 
+### DA40 NG Electrical System Schematic (D44-9224-30-01X03, Sheet 1/1)
+
+This is the master electrical system schematic for the MAM40-858 conversion (N238PS configuration). It shows all buses, relays, battery, alternator, ground stud groups, and the critical **wire 24008A4N (4 AWG)** — the dedicated ground return from the GS-IP bus bar to battery B1 negative:
+
+![Electrical System — D44-9224-30-01X03](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png)
+
 ### Why Only the G1000 Reads Low
 
-The GEA 71S grounds through **GS-IP-14** (power ground Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N), which must return to the battery negative terminal through the instrument panel ground bus bar, IP frame structure, and fuselage. The exact routing from the GS-IP bus bar to battery negative is not shown on the AMM CH.92 wiring schematics (see [Documentation Status](#documentation-status) below) — but current must complete this circuit, and every joint in the chain adds potential resistance.
+The GEA 71S grounds through **GS-IP-14** (power ground Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N), which returns to the battery negative terminal through the GS-IP bus bar and a dedicated **wire 24008A4N (4 AWG)** that runs through the firewall to battery B1 negative (per D44-9224-30-01X03 Sheet 1/1). Every joint in this chain adds potential resistance.
 
-The ECU (located under the pilot's seat) grounds through the **GS-RP** (Ground Stud — Relay Panel) studs, which use a separate ground path to battery negative. The ECU reads correctly — its ground path doesn't share the instrument panel's bus bar, frame bonds, or GS-IP studs.
+The ECU (located under the pilot's seat) grounds through the **GS-RP** (Ground Stud — Relay Panel) studs, which use separate short ground straps in the engine compartment directly to battery negative. The ECU reads correctly — its ground path doesn't share the instrument panel's bus bar, GS-IP studs, or wire 24008A4N.
 
 ```
-GEA 71S → GS-IP studs → IP bus bar → IP frame → fuselage → battery negative  (reads low)
-          ^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-          documented     inferred — not on AMM CH.92 schematics
+GEA 71S → GS-IP-14 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1 neg  (reads low)
+          ^^^^^^^^   ^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          Pin 20/45   all documented on AMM CH.92 schematics
+          77016A22N   D44-9231-60-03   D44-9224-30-01X03
 
-ECU     → GS-RP studs → separate ground path → battery negative            (reads correctly)
+ECU     → GS-RP studs → short ground straps → battery negative                (reads correctly)
 ```
 
 ### How the Voltage Data Flows to the G1000 Displays
@@ -310,41 +334,47 @@ When you have the GEA 71S connector P701 in hand, these are the pins relevant to
 - Connector not fully seated or lock not engaged
 - Damaged strain relief (wires pulling on connector)
 
-### Ground Bus Bar
+### Ground Bus Bar and Wire 24008A4N
 
-The GS-IP studs connect to a ground bus bar mounted on the instrument panel frame. The bus bar and its connection to the IP frame are not shown on the AMM CH.92 wiring schematics but are standard aircraft construction — visually confirm when panels are open. Check:
+The GS-IP studs connect to a ground bus bar mounted on the instrument panel frame. The bus bar returns to battery B1 negative via a dedicated **wire 24008A4N (4 AWG)** that runs through the firewall to the engine compartment (per D44-9224-30-01X03 Sheet 1/1). This wire has negligible resistance — the problem will be at a **terminal connection**.
+
+**Check at the GS-IP bus bar (instrument panel end):**
+- Wire 24008A4N ring terminal tight and clean at bus bar
 - Bus bar mounting bolts tight
 - Clean metal-to-metal contact between bus bar and IP frame
 - No cracks in the bus bar
 
-### IP Frame to Fuselage Bond
+**Check at the battery negative terminal (engine compartment end):**
+- Wire 24008A4N ring terminal tight, clean, not corroded
+- Terminal not buried under other ring terminals (proper stacking order)
+- Battery post clean, all terminals properly torqued
+- Star/lock washers present
 
-The instrument panel frame connects to the fuselage structure. Check:
-- Bonding strap present and tight (if required by AMM)
-- No paint between bonding surfaces
-- Metal-to-metal contact confirmed
+**Check at the firewall pass-through:**
+- Wire 24008A4N not chafed or damaged at firewall penetration
+- Seal/grommet intact
 
 ### Documentation Status
 
-The ground return path described in this guide has two levels of documentation:
+The ground return path described in this guide is **fully documented** across two AMM CH.92 schematic drawings:
 
 | Path Segment | Source | Status |
 |---|---|---|
 | GEA 71S pins → wire 77016A22N → **GS-IP-14** | AMM CH.92, D44-9231-60-03 (pages 1908-1912) | **Documented on schematic** |
 | All G1000 LRU ground pins → GS-IP studs | AMM CH.92, D44-9231-60-03 (pages 1908-1912) | **Documented on schematic** |
 | GS-IP vs GS-RP ground stud groups (separate paths) | AMM CH.92, D44-9224-30-01X03 | **Documented on schematic** |
-| GS-IP studs → IP ground bus bar | Implied by schematic layout and naming | **Inferred** — not explicitly traced |
-| IP ground bus bar → IP frame → fuselage → battery negative | Standard aircraft grounding practice | **Inferred** — not on any AMM schematic we have |
+| GS-IP studs → GS-IP ground bus bar | Standard construction (studs mount on bus bar) | **Physical construction** |
+| **GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1 negative** | **AMM CH.92, D44-9224-30-01X03 Sheet 1/1 (p1859)** | **Documented on schematic** |
 
-The CH.92 wiring diagrams show the ground symbol at the GS-IP studs and stop there — they do not trace the structural return path from the instrument panel back to the battery negative terminal. The AMM chapters that would document the bonding and structural ground path (CH.51/52 Structures, CH.71 Power Plant) have not been extracted for this project.
-
-**This does not weaken the diagnosis or the test procedure.** The end-to-end resistance measurement (Test 1) measures the actual resistance from GEA Pin 20 (POWER GROUND) to battery negative regardless of how the path is routed. Tests 2–5 then segment that path to isolate where the resistance is. The measurements will find the problem whether or not we have a schematic showing every joint.
+The complete ground return path from any G1000 LRU to battery negative is now traceable through documented wiring: LRU ground pin → harness wire (20-22 AWG) → GS-IP stud → GS-IP bus bar → **wire 24008A4N (4 AWG)** → through firewall → Battery B1 negative terminal. This is a dedicated copper wire path, **not** structural ground through the fuselage.
 
 ## How to Test
 
-### ESS BUS Switch Test (Quick Isolation — No Tools Required)
+### ESS BUS Switch Test (Quick Isolation — Multimeter Required)
 
-This test isolates the **power path** from the **ground path** using only a cockpit switch on the ground.
+This test isolates the **power path** from the **ground path** using a cockpit switch and a multimeter on the ground.
+
+> **Why a multimeter is needed:** When the ESS BUS switch is activated, the Avionic Bus loses power and the **MFD turns off**. The PFD enters reversionary mode and displays essential engine parameters, but the **voltage reading is only shown on the MFD** — the PFD does not display it. The GEA 71S stays powered (it's on the Essential Bus), but with the MFD dark you cannot see the G1000 voltage. A multimeter on the Essential Bus provides the reference reading. Verified on N238PS, Feb 20, 2026.
 
 **Background:** The GEA 71S senses voltage from the **Essential Bus** (via Pin 46 (ANALOG IN 5 HI) / Pin 47 (ANALOG IN 5 LO)). In normal operation, the Essential Bus is fed from the Main Bus:
 
@@ -358,26 +388,28 @@ When the **ESS BUS switch** is activated, the Essential Bus is fed directly from
 Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (ANALOG IN 5 HI)
 ```
 
-**Critically, the ground path does not change either way** — the GEA 71S ground pins (Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO)) still return through the GS-IP studs → structural ground path → battery negative.
+**Critically, the ground path does not change either way** — the GEA 71S ground pins (Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO)) still return through GS-IP-14 → GS-IP bus bar → wire 24008A4N (4 AWG) → battery B1 negative.
 
 **Procedure:**
-1. Avionics powered and G1000 running. Engine running is preferred (alternator charging ~28V, higher current loads make the offset more pronounced) but not required — the offset is visible on battery alone (~25V range, lighter loads). Either way answers the question.
-2. Note the G1000 voltage reading on the MFD
-3. Flip the **ESS BUS switch** ON
-4. Observe the G1000 voltage reading for 30–60 seconds
-5. Return the ESS BUS switch to normal
+1. Connect a multimeter (DC volts) to the Essential Bus (e.g., at the ENG INST breaker output or any accessible Essential Bus point)
+2. Avionics powered and G1000 running. Engine running is preferred (alternator charging ~28V, higher current loads make the offset more pronounced) but not required — the offset is visible on battery alone (~25V range, lighter loads). Either way answers the question.
+3. Note the G1000 voltage reading on the MFD **and** the multimeter reading. The difference between these two is the baseline offset.
+4. Flip the **ESS BUS switch** ON — the MFD will turn off and the PFD will enter reversionary mode (engine parameters move to PFD, but no voltage display)
+5. Read the **multimeter** voltage for 30–60 seconds. Compare to the multimeter reading from step 3.
+6. Return the ESS BUS switch to normal. Confirm the MFD powers back on and the G1000 voltage reading returns.
 
-**Interpreting results:**
+**Interpreting results:** Compare the multimeter reading from step 5 (ESS switch ON) to step 3 (normal operation).
 
 | Result | What It Means | Where to Look |
 |--------|---------------|---------------|
-| **Voltage stays the same (still reads low)** | **Ground path confirmed** — the power source changed but the reading didn't, so the drop is on the ground side. | **GS-IP-14** ground stud, GEA P701 ground pins (Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO)), IP bus bar, IP-to-fuselage bond. Proceed to resistance measurements below. |
-| Voltage improves noticeably (reads closer to 28V) | **Power path resistance** — the normal Main Bus → Essential Bus path has degraded contacts. The bypassed components carry all Essential Bus current, so even modest contact resistance produces a measurable drop. | **Essential Tie Relay contacts**, **Main Tie 30A breaker contacts**, **Power Relay contacts**, Main Bus bar connections. Inspect relay contact surfaces for pitting/corrosion. Check breaker resistance (should be < 0.005 Ω across contacts). |
-| Voltage improves partially | **Both paths contribute** — resistance on the power side AND the ground side. | Inspect both: relay/breaker contacts in the power path, AND GS-IP ground studs and GEA connector pins. |
+| **Multimeter reading stays the same** | **The Essential Bus voltage is the same regardless of power source.** The power path (Main Bus → Essential Bus) is fine. Combined with the known G1000 offset from step 3, this **confirms the ground path** as the problem. | **GS-IP-14** ground stud, GEA P701 ground pins (Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO)), IP bus bar. Proceed to resistance measurements below. |
+| Multimeter reading changes noticeably | **Power path resistance** — the normal Main Bus → Essential Bus path has degraded contacts. The ESS switch bypasses those components, and the bus voltage changes as a result. | **Essential Tie Relay contacts**, **Main Tie 30A breaker contacts**, **Power Relay contacts**, Main Bus bar connections. Inspect relay contact surfaces for pitting/corrosion. Check breaker resistance (should be < 0.005 Ω across contacts). |
+
+Note: If the multimeter reads the same in both modes but the G1000 was reading low in step 3, that directly proves the G1000's own sensing/ground path is the issue — the bus itself is healthy.
 
 Both the ECU and VDL48 bypass the Main Bus → Essential Bus path entirely (ECU is on ECU BUS from Battery Bus 2; VDL48 is on HOT BUS direct from battery), which is why both read higher regardless of whether the problem is power-side or ground-side.
 
-Based on all prior analysis (variable offset with load, elevated noise, worse under vibration), we expect the reading to **stay low** — confirming the ground path. But this test removes the guesswork.
+Based on all prior analysis (variable offset with load, elevated noise, worse under vibration), we expect the multimeter reading to **stay the same** — confirming the ground path is the problem. But this test removes the guesswork.
 
 ### Resistance Measurements
 
@@ -399,10 +431,10 @@ Based on all prior analysis (variable offset with load, elevated noise, worse un
 | Test | From | To | Expected | If High |
 |------|------|----|----------|---------|
 | **1. End-to-end** | GEA 71S ground pin (P701 Pin 20 (POWER GROUND)) | Battery negative cable lug | **< 0.050 Ω** | Confirms ground path problem — continue testing |
-| **2. Fuselage path** | Bare fuselage metal near IP | Battery negative cable lug | < 0.010 Ω | Check battery cable, fuselage ground point |
-| **3. IP-to-fuselage** | IP frame metal | Bare fuselage metal | < 0.005 Ω | Check bonding strap, IP mounting |
-| **4. Each GS-IP stud** | Each GS-IP stud terminal | IP frame metal | < 0.005 Ω | Clean and retorque that stud |
-| **5. Each LRU ground** | LRU ground pin (at connector) | Its GS-IP stud | < 0.010 Ω | Check connector pin, harness wire, crimp |
+| **2. Wire 24008A4N** | GS-IP bus bar | Battery negative cable lug | < 0.010 Ω | Check 24008A4N ring terminals at both ends, battery post stacking |
+| **3. Each GS-IP stud** | Each GS-IP stud terminal | GS-IP bus bar | < 0.005 Ω | Clean and retorque that stud |
+| **4. Each LRU ground** | LRU ground pin (at connector) | Its GS-IP stud | < 0.010 Ω | Check connector pin, harness wire, crimp |
+| **5. Battery terminal** | Wire 24008A4N ring terminal | Battery negative post | < 0.005 Ω | Clean, retorque, check stacking order |
 
 ### Where to Put the Probes (Step by Step)
 
@@ -411,27 +443,27 @@ Based on all prior analysis (variable offset with load, elevated noise, worse un
 - **Red probe:** Touch the back of **Pin 20 (POWER GROUND)** on harness plug **P701** (the aircraft-side plug that mates to J701 on the GEA 71S, located on the instrument panel shelf). This is the power ground pin — the ground reference for all voltage measurements. If P701 is mated to the unit, you'll need to back-probe or disconnect it from J701 to access the pin.
 - This measures the entire ground path at once. If it reads good (< 0.050 Ω), the ground path is fine and the problem is elsewhere. If high, continue with Tests 2–5 to find which segment has the resistance.
 
-**Test 2 — Fuselage Path:**
+**Test 2 — Wire 24008A4N (Main Ground Return):**
 - **Black probe:** Still connected via extension wire to **disconnected battery negative cable lug** (REL still active).
-- **Red probe:** Bare/scraped fuselage metal **near the instrument panel** — find an unpainted screw head or lightly sand a small spot to get bare metal contact.
-- Tests the fuselage structure itself as a conductor from front to back.
+- **Red probe:** The **GS-IP bus bar** in the instrument panel — where wire 24008A4N (4 AWG) connects. Find the ring terminal of this heavy wire on the bus bar.
+- This tests the 4 AWG dedicated ground return wire and its terminal connections at both ends (per D44-9224-30-01X03). The wire itself has negligible resistance — if this reads high, the problem is at one of the terminal connections.
 
 **Tests 3–5** are all at the instrument panel — no extension wire needed. Disconnect the extension, touch the standard leads together, and press REL again to re-zero with just the standard leads.
 
-**Test 3 — IP Frame to Fuselage:**
-- **Red probe:** Bare metal on the **instrument panel frame** — the structural part the ground studs are mounted to.
-- **Black probe:** Bare **fuselage metal** nearby (same spot from Test 2).
-- If this reads high, the bonding strap between the IP frame and fuselage is the problem.
-
-**Test 4 — Each GS-IP Ground Stud:**
+**Test 3 — Each GS-IP Ground Stud:**
 - **Red probe:** The **nut/terminal surface** of each GS-IP stud — where the ring terminals are stacked.
-- **Black probe:** Bare **IP frame metal** right next to that stud.
+- **Black probe:** The **GS-IP bus bar** surface — bare metal on the bus bar itself.
 - Test each stud individually: **GS IP-14** (GEA voltage sensor ground — most critical), GS IP-6, GS IP-4, GS IP-5, GS IP-3, GS IP-10. If one reads high while others read near-zero, that's your culprit — clean all surfaces and retorque.
 
-**Test 5 — Each LRU Ground Wire:**
+**Test 4 — Each LRU Ground Wire:**
 - **Red probe:** The **ground pin** at the aircraft-side harness plug — start with **P701 Pin 20 (POWER GROUND)** (the harness plug for the GEA 71S — mates to J701 on the unit).
 - **Black probe:** The **GS-IP stud** that wire runs to — **GS-IP-14** for the GEA 71S.
 - Tests the wire, crimp, and connector pin between the LRU and its ground stud. Repeat for each connector on the instrument panel.
+
+**Test 5 — Battery Negative Terminal:**
+- **Red probe:** The **wire 24008A4N ring terminal** at the battery negative post.
+- **Black probe:** The **battery negative post** itself.
+- Tests just the terminal-to-post contact. If high, clean the post and terminal, check stacking order (24008A4N should not be buried under other terminals), and retorque.
 
 ### Isolation Strategy
 
@@ -471,7 +503,7 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 | AFM Doc 6.01.15-E, Section 7.10.1 | Electrical system description, bus architecture, voltmeter/ammeter (pp. 7-39 to 7-43) |
 | AMM 24-60-00 | Bus structure, power distribution, troubleshooting table |
 | AMM 31-40-00, p.985-986 | GEA 71S location (instrument panel shelf), Figure 6 |
-| AMM CH.92, D44-9224-30-01X03 | Electrical system wiring diagram — **N238PS configuration**: [p1859](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png). Other variants: [p1857](docs/AMM_p1857_D44-9224-30-01_Electrical_System.png) · [p1858](docs/AMM_p1858_D44-9224-30-01_02_Electrical_System_Wiring.png) · [p1861](docs/AMM_p1861_D44-9224-30-05_Second_Alternator.png) |
+| AMM CH.92, D44-9224-30-01X03 | Electrical system wiring diagram — **N238PS configuration**: [p1859](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png). Shows **wire 24008A4N (4 AWG)** — dedicated ground return from GS-IP bus bar to Battery B1 negative. Other variants: [p1857](docs/AMM_p1857_D44-9224-30-01_Electrical_System.png) · [p1858](docs/AMM_p1858_D44-9224-30-01_02_Electrical_System_Wiring.png) · [p1861](docs/AMM_p1861_D44-9224-30-05_Second_Alternator.png) |
 | AMM CH.92, D44-9231-60-03 | G1000 NXi wiring diagrams (Phase I & II, Sheets 2-6): [p1908](docs/AMM_p1908_G1000_wiring.png) · [p1909](docs/AMM_p1909_G1000_wiring.png) · [p1910](docs/AMM_p1910_G1000_wiring.png) · [p1911](docs/AMM_p1911_G1000_wiring.png) · [p1912](docs/AMM_p1912_G1000_wiring.png) |
 | AMM CH.31 | GDU 1050/1060 connector pinouts |
 | AMM CH.34 | GIA 63W connector pinouts |
@@ -481,7 +513,11 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 
 ## Summary
 
-The G1000 reads low because of a high-resistance ground connection — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit. Three voltage regulators, two alternators, and two pitch servos have been replaced — none fixed it because the ground path was never addressed. Start at the **instrument panel shelf** with GEA 71S connector P701 (Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N) and ground stud **GS-IP-14** (where both GEA power ground pins terminate). Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 connectors on the instrument panel. Don't stop after finding one bad connection — the data shows there may be more than one marginal joint.
+The G1000 reads low because of a high-resistance ground connection — not a calibration issue, not a charging system issue, not a firmware issue. The voltage was never as stable as other DA40NGs (even from delivery), and it got significantly worse after the Feb 2024 shop visit. Three voltage regulators, two alternators, and two pitch servos have been replaced — none fixed it because the ground path was never addressed.
+
+The complete ground return path is now documented: GEA 71S Pin 20 → wire 77016A22N (22 AWG) → **GS-IP-14** → GS-IP bus bar → **wire 24008A4N (4 AWG)** → through firewall → Battery B1 negative terminal (per D44-9224-30-01X03 and D44-9231-60-03). The 4 AWG wire itself has negligible resistance — the problem is at a **terminal connection**.
+
+Start at the **instrument panel shelf** with GEA 71S connector P701 (Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N) and ground stud **GS-IP-14** (where both GEA power ground pins terminate). Check the **wire 24008A4N terminal** at the GS-IP bus bar and at the battery negative post. Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 connectors on the instrument panel. Don't stop after finding one bad connection — the data shows there may be more than one marginal joint.
 
 ---
 
@@ -516,6 +552,17 @@ The hot battery bus is directly connected to the main battery, installed in the 
 
 **Battery Bus 1:**
 The battery bus 1 is connected to the main battery via the battery-relay which can be controlled by the ELECTRIC MASTER key switch. The battery bus 1 provides power to the battery bus 2 and heavy duty power to the starter. The battery bus 1 is also connected to the power input line of the external power plug.
+
+**External Power Plug (EPU — AN2551):**
+The GPU connects through an AN2551 plug in the engine compartment. Per D44-9224-30-01X03:
+
+| EPU Pin | Wire | Gauge | Connects To |
+|---------|------|-------|-------------|
+| Jumper/Sense | 24401B22 → J2421 pin 4 → 24401A22 | 22 AWG | EPU RELAY coil |
+| **Positive** | **24403A6** | **6 AWG** | **BATT BUS** (through EPU RELAY + 100A fuse) |
+| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground) |
+
+**Diagnostic significance:** The EPU negative connects to **GS-RP** (near the firewall), not the battery negative terminal (aft fuselage). With battery power, all return current must travel through 24008A4N to the aft battery terminal — the only current sink. With GPU power, the GPU negative at GS-RP is the current sink, and return current takes the path of least resistance: the airframe structure from instrument panel to firewall is physically shorter than the round trip through 24008A4N → aft battery → back to GS-RP. More current bypasses the fault, reducing the voltage drop. This is why the G1000 reads nearly correctly with GPU power (0.19V offset) but reads low with battery power (1.5V offset on the ground, 1.4V average in flight). See the GPU ground test results in the Evidence Summary section above.
 
 **Battery Bus 2:**
 The battery bus 2 is connected to the battery bus 1 via a 100 A fuse and provides power to the ECU bus via a 80 A fuse. It also provides power to the main bus via the power-relay which can be controlled by the ELECTRIC MASTER key switch and the ESSENTIAL BUS switch. The ELECTRIC MASTER key switch must be set to ON and the ESSENTIAL BUS switch must be set to OFF to connect the battery bus to the main bus.

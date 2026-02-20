@@ -198,13 +198,40 @@ GEA 71S ────RS-485───→ GIA 63W ──HSDB──→ GDU displays 
 
 The GEA 71S does not interface directly with the ECU. Engine parameters flow from the ECU to a GIA 63W via RS-232, then to the displays via HSDB (Ethernet/RS-485). The GEA sends its own airframe measurements (voltage, amps, pitot heat) to the GIAs via RS-485 on pins 5/6 and 7/8.
 
-## Owner Ground Test (Aug 18, 2025)
+## Owner Ground Tests
 
+### Aug 18, 2025 (Battery Only)
 Static ground test performed after Jul 2025 annual (new battery, VR previously replaced, battery on BatteryMinder):
 - **Open circuit (master OFF):** Meter at AUX POWER reads 26.3V → 100% charged per Concorde table
 - **G1000 on, no other loads:** Meter reads 25.2V, G1000 displays 23.7V → **1.5V offset with battery only**
 - Premier mechanic Raymond independently confirmed variance from cigarette lighter connector
 - FlySto LOW VOLTS events: 18s, 85s, 5s below 25V during landing/taxi phases
+
+### Feb 20, 2026 (GPU Power)
+Ground test with external GPU connected through EPU plug (AN2551):
+- **AUX POWER PLUG (HOT BUS):** Meter reads 28.79V
+- **G1000 display:** 28.6V → **only 0.19V offset**
+- This is within normal measurement tolerance and expected voltage drop from HOT BUS → Essential Bus through relay/breaker contacts
+- **Dramatic improvement** vs Aug 2025 battery test (1.5V offset) and in-flight data (1.4V average offset)
+
+**Why the GPU test reads differently:** The EPU negative cable connects to **GS-RP** (relay panel ground, near the firewall) via wire 24405A6N (6 AWG). The battery B1 is mounted **aft** (behind the baggage compartment) and its negative terminal connects back to GS-RP through a wire running from aft to the relay panel. With **battery power**, the battery negative is the current *sink* — ALL return current must physically enter the battery through its negative terminal in the aft fuselage, so it all flows through 24008A4N and any fault in that path. With **GPU power**, the GPU negative at GS-RP (near the firewall) is the current *sink*, and return current from GS-IP takes the **path of least resistance** to reach GS-RP:
+
+1. 24008A4N → aft to battery negative → wire from aft back to GS-RP (long round trip, through any fault)
+2. Airframe structure from instrument panel → firewall/relay panel → GS-RP (shorter structural path, bypasses 24008A4N and battery terminal entirely)
+
+Current splits proportionally by conductance. Path 2 is physically shorter (IP to firewall) than path 1 (IP → aft → back to firewall). Any elevated resistance in path 1 pushes even more current through path 2, reducing the voltage drop across the fault.
+
+**Two contributing factors:**
+1. GPU ground at GS-RP provides parallel return — current bypasses the fault via path of least resistance
+2. Connection may be intermittent/vibration-sensitive — currently in good contact on the ground (shop also couldn't reproduce on Feb 15)
+
+### Feb 20, 2026 (ESS BUS Switch Test)
+Tested ESS BUS switch activation with G1000 running:
+- MFD turned off (Avionic Bus lost power)
+- Engine parameters moved to PFD (reversionary mode)
+- **No voltage indicator on PFD** — VOLTS display is MFD-only
+- Test requires a multimeter on the Essential Bus to provide reference reading
+- Updated MAINTENANCE_GUIDE.md procedure accordingly
 
 ## Electrical System Architecture (from AMM CH.92 Wiring Diagrams)
 
@@ -237,18 +264,31 @@ GEA 71S (voltage sensor) is on the ESSENTIAL BUS, not the AVIONIC BUS:
 ### VDL48 Connection Point
 The VDL48 was connected to the **AUX POWER PLUG** in the cockpit, which is on the **HOT BUS** (direct battery connection via 5A fuse). This gives a clean reference measurement of battery/alternator voltage without relay or breaker voltage drops.
 
+### External Power Unit (EPU) Plug — AN2551
+The GPU connects through an AN2551 external power plug in the engine compartment. Wiring from D44-9224-30-01X03:
+
+| EPU Pin | Wire | Gauge | Connects To |
+|---------|------|-------|-------------|
+| Jumper/Sense | 24401B22 → J2421 pin 4 → 24401A22 | 22 AWG | EPU RELAY coil (closes relay when GPU plugged in) |
+| **Positive** | **24403A6** | **6 AWG** | **BATT BUS** (through EPU RELAY contacts + 100A fuse) |
+| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, near firewall) |
+
+**Important:** The EPU negative connects to **GS-RP**, not to the battery B1 negative terminal. This means GPU return current flows through GS-RP ground studs, providing a parallel ground return path that can bypass wire 24008A4N and the battery negative terminal. This is diagnostically significant — see GPU ground test results in Owner Ground Tests section.
+
 ### Ground Path (Critical for Voltage Sensing)
-The G1000 measures voltage at its power input pins **relative to its own ground pins**. The ground return path is:
+The G1000 measures voltage at its power input pins **relative to its own ground pins**. The ground return path is now **fully documented** from the AMM CH.92 schematics:
 ```
 G1000 GDU/GIA ground pins
-  -> harness wires (22 AWG)
+  -> harness wires (20-22 AWG)
   -> Instrument Panel ground studs (GS-IP-xx series)
-  -> ground bus bar
-  -> fuselage structure
-  -> battery negative terminal (aft fuselage)
+  -> GS-IP bus bar
+  -> wire 24008A4N (4 AWG) -- dedicated ground return wire
+  -> crosses firewall (continuous wire, no connector)
+  -> Battery B1 negative terminal (aft fuselage)
 ```
+**Source:** D44-9224-30-01X03 Sheet 1/1 (Electrical System, Conversion — p1859). Wire 24008A4N is a heavy 4 AWG negative wire providing a dedicated copper path from the GS-IP bus bar to the battery negative. This is NOT a structural ground through the fuselage — it is a wired return.
 
-The relay panel and engine compartment components use separate ground studs (GS-RP series). The battery, alternator, and starter grounds return through GS-RP directly to the battery negative.
+The relay panel and engine compartment components use separate ground studs (GS-RP series) near the firewall. The alternator and starter grounds return through GS-RP. The battery B1 is mounted in the aft fuselage and its negative terminal connects to both GS-RP (relay panel) and GS-IP (instrument panel, via wire 24008A4N).
 
 ### Alternator Voltage Regulation
 The alternator regulator (J2424) has a **dedicated USENSE wire** (24022A22, 22 AWG, pin 5) for voltage sensing, separate from the G1000's measurement. This means:
@@ -266,11 +306,12 @@ The alternator regulator (J2424) has a **dedicated USENSE wire** (24022A22, 22 A
 | 4 | GROUND | 24018A20N (20 AWG) |
 
 ### Where to Look for the Problem
-Based on the schematics, the most likely failure points for a high-resistance ground:
-1. **G1000 GDU/GIA ground pins at harness connector** - corrosion or loose pin
-2. **Instrument panel ground studs (GS-IP)** - loose nut, corrosion, paint under ring terminal
-3. **Ground bus bar to fuselage bond** - structural ground point where the instrument panel bus bar connects to the airframe
-4. **Firewall ground feedthrough** - where instrument panel grounds transition to the engine compartment/battery ground
+Based on the schematics, the most likely failure points for a high-resistance ground (in order of priority):
+1. **GS-IP-14 ground stud** - where the GEA 71S voltage sensor ground terminates (wire 77016A22N)
+2. **GS-IP bus bar connections** - where wire 24008A4N connects to the bus bar, and bus bar mounting to IP frame
+3. **Wire 24008A4N terminal at battery negative** - disturbed during every engine R&R; if poorly reconnected, would affect all GS-IP returns while leaving GS-RP unaffected
+4. **G1000 LRU connector ground pins** - corrosion or loose pin at GEA P701, GIA, or GDU harness connectors
+5. **Other GS-IP studs** - GS IP-4 (most loaded, 4 LRUs), GS IP-6 (both GIA computers)
 
 The AVIONIC BUS power path (25A breaker, relay contacts) could also contribute series resistance, but this would equally affect all avionics. The fact that only the G1000 reads low (while the ECU on a separate bus reads correctly) points specifically to the G1000's own ground return path.
 
@@ -507,6 +548,39 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - G1000 CSV logs do not record amps (only volt1/volt2); ECU logs do not record aircraft electrical current (only fuel system solenoid currents)
 - Added pin reference table to MAINTENANCE_GUIDE.md for mechanics working on the P701 connector
 - Added complete pin assignments and ALT AMPS SENSOR circuit to CLAUDE.md
+
+### 2026-02-20: Battery Ground Return Wire Discovery (D44-9224-30-01X03)
+- Owner identified wire **24008A4N** (4 AWG, negative) on drawing D44-9224-30-01X03 Sheet 1/1 (Electrical System, Conversion — p1859)
+- This wire provides a **dedicated copper ground return** from the GS-IP bus bar (instrument panel) to the main battery B1 negative terminal
+- **Previously:** The path from GS-IP bus bar → battery negative was documented as "inferred — not on any AMM schematic" and assumed to be structural ground through the fuselage
+- **Now:** The entire ground return path is documented as wired: GEA Pin 20 → 77016A22N (22 AWG) → GS-IP-14 → GS-IP bus bar → 24008A4N (4 AWG) → Battery B1 negative
+- Wire 24008A4N crosses the firewall as a continuous wire (no connector visible on schematic) running from the instrument panel through the engine compartment to the battery
+- Also visible on same drawing: wire 24008A10 (10 AWG, positive) runs the same route from IP to BATT BUS, and wire 24200A10 (10 AWG) to BATT BUS through a 50A fuse
+- **Diagnostic implication:** The 4 AWG wire itself has negligible resistance (~0.25 mΩ/ft) — the problem must be at a terminal connection (GS-IP bus bar end, battery negative end, or GS-IP-14 stud)
+- **R&R correlation:** Battery negative terminal is disturbed during every engine R&R but R&R #2 did not fix the problem — suggests the fault is at the GS-IP bus bar end (never disturbed during either R&R)
+- Updated CLAUDE.md ground path section, README.md Mermaid diagrams and differential diagnosis, and MAINTENANCE_GUIDE.md documentation status and test procedure
+- Added D44-9224-30-01X03 schematic image to MAINTENANCE_GUIDE.md
+- Created `render_drawio.py` — parses `docs/GEA71S_voltage_path.drawio` XML and renders to PNG using matplotlib. Replaces manual Draw.io desktop export.
+- Updated voltage measurement path diagram: ground path chain now solid (documented) with GS-IP Bus Bar, wire 24008A4N (4 AWG), Battery B1 Negative, and "per D44-9224-30-01X03" annotation
+
+### 2026-02-20: ESS BUS Switch Test — Owner Verification
+- Owner tested the ESS BUS switch on the aircraft (Feb 20, 2026)
+- **Result:** MFD turned off, engine parameters moved to PFD (reversionary mode), but **no voltage indicator available on PFD**
+- **Reason:** The G1000 voltage display is only on the MFD. When the ESS switch activates, the Avionic Bus loses power and the MFD goes dark. The GEA 71S stays powered (it's on the Essential Bus), but the voltage reading has no display path to the PFD in reversionary mode.
+- **Updated MAINTENANCE_GUIDE.md:** ESS BUS switch test now requires a **multimeter on the Essential Bus** to provide the reference reading. Procedure revised to compare multimeter readings before/after ESS switch activation.
+
+### 2026-02-20: GPU Ground Test & EPU Wiring Analysis
+- Owner tested with external GPU connected through EPU plug (AN2551)
+- **AUX POWER PLUG:** 28.79V, **G1000:** 28.6V → **only 0.19V offset** (vs 1.5V with battery Aug 2025, vs 1.4V average in flight)
+- 0.19V is within normal measurement tolerance — essentially no fault signature
+- Traced EPU wiring from D44-9224-30-01X03:
+  - EPU positive: wire 24403A6 (6 AWG) → EPU RELAY → BATT BUS
+  - EPU negative: wire **24405A6N** (6 AWG) → **GS-RP** (relay panel ground, NOT battery negative terminal)
+  - EPU jumper: wire 24401B22 → J2421 pin 4 → 24401A22 (triggers EPU relay)
+- **Key finding:** EPU negative at GS-RP provides a parallel ground return path. Instrument panel ground current (from GS-IP bus bar) can flow through the airframe structure directly to GS-RP → GPU negative, bypassing wire 24008A4N and the battery negative terminal entirely.
+- Two contributing factors explain the near-zero offset: (1) GPU ground at GS-RP bypasses the fault area, (2) intermittent connection may be in good contact on the ground (no vibration)
+- Added AN2551 EPU plug PDF to docs/, added EPU wiring to electrical architecture section
+- Updated all documentation with GPU test results
 
 ## Scripts
 

@@ -178,67 +178,58 @@
                 <mxCell id="ess_note1" value="BUS VOLTS&lt;br&gt;(volt1 on MFD)" style="text;html=1;align=center;verticalAlign=top;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
                     <mxGeometry x="565" y="355" width="140" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="g1" value="" style="endArrow=none;strokeColor=#999999;strokeWidth=1.5;dashed=1;dashPattern=6 4;" edge="1" parent="1">
+                <mxCell id="g1" value="" style="endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="795" y="278" as="sourcePoint"/>
                         <mxPoint x="795" y="410" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="busbar" value="IP Ground Bus Bar" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;strokeWidth=1;fontSize=10;dashed=1;dashPattern=6 4;" parent="1" vertex="1">
+                <mxCell id="busbar" value="GS-IP Bus Bar" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#333333;strokeWidth=1.5;fontSize=10;" parent="1" vertex="1">
                     <mxGeometry x="730" y="410" width="130" height="28" as="geometry"/>
                 </mxCell>
-                <mxCell id="g2" value="" style="endArrow=none;strokeColor=#999999;strokeWidth=1.5;dashed=1;dashPattern=6 4;" edge="1" parent="1">
+                <mxCell id="g2" value="" style="endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="795" y="438" as="sourcePoint"/>
-                        <mxPoint x="795" y="458" as="targetPoint"/>
+                        <mxPoint x="795" y="500" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="ipframe" value="IP Frame" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;strokeWidth=1;fontSize=10;dashed=1;dashPattern=6 4;" parent="1" vertex="1">
-                    <mxGeometry x="745" y="458" width="100" height="25" as="geometry"/>
+                <mxCell id="wire_label" value="24008A4N (4 AWG)" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+                    <mxGeometry x="805" y="458" width="130" height="18" as="geometry"/>
                 </mxCell>
-                <mxCell id="g3" value="" style="endArrow=none;strokeColor=#999999;strokeWidth=1.5;dashed=1;dashPattern=6 4;" edge="1" parent="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="795" y="483" as="sourcePoint"/>
-                        <mxPoint x="795" y="503" as="targetPoint"/>
-                    </mxGeometry>
+                <mxCell id="bat_neg" value="Battery B1 Negative" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#333333;strokeWidth=1.5;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="728" y="500" width="135" height="28" as="geometry"/>
                 </mxCell>
-                <mxCell id="fuselage" value="Fuselage Structure" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;strokeWidth=1;fontSize=10;dashed=1;dashPattern=6 4;" parent="1" vertex="1">
-                    <mxGeometry x="730" y="503" width="130" height="25" as="geometry"/>
-                </mxCell>
-                <mxCell id="g4" value="" style="endArrow=none;strokeColor=#999999;strokeWidth=1.5;dashed=1;dashPattern=6 4;" edge="1" parent="1">
+                <mxCell id="g4" value="" style="endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="795" y="528" as="sourcePoint"/>
                         <mxPoint x="795" y="548" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="bat_neg" value="Battery Negative" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;strokeWidth=1;fontSize=10;fontStyle=1;dashed=1;dashPattern=6 4;" vertex="1" parent="1">
-                    <mxGeometry x="735" y="548" width="120" height="25" as="geometry"/>
-                </mxCell>
-                <mxCell id="inferred_note" value="— — Dashed = inferred path (not on AMM schematic)" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontStyle=2;fontColor=#999999;" vertex="1" parent="1">
-                    <mxGeometry x="595" y="435" width="280" height="18" as="geometry"/>
+                <mxCell id="inferred_note" value="per D44-9224-30-01X03" style="text;html=1;align=center;verticalAlign=middle;fontSize=8;fontStyle=2;fontColor=#999999;" vertex="1" parent="1">
+                    <mxGeometry x="730" y="530" width="130" height="16" as="geometry"/>
                 </mxCell>
                 <mxCell id="gs1" value="" style="endArrow=none;strokeColor=#333333;strokeWidth=2;" edge="1" parent="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="795" y="573" as="sourcePoint"/>
-                        <mxPoint x="795" y="585" as="targetPoint"/>
+                        <mxPoint x="795" y="548" as="sourcePoint"/>
+                        <mxPoint x="795" y="560" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="gs2" value="" style="endArrow=none;strokeColor=#333333;strokeWidth=2;" edge="1" parent="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="779" y="585" as="sourcePoint"/>
-                        <mxPoint x="811" y="585" as="targetPoint"/>
+                        <mxPoint x="779" y="560" as="sourcePoint"/>
+                        <mxPoint x="811" y="560" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="gs3" value="" style="endArrow=none;strokeColor=#333333;strokeWidth=2;" edge="1" parent="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="784" y="591" as="sourcePoint"/>
-                        <mxPoint x="806" y="591" as="targetPoint"/>
+                        <mxPoint x="784" y="566" as="sourcePoint"/>
+                        <mxPoint x="806" y="566" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="gs4" value="" style="endArrow=none;strokeColor=#333333;strokeWidth=2;" edge="1" parent="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="789" y="597" as="sourcePoint"/>
-                        <mxPoint x="801" y="597" as="targetPoint"/>
+                        <mxPoint x="789" y="572" as="sourcePoint"/>
+                        <mxPoint x="801" y="572" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="p701_label" value="P701" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">

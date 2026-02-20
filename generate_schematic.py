@@ -152,30 +152,26 @@ gs_y = junc_gnd_y - gs_h/2
 draw_wire(junc_gnd_x, junc_gnd_y, gs_x, junc_gnd_y, RED)
 draw_dest_box(gs_x, gs_y, gs_w, gs_h, 'GS-IP-14', RED_BG, RED, RED, fontsize=12)
 
-# ── Ground path chain (purple) ──
+# ── Ground path chain (documented — solid red lines) ──
 chain_x = gs_x + gs_w/2
-chain_boxes = [
-    (chain_x - 1.0, 0.9, 2.0, 'IP Ground\nBus Bar'),
-    (chain_x - 0.7, 0.15, 1.4, 'IP Frame'),
-]
 
-# GS-IP-14 → Bus Bar
-draw_wire(chain_x, gs_y, chain_x, 1.45, PURPLE)
+# GS-IP-14 → GS-IP Bus Bar
+draw_wire(chain_x, gs_y, chain_x, 1.45, RED)
 bb_w, bb_h = 2.0, 0.45
-draw_dest_box(chain_x - bb_w/2, 0.95, bb_w, bb_h, 'IP Ground Bus Bar',
-              PURPLE_BG, PURPLE, PURPLE, fontsize=9)
+draw_dest_box(chain_x - bb_w/2, 0.95, bb_w, bb_h, 'GS-IP Bus Bar',
+              RED_BG, RED, RED, fontsize=9)
 
-# Bus Bar → IP Frame
-draw_wire(chain_x, 0.95, chain_x, 0.65, PURPLE)
-ipf_w, ipf_h = 1.4, 0.3
-draw_dest_box(chain_x - ipf_w/2, 0.35, ipf_w, ipf_h, 'IP Frame',
-              PURPLE_BG, PURPLE, PURPLE, fontsize=9)
+# Bus Bar → wire 24008A4N → Battery B1 Negative
+draw_wire(chain_x, 0.95, chain_x, 0.65, RED)
+ax.text(chain_x + 0.1, 0.8, '24008A4N (4 AWG)',
+        ha='left', va='center', fontsize=8, fontweight='bold', color=RED)
+bat_w, bat_h = 2.2, 0.45
+draw_dest_box(chain_x - bat_w/2, 0.15, bat_w, bat_h, 'Battery B1\nNegative',
+              RED_BG, RED, RED, fontsize=9)
 
-# Arrow to fuselage / battery (off page indicator)
-draw_wire(chain_x, 0.35, chain_x, 0.1, PURPLE)
-ax.annotate('→ Fuselage Structure → Battery Negative  (GND)',
-            xy=(chain_x + 0.1, 0.1), fontsize=9, color=PURPLE,
-            fontweight='bold', va='top')
+# Source drawing annotation
+ax.text(chain_x, 0.62, 'per D44-9224-30-01X03',
+        ha='center', va='center', fontsize=7, color=GRAY, style='italic')
 
 # ── Warning callout ──
 warn_x, warn_y = 10.2, 1.2
@@ -184,8 +180,8 @@ warn = FancyBboxPatch((warn_x, warn_y), 3.3, 1.1, boxstyle="round,pad=0.15",
                        linestyle='--')
 ax.add_patch(warn)
 ax.text(warn_x + 1.65, warn_y + 0.55,
-        '⚠  HIGH RESISTANCE\nSOMEWHERE IN HERE',
-        ha='center', va='center', fontsize=11, fontweight='bold', color=RED)
+        '⚠  HIGH RESISTANCE\nAT A TERMINAL\nCONNECTION',
+        ha='center', va='center', fontsize=10, fontweight='bold', color=RED)
 # Arrow from callout to ground path
 ax.annotate('', xy=(gs_x + gs_w, junc_gnd_y - 0.3),
             xytext=(warn_x, warn_y + 0.3),

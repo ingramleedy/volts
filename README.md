@@ -101,9 +101,11 @@ N238PS is a MAM40-858 configuration. Wiring schematics were extracted from the D
 
 ![Bus Structure Diagram](docs/AMM_p622_24-60-00_Bus_Structure_G1000.png)
 
-### DA40 NG Electrical System Schematic (MAM40-858 Conversion, p1859)
+### DA40 NG Electrical System Schematic (D44-9224-30-01X03, Sheet 1/1)
 
-![Electrical System Conversion](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png)
+N238PS is a MAM40-858 conversion. This is the master electrical system schematic showing all buses, relays, battery, alternator, and the critical **ground return wire 24008A4N** (4 AWG) from battery B1 negative to the GS-IP bus bar:
+
+![Electrical System Conversion — D44-9224-30-01X03](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png)
 
 ### Bus Structure & Power Distribution
 
@@ -310,12 +312,12 @@ flowchart TB
         IP7["GTX 33 XPDR<br/>harness GND (22AWG)"]
         IP8["GDL 69A Datalink<br/>harness GND (22AWG)"]
         IP9["GSU 73 AHRS<br/>harness GND (22AWG)"]
-        IPBAR["GS-IP Bus Bar<br/>(LONG path through<br/>IP structure to<br/>battery negative)"]
+        IPBAR["GS-IP Bus Bar<br/>(wire 24008A4N, 4 AWG<br/>→ firewall → battery neg)"]
         IP1 & IP2 & IP3 & IP4 & IP5 & IP6 & IP7 & IP8 & IP9 --> IPBAR
     end
 
-    RPBAR -->|"short ground strap<br/>low resistance"| BATNEG["Battery<br/>Negative<br/>Terminal"]
-    IPBAR -->|"IP structure → fuselage<br/>→ firewall → aft fuselage<br/>HIGH RESISTANCE?"| BATNEG
+    RPBAR -->|"short ground strap<br/>low resistance"| BATNEG["Battery B1<br/>Negative<br/>Terminal"]
+    IPBAR -->|"wire 24008A4N (4 AWG)<br/>→ through firewall<br/>→ battery negative<br/>HIGH RESISTANCE?"| BATNEG
 
     style GSRP_GROUP fill:#d4edda,stroke:#28a745
     style GSIP_GROUP fill:#f8d7da,stroke:#dc3545
@@ -376,6 +378,7 @@ Complete mapping of all G1000 power ground connections extracted from the G1000 
 3. All power ground wires use the **"N" suffix** convention (e.g., 23011A20**N**) per Diamond's wire numbering
 4. Power grounds are **20-22 AWG**; signal grounds are **24 AWG**
 5. The **GS AVB** avionics ground bus bar is an intermediate collection point that routes to GS IP-5, with 53V TVS diode protection circuits
+6. **Wire 24008A4N (4 AWG)** provides the dedicated ground return from the GS-IP bus bar to Battery B1 negative — confirmed on D44-9224-30-01X03 Sheet 1/1 (p1859). This is a heavy copper wire, not structural ground through the fuselage. The wire itself has negligible resistance; the problem must be at a terminal connection
 
 ### AMM Chapter Cross-Reference
 
@@ -414,20 +417,20 @@ flowchart TB
     STEP1R -->|"YES — problem confirmed"| STEP2
     STEP1R -->|"NO — ground path OK,<br/>check power side instead"| PWRSIDE["Investigate AVIONIC BUS<br/>power path: AV.BUS 25A CB,<br/>Avionic Relay contacts,<br/>LRU power pin connections"]
 
-    STEP2["<b>STEP 2: Segment 6 — Fuselage to Battery</b><br/>Measure: bare fuselage metal near IP → Battery negative post<br/>Expected: < 0.010 Ω<br/>This tests the fuselage structural path"] --> STEP2R{"> 0.010 Ω?"}
-    STEP2R -->|"YES"| FIX6["Check:<br/>• Battery negative cable terminals<br/>• Fuselage ground point corrosion<br/>• Firewall bonding"]
+    STEP2["<b>STEP 2: Wire 24008A4N — GS-IP Bus Bar to Battery Neg</b><br/>Measure: GS-IP bus bar → Battery B1 negative post<br/>Expected: < 0.010 Ω<br/>This tests the 4 AWG main ground return wire + terminals"] --> STEP2R{"> 0.010 Ω?"}
+    STEP2R -->|"YES"| FIX6["Check:<br/>• Wire 24008A4N ring terminal at battery neg<br/>• Wire 24008A4N terminal at GS-IP bus bar<br/>• Bus bar mounting to IP frame<br/>• Firewall pass-through condition"]
     STEP2R -->|"NO"| STEP3
 
-    STEP3["<b>STEP 3: Segment 5 — IP Frame to Fuselage</b><br/>Measure: IP frame/structure → bare fuselage metal<br/>Expected: < 0.005 Ω<br/>This tests the IP-to-fuselage bond"] --> STEP3R{"> 0.005 Ω?"}
-    STEP3R -->|"YES"| FIX5["Check:<br/>• IP mounting bolts/bonding straps<br/>• Paint between IP frame and fuselage<br/>• Bonding jumper if installed"]
+    STEP3["<b>STEP 3: GS-IP Stud to Bus Bar</b><br/>Measure: each GS-IP stud → GS-IP bus bar<br/>Expected: < 0.005 Ω per stud<br/>This tests individual stud connections"] --> STEP3R{"> 0.005 Ω<br/>on any stud?"}
+    STEP3R -->|"YES"| FIX5["Check that stud:<br/>• Loose nut — retorque<br/>• Corrosion under ring terminal<br/>• Paint/anodize under terminal<br/>• Cracked ring terminal<br/>• Multiple terminals stacked poorly"]
     STEP3R -->|"NO"| STEP4
 
-    STEP4["<b>STEP 4: Segment 3+4 — GS-IP Stud to IP Frame</b><br/>Measure: each GS-IP stud → IP frame<br/>Expected: < 0.005 Ω per stud<br/>This tests stud connections + bus bar"] --> STEP4R{"> 0.005 Ω<br/>on any stud?"}
-    STEP4R -->|"YES"| FIX34["Check that stud:<br/>• Loose nut — retorque<br/>• Corrosion under ring terminal<br/>• Paint/anodize under terminal<br/>• Cracked ring terminal<br/>• Bus bar mounting bolts"]
+    STEP4["<b>STEP 4: LRU GND Pin to GS-IP Stud</b><br/>Measure: GEA 71S Pin 20 → GS-IP-14<br/>Repeat for GIA, GDU connectors<br/>Expected: < 0.010 Ω per LRU<br/>This tests harness wire + connector pin"] --> STEP4R{"> 0.010 Ω<br/>on any LRU?"}
+    STEP4R -->|"YES"| FIX34["Check that LRU:<br/>• Connector pin corrosion<br/>• Backed-out pin in connector<br/>• Crimp integrity at ring terminal<br/>• Wire break inside insulation<br/>• Connector shell/lock engagement"]
     STEP4R -->|"NO"| STEP5
 
-    STEP5["<b>STEP 5: Segment 1+2 — LRU GND Pin to GS-IP Stud</b><br/>Measure: GIA 63W GND pin (at connector) → GS-IP stud<br/>Repeat for GDU 1050, GDU 1055<br/>Expected: < 0.010 Ω per LRU<br/>This tests harness wire + connector pin"] --> STEP5R{"> 0.010 Ω<br/>on any LRU?"}
-    STEP5R -->|"YES"| FIX12["Check that LRU:<br/>• Connector pin corrosion<br/>• Backed-out pin in connector<br/>• Crimp integrity at ring terminal<br/>• Wire break inside insulation<br/>• Connector shell/lock engagement"]
+    STEP5["<b>STEP 5: Battery Negative Terminal</b><br/>Measure: wire 24008A4N terminal → battery post<br/>Also check GS-RP terminal → battery post<br/>Expected: < 0.005 Ω each<br/>This tests terminal connections at battery"] --> STEP5R{"> 0.005 Ω<br/>on 24008A4N?"}
+    STEP5R -->|"YES"| FIX12["Check:<br/>• Ring terminal corrosion/oxidation<br/>• Terminal not fully tightened<br/>• Stacking order (24008A4N buried<br/>  under other terminals)<br/>• Battery post corrosion"]
     STEP5R -->|"NO"| ALLGOOD["All segments within limits.<br/>Consider:<br/>• Intermittent fault (vibration-dependent)<br/>• Power-side resistance (AV.BUS CB,<br/>  Avionic Relay contacts)<br/>• Re-test with controlled vibration"]
 
     style START fill:#333,color:#fff
@@ -497,11 +500,11 @@ Based on the data analysis (change-point at Feb 2024, second R&R did not resolve
 
 | Priority | Location | Why Most Likely | Test |
 |---|---|---|---|
-| **1** | **GS-IP ground studs** | Most common source of intermittent ground resistance in GA aircraft. Ring terminals loosen over time from vibration. Paint under terminals during manufacture or maintenance. | Step 4: Stud-to-frame resistance |
-| **2** | **Ground bus bar mounting** | Bolted joint between bus bar and IP structure can loosen. Dissimilar metal corrosion (copper bar on aluminum frame). | Step 4: Part of stud-to-frame test |
-| **3** | **IP frame-to-fuselage bond** | Structural bond or bonding strap. If the IP is semi-floating (shock-mounted), the ground depends on a bonding jumper that may have been disturbed. | Step 3: IP frame to fuselage |
-| **4** | **GIA 63W connector ground pins** | Connector pin corrosion or insufficient pin tension. The GIA is the primary voltage sensor — its ground pin is the most critical. | Step 5: LRU pin to stud |
-| **5** | **Harness ground wire crimp** | Factory crimp on ring terminal at the GS-IP stud end. Can crack internally without visible damage. | Step 5: LRU pin to stud |
+| **1** | **GS-IP-14 ground stud** | GEA 71S voltage sensor ground terminates here (wire 77016A22N). Ring terminal loosening, corrosion, or paint under terminal. | Step 3: Stud-to-bus bar resistance |
+| **2** | **GS-IP bus bar / wire 24008A4N connection** | The 4 AWG main ground return wire (24008A4N) connects to the bus bar here. Bolted joint can loosen. Dissimilar metal corrosion. This end was NOT disturbed during either engine R&R. | Step 2: Bus bar to battery neg |
+| **3** | **Wire 24008A4N terminal at battery negative** | Disturbed during every engine R&R (battery disconnect). If not properly retorqued or if buried under other terminals. R&R #2 also disturbed this — if problem persists, terminal may be chronically undertorqued. | Step 5: Terminal to battery post |
+| **4** | **GEA 71S P701 connector Pin 20** | Connector pin corrosion or insufficient pin tension. The GEA is the voltage sensor — its ground pin is the most critical LRU connection. | Step 4: LRU pin to stud |
+| **5** | **Other GS-IP studs (IP-4, IP-6)** | GS IP-4 is the most loaded stud (4 LRUs). GS IP-6 carries both GIA computers. Ring terminals loosen from vibration. | Step 3: Stud-to-bus bar resistance |
 
 ### Compartment-by-Compartment Inspection Guide
 
@@ -536,26 +539,25 @@ This is where all G1000 LRUs are mounted and where the GS-IP ground stud group c
 - [ ] Bus bar mounting bolts tight, contact surfaces bright metal
 - [ ] No evidence of tools dropped on or damage to ground bus bar
 
-#### FUSELAGE (Medium Priority)
+#### FUSELAGE / BATTERY NEGATIVE TERMINAL (Medium-High Priority)
 
-The structural ground path from the instrument panel to the battery passes through the fuselage. The pitch servo work (under seats) during R&R #1 could have involved moving or bumping harnesses/structure in this area.
+The GS-IP ground return uses a dedicated **wire 24008A4N (4 AWG)** that runs from the GS-IP bus bar through the firewall to the battery B1 negative terminal (per D44-9224-30-01X03). The wire itself has negligible resistance — the failure points are at its **terminal connections** at each end.
 
 | Item | What to Check | Test Method | Pass Criteria |
 |---|---|---|---|
-| **IP frame-to-fuselage structural bond** | Bonding strap or structural joint where IP mounts to fuselage — vibration can loosen | Milliohm: IP frame → bare fuselage metal | < 0.005 Ω |
-| **IP mounting bolts/shock mounts** | If IP is shock-mounted, ground depends on bonding jumper not structure | Visual: bonding jumper present and tight | Metal-to-metal contact |
-| **Fuselage structure continuity** | DA40 NG is composite with metal structural elements — ground path follows metal | Milliohm: fuselage near IP → fuselage near firewall | < 0.010 Ω |
+| **Wire 24008A4N at battery negative** | Ring terminal tight, clean, not buried under other terminals. This terminal is disturbed during every engine R&R (battery disconnect/reconnect) | Milliohm: 24008A4N terminal → battery negative post | < 0.005 Ω |
+| **Wire 24008A4N at GS-IP bus bar** | Ring terminal tight, clean, proper contact to bus bar | Milliohm: 24008A4N terminal → GS-IP bus bar | < 0.005 Ω |
+| **Wire 24008A4N end-to-end** | Full wire continuity including both terminal connections | Milliohm: GS-IP bus bar → battery negative post | < 0.010 Ω |
+| **Battery negative terminal stacking** | Multiple ring terminals on battery post — verify all are making good contact, proper stacking order, star washers present | Visual + milliohm: each terminal → post | < 0.005 Ω each |
+| **Wire 24008A4N at firewall** | Condition at firewall pass-through — chafing, corrosion, seal integrity | Visual: no damage at firewall penetration | No damage |
 | **Under-seat area (pitch servo)** | Harness routing disturbed during pitch servo work (R&R #1 only) | Visual: no pinched wires, correct routing | No damage |
-| **Battery negative terminal** | Aft fuselage — loose/corroded terminal | Milliohm: fuselage metal near battery → battery negative post | < 0.005 Ω |
-| **Battery negative cable** | Heavy gauge cable from terminal to airframe ground point | Visual + milliohm: cable end-to-end | < 0.005 Ω |
 
 **Visual inspection checklist:**
-- [ ] IP-to-fuselage bonding strap/jumper present and tight (if applicable per AMM)
-- [ ] No paint or sealant between bonding surfaces
-- [ ] IP shock mount bolts tight (if shock-mounted)
+- [ ] Wire 24008A4N ring terminal at battery negative: clean, tight, not corroded
+- [ ] Wire 24008A4N ring terminal at GS-IP bus bar: clean, tight, proper contact
+- [ ] Battery negative post: no corrosion, all terminals properly stacked and torqued
+- [ ] Wire 24008A4N: no chafing or damage at firewall pass-through
 - [ ] Under-seat wiring harnesses properly routed and secured
-- [ ] Battery negative terminal clean and tight
-- [ ] Battery ground cable: no corrosion, no fraying, secure at both ends
 
 #### ENGINE COMPARTMENT (Suspect — R&R #1 Specific Work)
 
@@ -571,7 +573,7 @@ The oil leak repair during R&R #1 required accessing the cylinder head cover (to
 | **P2208 connector area** | Wire terminal repaired Jun 2024 — check quality of repair | Visual + milliohm: repaired terminal resistance | < 0.010 Ω |
 | **GEA 71 sensor wire pass-throughs** | Sensor wires from engine to GEA 71 behind IP pass through firewall | Visual: seals intact, no chafing at firewall | No damage |
 
-**Why check here even though ECU reads correctly:** The ECU's GS-RP ground path is a *different* ground path than the G1000's GS-IP path. Both paths share the fuselage-to-battery-negative segment, but diverge at the firewall/relay panel area. If the firewall bonding or a specific ground strap was disturbed during the oil leak repair in a way that increases resistance in the GS-IP return path (not the GS-RP path), this could explain the G1000 under-reading while the ECU remains unaffected.
+**Why check here even though ECU reads correctly:** The ECU's GS-RP ground path is a *different* ground path than the G1000's GS-IP path. The GS-IP return uses a dedicated **wire 24008A4N (4 AWG)** that runs from the instrument panel through the firewall to battery B1 negative (per D44-9224-30-01X03). GS-RP uses separate short ground straps in the engine compartment. The **battery negative terminal** is where wire 24008A4N terminates alongside the GS-RP connections — if 24008A4N's ring terminal is loose, corroded, or buried under other terminals, it would increase resistance in the GS-IP return while leaving GS-RP unaffected.
 
 **Visual inspection checklist:**
 - [ ] All engine ground straps clean, tight, correct torque per AMM
@@ -663,6 +665,7 @@ Parsing the N238PS aircraft maintenance logs (115 pages) revealed the cause of t
 | **Aug 18, 2025** | ~150 | **Owner ground test**: meter at AUX POWER reads 26.3V (open circuit), 25.2V (G1000 on); G1000 displays 23.7V — **1.5V offset confirmed on ground with battery only** |
 | Feb 15, 2026 | ~160 | Shop cleaned GDL 69A pins (wrong unit — see below); could not reproduce on ground run |
 | **Feb 8, 2026** | ~158 | **VDL48 flight test**: confirmed -1.36V mean offset, -5.6V worst dip (this analysis) |
+| **Feb 20, 2026** | ~160 | **GPU ground test**: 0.19V offset with GPU (vs 1.5V with battery). EPU negative connects to GS-RP, bypassing 24008A4N. ESS BUS switch test: MFD goes dark, no voltage on PFD. |
 
 **Pattern:** The shop recognized a voltage issue and attempted to resolve it through component replacement (3 voltage regulators, 2 alternators, 1 wire repair) — but the G1000 under-reading persisted because the root cause is a ground path resistance issue introduced during the engine R&R, not a charging system problem. The ECU reads correctly throughout, proving the alternator and regulators function normally.
 
@@ -678,7 +681,7 @@ The engine was removed again in Apr–Jul 2025 for a piston crack (AD 2024-19-10
 
 The problem **did not resolve** after the second R&R. Voltage remains ~0.4 V below the pre-fault baseline and noise actually increased slightly. This **rules out the firewall pass-through connectors** as the fault location — they were reconnected during R&R #2 with no improvement.
 
-**Narrowed failure location:** The instrument panel ground path (GS-IP ground studs, ground bus bar, or G1000 harness ground pins) — these areas were NOT disturbed during either engine R&R. Something during the Feb 2024 shop visit disturbed an instrument panel ground connection, or the introduction of slightly higher resistance at the firewall shifted enough current through the instrument panel ground path to expose a pre-existing marginal connection.
+**Narrowed failure location:** The GS-IP ground return uses a dedicated wire 24008A4N (4 AWG) from the GS-IP bus bar to battery B1 negative (per D44-9224-30-01X03). Since R&R #2 disturbed the battery terminal end but did not fix the problem, the most likely failure points are at the **GS-IP bus bar end** of wire 24008A4N, the **GS-IP-14 stud**, or the **GEA P701 connector** — all of which are in the instrument panel and were NOT disturbed during either R&R. The battery negative terminal should still be inspected (it may have been improperly reconnected during both R&Rs).
 
 ### What Changed During R&R #1 That Did NOT Happen During R&R #2?
 
@@ -701,9 +704,9 @@ The Pettitt change-point test pinpoints February 2024 with extremely high statis
 
 **Analysis:** The oil leak repair required specific engine compartment access (cylinder head cover, oil sump) that the piston replacement did not. Any wiring, harness routing, or ground connections disturbed specifically for oil leak access would NOT have been re-done during R&R #2. Additionally, the subsequent cascade of troubleshooting repairs after R&R #1 (3 voltage regulators, 2 alternators, P2413 repinning, P2208 wire repair) each involved further work in the engine compartment and behind the instrument panel, potentially worsening a marginal connection.
 
-**Key constraint — the ECU test:** The ECU grounds through GS-RP (relay panel / engine compartment side) and reads correctly throughout the entire period. This means the GS-RP ground studs and engine compartment ground straps have good connections. However, the G1000's ground path from the GS-IP bus bar goes through the IP structure → fuselage → firewall area → battery negative. The firewall area IS in/near the engine compartment and could have been affected during R&R #1 oil leak work.
+**Key constraint — the ECU test:** The ECU grounds through GS-RP (relay panel / engine compartment side) and reads correctly throughout the entire period. This means the GS-RP ground studs and engine compartment ground straps have good connections. The G1000's ground path uses a separate **dedicated wire 24008A4N (4 AWG)** from the GS-IP bus bar through the firewall to battery B1 negative (per D44-9224-30-01X03). This wire's terminal at the battery negative is disturbed during every engine R&R, but since R&R #2 did not fix the problem, the fault is more likely at the **GS-IP bus bar end** of this wire or at the **GS-IP-14 stud** — both of which are in the instrument panel and were NOT disturbed during either R&R.
 
-**Bottom line:** The fault was most likely introduced as **collateral damage during the R&R #1 maintenance window** — either behind the instrument panel (most likely), at the IP-to-fuselage structural bond, or at a ground connection in the firewall area that was disturbed for oil leak access but not redone during R&R #2's piston work. The compartment-by-compartment inspection below covers all possibilities.
+**Bottom line:** The fault was most likely introduced as **collateral damage during the R&R #1 maintenance window** — most likely at the GS-IP bus bar or stud connections behind the instrument panel. The battery negative terminal of wire 24008A4N should also be inspected (it was reconnected during both R&Rs — possibly improperly each time). The compartment-by-compartment inspection below covers all possibilities.
 
 ## Owner Ground Test (August 18, 2025)
 
@@ -761,6 +764,41 @@ The voltage measurement path was investigated through the GEA 71B (Engine/Airfra
 - The G1000 would under-report during high-current events (still triggering LOW VOLTS) and over-report during low-current conditions
 - The underlying high-resistance ground connection would continue to degrade, potentially causing other issues (noise on signal grounds, erratic sensor readings)
 - The correct fix is to repair the ground path so that `m=1.0, b=0.0` reads correctly
+
+## GPU Ground Test (February 20, 2026)
+
+A follow-up ground test was conducted with an external GPU connected through the EPU plug (AN2551).
+
+| Condition | Meter at AUX POWER | G1000 Display | Offset |
+|-----------|-------------------|---------------|--------|
+| **GPU connected**, G1000 on | **28.79V** | **28.6V** | **-0.19V** |
+
+The 0.19V offset is within normal measurement tolerance — essentially a healthy reading. This is a dramatic improvement vs the **1.5V offset with battery** (Aug 2025) and **1.4V average in flight**.
+
+### Why GPU Power Reads Differently
+
+The EPU wiring (from D44-9224-30-01X03) reveals the explanation:
+
+| EPU Pin | Wire | Gauge | Connects To |
+|---------|------|-------|-------------|
+| Positive | 24403A6 | 6 AWG | BATT BUS (through EPU RELAY) |
+| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, near firewall) |
+
+The EPU negative connects to **GS-RP** (near the firewall), while the battery B1 is mounted **aft** (behind the baggage compartment). With **battery power**, the battery negative is the only current sink — all return current must travel through 24008A4N to the aft battery terminal. With **GPU power**, the GPU negative at GS-RP is the current sink, and return current takes the **path of least resistance** to reach it:
+
+1. 24008A4N → aft to battery negative → wire from aft back to GS-RP (long round trip, through any fault)
+2. Airframe structure from instrument panel → firewall → GS-RP (shorter structural path, **bypasses 24008A4N and battery terminal**)
+
+More current takes the shorter structural path, reducing the voltage drop across any fault in the wired path.
+
+This test confirms:
+1. The G1000 **can read correctly** — the GEA hardware and firmware are functioning properly
+2. The offset is a **ground path issue**, not calibration
+3. The fault is likely between GS-IP and the battery negative terminal (the section the GPU bypasses)
+
+### ESS BUS Switch Test
+
+The ESS BUS switch was also tested. When activated, the MFD turns off (Avionic Bus loses power) and the PFD enters reversionary mode with engine parameters. However, **the voltage display is MFD-only** — it does not appear on the PFD in reversionary mode. This test requires a multimeter on the Essential Bus to provide a reference reading.
 
 ## External Comparison: DA40NG Voltage Stability (N541SA)
 
