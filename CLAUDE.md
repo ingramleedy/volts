@@ -42,7 +42,7 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 - `Docs/GEA71_InstallationManual.pdf` - Garmin GEA 71 Installation Manual (190-00303-40, Revision F). Pages 23-26 contain P701 and P702 connector pin function lists (78 pins each)
 - `Docs/Instrument Panel - Breakers.png` - AFM p.361 instrument panel layout showing circuit breaker positions grouped by bus (EECU BUS, ESSENTIAL BUS, MAIN BUS, AVIONICS BUS). Confirms ENG INST breaker (GEA 71S power) is on the Essential Bus.
 - `docs/24-31 Battery Installation.png` - IPC drawing showing battery mounting in aft fuselage
-- `docs/24-40 External Power.png` - IPC drawing showing EPU plug location and routing
+- `docs/24-40 External Power.png` - IPC drawing showing EPU (External Power Unit) plug location and routing
 - `docs/24-60 Battery Relay.png` - IPC drawing showing battery relay installation
 - `docs/24-60 Relay Panel.png` - IPC drawing showing relay panel adjacent to battery in aft fuselage
 - `docs/an2551-plug.pdf` - AN2551 external power plug technical instructions
@@ -72,7 +72,7 @@ The G1000 systematically under-reports by ~1.4 V on average, with erratic fluctu
 
 ## Probable Cause
 
-High-resistance ground connection in the G1000's measurement path. Evidence:
+High-resistance power ground connection in the G1000's voltage measurement path. Evidence:
 - Variable offset (not constant) driven by changing current loads
 - G1000 shows 2-3x more voltage noise than VDL on the same bus
 - Deep transient dips coincide with high-current events (radio TX, servos)
@@ -107,13 +107,13 @@ The GEA 71 has two 78-pin connectors: **P701** and **P702**. Pin assignments fro
 | 15 | +5 VDC TRANSDUCER POWER OUT | Out | |
 | 16 | +12 VDC TRANSDUCER POWER OUT | Out | |
 | 19 | SIGNAL GROUND | — | |
-| **20** | **POWER GROUND** | **—** | **Wire 77016A22N → GS-IP-14. THE BAD GROUND — voltage sensor reference** |
+| **20** | **POWER GROUND** | **—** | **Wire 77016A22N → GS-IP-14 (Ground Stud - Instrument Panel #14). THE BAD GROUND — voltage sensor reference** |
 | **35** | **AIRCRAFT POWER 1** | **In** | **Wire 77015A22 from Essential Bus via 5A ENG INST breaker** |
 | 37 | AIRCRAFT POWER 2 | In | Second power input |
 | **42** | **ANALOG IN 3 HI** | **In** | **ALT AMPS SENSOR OUT HI — differential current measurement** |
 | **43** | **ANALOG IN 3 LO** | **In** | **ALT AMPS SENSOR OUT LO — differential current measurement** |
 | **44** | **ANALOG IN 4 HI** | **In** | **Wire 77015A22 (tied to Pin 35 power) — measures GEA supply voltage** |
-| **45** | **ANALOG IN 4 LO** | **In** | **Wire 77016A22N (tied to Pin 20 ground) → GS-IP-14 — GEA ground pin** |
+| **45** | **ANALOG IN 4 LO** | **In** | **Wire 77016A22N (tied to Pin 20 power ground) → GS-IP-14 — GEA power ground pin** |
 | **46** | **ANALOG IN 5 HI** | **In** | **BUS VOLTS ESSENTIAL BUS (HI) — wire 31299A22WH (shielded), 3A fuse in path (location unknown). Open fuse = 0V reading (not low).** |
 | **47** | **ANALOG IN 5 LO** | **In** | **BUS VOLTS ESSENTIAL BUS (LO) — wire 31299A22BL (shielded)** |
 
@@ -191,7 +191,7 @@ Pin 43 (ANALOG IN 3 LO)     ←──  OUT LO (BLK,  wire 24331A22BL)
 Pin 11 (TRANSDUCER LO/GND)  ──→  GND
 ```
 
-- Differential output (HI vs LO) means the bad ground at Pin 20 does NOT affect the amp reading
+- Differential output (HI vs LO) means the bad power ground at Pin 20 does NOT affect the amp reading
 - The transducer has its own power supply (+10V) and ground (Pin 11), isolated from the POWER GROUND path
 - The G1000 MFD amps display is accurate even with the ground path problem — but amps are not logged to CSV
 
@@ -213,16 +213,16 @@ Static ground test performed after Jul 2025 annual (new battery, VR previously r
 - Premier mechanic Raymond independently confirmed variance from cigarette lighter connector
 - FlySto LOW VOLTS events: 18s, 85s, 5s below 25V during landing/taxi phases
 
-### Feb 20, 2026 (GPU Power)
+### Feb 20, 2026 (GPU (Ground Power Unit) Power)
 Ground test with external GPU connected through EPU plug (AN2551):
 - **AUX POWER PLUG (HOT BUS):** Meter reads 28.79V
 - **G1000 display:** 28.6V → **only 0.19V offset**
 - This is within normal measurement tolerance and expected voltage drop from HOT BUS → Essential Bus through relay/breaker contacts
 - **Dramatic improvement** vs Aug 2025 battery test (1.5V offset) and in-flight data (1.4V average offset)
 
-**Why the GPU test reads nearly correctly:** The EPU negative cable connects to **GS-RP** via wire 24405A6N (6 AWG). Per the AMM installation drawings (24-31, 24-40, 24-60), the **relay panel, battery, EPU plug, and battery relay are all co-located in the aft fuselage** — right next to each other. GS-RP ground studs and the battery B1 negative terminal are in the same area, connected by short straps.
+**Why the GPU test reads nearly correctly:** The EPU negative cable connects to **GS-RP (Ground Stud - Relay Panel)** via wire 24405A6N (6 AWG). Per the AMM installation drawings (24-31, 24-40, 24-60), the **relay panel, battery, EPU plug, and battery relay are all co-located in the aft fuselage** — right next to each other. GS-RP ground studs and the battery B1 negative terminal are in the same area, connected by short straps.
 
-Since GS-RP and the battery negative are adjacent in the aft fuselage, the GPU does NOT provide a significantly shorter alternate ground path. Return current from the instrument panel (GS-IP) still must travel the full length of wire 24008A4N to reach the aft area regardless of whether the sink is the battery negative or GS-RP.
+Since GS-RP and the battery negative are adjacent in the aft fuselage, the GPU does NOT provide a significantly shorter alternate ground path. Return current from the GS-IP (Ground Stud - Instrument Panel) bus still must travel the full length of wire 24008A4N to reach the aft area regardless of whether the sink is the battery negative or GS-RP.
 
 The near-zero offset with GPU is most likely because the **intermittent connection is currently in good contact on the ground** (no vibration, stable temperature). This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run." The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Feb 8 flight data (-1.4V average, -5.6V worst) was only 12 days before.
 
@@ -289,7 +289,7 @@ G1000 GDU/GIA ground pins
   -> crosses firewall (continuous wire, no connector)
   -> Battery B1 negative terminal (aft fuselage)
 ```
-**Source:** D44-9224-30-01X03 Sheet 1/1 (Electrical System, Conversion — p1859). Wire 24008A4N is a heavy 4 AWG negative wire providing a dedicated copper path from the GS-IP bus bar to the battery negative. This is NOT a structural ground through the fuselage — it is a wired return.
+**Source:** D44-9224-30-01X03 Sheet 1/1 (Electrical System, Conversion — p1859). Wire 24008A4N is a heavy 4 AWG negative wire providing a dedicated copper path from the GS-IP (Ground Stud - Instrument Panel) bus bar to the battery negative. This is NOT a structural ground through the fuselage — it is a wired return.
 
 The relay panel components use separate ground studs (GS-RP series). Per AMM installation drawings (24-31, 24-40, 24-60), the **relay panel, battery, EPU plug, and battery relay are all co-located in the aft fuselage** — adjacent to each other. The alternator and starter grounds return through GS-RP. The battery B1 negative terminal connects to both GS-RP (short straps, same aft area) and GS-IP (instrument panel, via the long wire 24008A4N running the full length of the fuselage).
 
@@ -314,7 +314,7 @@ Based on the schematics, the most likely failure points for a high-resistance gr
 2. **GS-IP bus bar connections** - where wire 24008A4N connects to the bus bar, and bus bar mounting to IP frame
 3. **Wire 24008A4N terminal at battery negative** - disturbed during every engine R&R; if poorly reconnected, would affect all GS-IP returns while leaving GS-RP unaffected
 4. **G1000 LRU connector ground pins** - corrosion or loose pin at GEA P701, GIA, or GDU harness connectors
-5. **Other GS-IP studs** - GS IP-4 (most loaded, 4 LRUs), GS IP-6 (both GIA computers)
+5. **Other GS-IP studs** - GS IP-4 (Ground Stud - Instrument Panel #4) (most loaded, 4 LRUs), GS IP-6 (Ground Stud - Instrument Panel #6) (both GIA computers)
 
 The AVIONIC BUS power path (25A breaker, relay contacts) could also contribute series resistance, but this would equally affect all avionics. The fact that only the G1000 reads low (while the ECU on a separate bus reads correctly) points specifically to the G1000's own ground return path.
 
@@ -501,11 +501,11 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - **Key findings:**
   - **GS IP-6**: Both GIA 63W #1 (wire 23011A20N, pin 14 on 1P604) and GIA 63W #2 (wire 23001A20N, pin 14 on 2P604) share this single ground stud — the primary voltage sensors
   - **GS IP-4**: Most loaded stud — GDU 1050 PFD (31106A22N), GDU 1060 MFD (31158A22N), GMA 1360 (23201A20N), COM 1 (23001A20N) — 4 LRUs on one stud
-  - **GS IP-5**: Both GRS 79 AHRS units via GS AVB intermediate bus bar with 53V TVS diode protection
-  - **GS IP-3**: GPS/NAV 1 (34001A22N) + Wx 500 Stormscope (34402A20N)
-  - **GS IP-10**: GPS/NAV 2 (34101A22N) — isolated
+  - **GS IP-5 (Ground Stud - Instrument Panel #5)**: Both GRS 79 AHRS units via GS AVB intermediate bus bar with 53V TVS diode protection
+  - **GS IP-3 (Ground Stud - Instrument Panel #3)**: GPS/NAV 1 (34001A22N) + Wx 500 Stormscope (34402A20N)
+  - **GS IP-10 (Ground Stud - Instrument Panel #10)**: GPS/NAV 2 (34101A22N) — isolated
   - **GS-IP-14**: GEA 71S Pin 20 POWER GROUND + Pin 45 ANALOG IN 4 LO (both wire 77016A22N) + Pin 49 current monitor (74005A22N) — all GEA ground pins terminate here
-  - **GS IP-8**: Config/power ground (31108A22N)
+  - **GS IP-8 (Ground Stud - Instrument Panel #8)**: Config/power ground (31108A22N)
 - Updated Ground Stud Groups section in README with complete wire-level LRU ground inventory
 - Drawing reference: D44-9231-60-03, Doc 6.02.15, Rev. 5, 15 July 2024
 

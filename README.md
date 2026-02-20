@@ -103,7 +103,7 @@ N238PS is a MAM40-858 configuration. Wiring schematics were extracted from the D
 
 ### DA40 NG Electrical System Schematic (D44-9224-30-01X03, Sheet 1/1)
 
-N238PS is a MAM40-858 conversion. This is the master electrical system schematic showing all buses, relays, battery, alternator, and the critical **ground return wire 24008A4N** (4 AWG) from battery B1 negative to the GS-IP bus bar:
+N238PS is a MAM40-858 conversion. This is the master electrical system schematic showing all buses, relays, battery, alternator, and the critical **ground return wire 24008A4N** (4 AWG) from battery B1 negative to the GS-IP (Ground Stud - Instrument Panel) bus bar:
 
 ![Electrical System Conversion — D44-9224-30-01X03](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png)
 
@@ -182,7 +182,7 @@ flowchart BT
     style STARTGND fill:#2d8659,color:#fff
 ```
 
-The relay panel and engine compartment components (battery, alternator, starter, ECU) use separate **GS-RP ground studs** that return directly to battery negative, bypassing the instrument panel ground bus entirely. This is why only the G1000 reads low.
+The relay panel and engine compartment components (battery, alternator, starter, ECU) use separate **GS-RP (Ground Stud - Relay Panel) ground studs** that return directly to battery negative, bypassing the instrument panel ground bus entirely. This is why only the G1000 reads low.
 
 ### Why Three Instruments Disagree
 
@@ -334,20 +334,20 @@ Complete mapping of all G1000 power ground connections extracted from the G1000 
 
 | LRU | Connector | Pin | Function | Wire | Gauge | Ground Stud |
 |-----|-----------|-----|----------|------|-------|-------------|
-| **GIA 63W #1** | 1P604 | 14 | POWER GROUND | 23011A20N | 20 AWG | **GS IP-6** |
+| **GIA 63W #1** | 1P604 | 14 | POWER GROUND | 23011A20N | 20 AWG | **GS IP-6 (Ground Stud - Instrument Panel #6)** |
 | **GIA 63W #1** | 1P604 | 71 | AIRCRAFT GROUND | 34900B24BL | 24 AWG | (signal ground) |
 | **GIA 63W #2** | 2P604 | 14 | POWER GROUND | 23001A20N | 20 AWG | **GS IP-6** |
 | **GIA 63W #2** | 2P604 | 71 | AIRCRAFT GROUND | -- | 24 AWG | (signal ground) |
-| **GDU 1050 PFD** | 1P1600 | 27 | POWER GROUND | 31106A22N | 22 AWG | **GS IP-4** |
+| **GDU 1050 PFD** | 1P1600 | 27 | POWER GROUND | 31106A22N | 22 AWG | **GS IP-4 (Ground Stud - Instrument Panel #4)** |
 | **GDU 1050 PFD** | 1P1600 | 98 | AIRCRAFT GROUND | 31101A24BL | 24 AWG | (signal ground) |
 | **GDU 1060 MFD** | 2P1601 | 27 | POWER GROUND | 31158A22N | 22 AWG | **GS IP-4** |
-| **GEA 71S** | P701 | 20 | POWER GROUND | 77016A22N | 22 AWG | **GS-IP-14** |
+| **GEA 71S** | P701 | 20 | POWER GROUND | 77016A22N | 22 AWG | **GS-IP-14 (Ground Stud - Instrument Panel #14)** |
 | **GEA 71S** | P701 | 45 | ANALOG IN 4 LO (ground) | 77016A22N (tied to Pin 20) | 22 AWG | **GS-IP-14** |
 | **GEA 71S** | P701 | 49 | ANALOG/CURR MON LO | 74005A22N | 22 AWG | **GS-IP-14** |
-| **GRS 79 AHRS #1** | P791 | 34 | POWER GROUND | 34903A22N | 22 AWG | **GS IP-5** (via GS AVB) |
+| **GRS 79 AHRS #1** | P791 | 34 | POWER GROUND | 34903A22N | 22 AWG | **GS IP-5 (Ground Stud - Instrument Panel #5)** (via GS AVB (Ground Stud - Avionics Bus Bar)) |
 | **GRS 79 AHRS #2** | P791 | 34 | POWER GROUND | 34901A22N | 22 AWG | **GS IP-5** |
 | **GMA 1360 Audio** | P3475 | -- | POWER GROUND | 23201A20N | 20 AWG | **GS IP-4** |
-| **Wx 500 Stormscope** | -- | -- | POWER GROUND | 34402A20N | 20 AWG | **GS IP-3** |
+| **Wx 500 Stormscope** | -- | -- | POWER GROUND | 34402A20N | 20 AWG | **GS IP-3 (Ground Stud - Instrument Panel #3)** |
 | **GDL 69A SXM** | -- | 20 | POWER GROUND | 23403E22N | 22 AWG | (via harness) |
 
 #### Circuit Breaker Ground Returns
@@ -355,7 +355,7 @@ Complete mapping of all G1000 power ground connections extracted from the G1000 
 | Circuit | Bus | Breaker | Power Wire | Ground Wire | Ground Stud |
 |---------|-----|---------|------------|-------------|-------------|
 | GPS/NAV 1 | ESS BUS | 5A | 34000A22 | 34001A22N | **GS IP-3** |
-| GPS/NAV 2 | AVIONIC BUS | 5A | 34100A22 | 34101A22N | **GS IP-10** |
+| GPS/NAV 2 | AVIONIC BUS | 5A | 34100A22 | 34101A22N | **GS IP-10 (Ground Stud - Instrument Panel #10)** |
 | COM 1 | ESS BUS | 5A | 23000A20 | 23001A20N | **GS IP-4** |
 | COM 2 | AVIONIC BUS | 5A | 23200A20 | 23201A20N | -- |
 
@@ -369,7 +369,7 @@ Complete mapping of all G1000 power ground connections extracted from the G1000 
 | **GS IP-5** | GRS 79 AHRS #1 + GRS 79 AHRS #2 (via GS AVB bus bar) | MEDIUM | MEDIUM |
 | **GS IP-3** | GPS/NAV 1 + Wx 500 Stormscope | MEDIUM | MEDIUM |
 | **GS IP-10** | GPS/NAV 2 | LOW — single circuit | LOW |
-| **GS IP-8** | Config/power ground | LOW | LOW |
+| **GS IP-8 (Ground Stud - Instrument Panel #8)** | Config/power ground | LOW | LOW |
 | **GS AVB** | Intermediate bus bar for GRS 79 + protection circuits (53V TVS diodes) | MEDIUM | MEDIUM |
 
 **Key findings from the schematic extraction:**
@@ -665,7 +665,7 @@ Parsing the N238PS aircraft maintenance logs (115 pages) revealed the cause of t
 | **Aug 18, 2025** | ~150 | **Owner ground test**: meter at AUX POWER reads 26.3V (open circuit), 25.2V (G1000 on); G1000 displays 23.7V — **1.5V offset confirmed on ground with battery only** |
 | Feb 15, 2026 | ~160 | Shop cleaned GDL 69A pins (wrong unit — see below); could not reproduce on ground run |
 | **Feb 8, 2026** | ~158 | **VDL48 flight test**: confirmed -1.36V mean offset, -5.6V worst dip (this analysis) |
-| **Feb 20, 2026** | ~160 | **GPU ground test**: 0.19V offset with GPU (vs 1.5V with battery). EPU negative connects to GS-RP, bypassing 24008A4N. ESS BUS switch test: MFD goes dark, no voltage on PFD. |
+| **Feb 20, 2026** | ~160 | **GPU (Ground Power Unit) ground test**: 0.19V offset with GPU (vs 1.5V with battery). EPU (External Power Unit) negative connects to GS-RP, bypassing 24008A4N. ESS BUS switch test: MFD goes dark, no voltage on PFD. |
 
 **Pattern:** The shop recognized a voltage issue and attempted to resolve it through component replacement (3 voltage regulators, 2 alternators, 1 wire repair) — but the G1000 under-reading persisted because the root cause is a ground path resistance issue introduced during the engine R&R, not a charging system problem. The ECU reads correctly throughout, proving the alternator and regulators function normally.
 
@@ -765,9 +765,9 @@ The voltage measurement path was investigated through the GEA 71B (Engine/Airfra
 - The underlying high-resistance ground connection would continue to degrade, potentially causing other issues (noise on signal grounds, erratic sensor readings)
 - The correct fix is to repair the ground path so that `m=1.0, b=0.0` reads correctly
 
-## GPU Ground Test (February 20, 2026)
+## GPU (Ground Power Unit) Ground Test (February 20, 2026)
 
-A follow-up ground test was conducted with an external GPU connected through the EPU plug (AN2551).
+A follow-up ground test was conducted with an external GPU connected through the EPU (External Power Unit) plug (AN2551).
 
 | Condition | Meter at AUX POWER | G1000 Display | Offset |
 |-----------|-------------------|---------------|--------|
@@ -820,7 +820,7 @@ The data patterns are consistent with a high-resistance connection in the G1000'
 
 3. **Near-zero correlation (r = 0.09)** — The two instruments measure the same bus yet their readings are essentially uncorrelated. The G1000's voltage fluctuations are driven by its own ground/sensing path impedance, not actual bus voltage changes.
 
-4. **Transient deep dips** — Momentary dips to -5.6 V below reference are consistent with high-current events (radio transmit, servo actuation) pulling current through a resistive ground.
+4. **Transient deep dips** — Momentary dips to -5.6 V below reference are consistent with high-current events (radio transmit, servo actuation) pulling current through a resistive power ground path.
 
 5. **Different magnitude between flights** — Flight 1 offset was -1.87 V vs Flight 2 at -0.99 V. Thermal expansion, vibration, or connector seating can alter contact resistance between flights.
 
