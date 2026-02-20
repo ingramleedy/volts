@@ -782,19 +782,16 @@ The EPU wiring (from D44-9224-30-01X03) reveals the explanation:
 | EPU Pin | Wire | Gauge | Connects To |
 |---------|------|-------|-------------|
 | Positive | 24403A6 | 6 AWG | BATT BUS (through EPU RELAY) |
-| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft of firewall) |
+| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft fuselage — adjacent to battery) |
 
-The EPU negative connects to **GS-RP** (relay panel, aft of the firewall), while the battery B1 is mounted further **aft** (behind the baggage compartment). With **battery power**, the battery negative is the only current sink — all return current must travel through 24008A4N to the aft battery terminal. With **GPU power**, the GPU negative at GS-RP is the current sink, and return current takes the **path of least resistance** to reach it:
+Per AMM installation drawings (24-31, 24-40, 24-60), the **relay panel, battery, EPU plug, and battery relay are all co-located in the aft fuselage**. GS-RP ground studs and the battery B1 negative terminal are adjacent, connected by short straps. Since GS-RP and the battery negative are in the same area, the GPU does not provide a significantly shorter alternate ground path — return current from GS-IP still must travel the full length of wire 24008A4N to reach the aft area.
 
-1. 24008A4N → aft to battery negative → wire from aft back to GS-RP (long round trip, through any fault)
-2. Airframe structure from instrument panel → relay panel → GS-RP (shorter structural path, **bypasses 24008A4N and battery terminal**)
-
-More current takes the shorter structural path, reducing the voltage drop across any fault in the wired path.
+The near-zero offset with GPU is most likely because the **fault is intermittent and currently in good contact on the ground** (no vibration, stable temperature). The shop also could not reproduce the voltage drop on a ground run (Feb 15, 2026). The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground.
 
 This test confirms:
 1. The G1000 **can read correctly** — the GEA hardware and firmware are functioning properly
 2. The offset is a **ground path issue**, not calibration
-3. The fault is likely between GS-IP and the battery negative terminal (the section the GPU bypasses)
+3. The fault is **intermittent/vibration-sensitive** — reproduces in flight but not on the ground
 
 ### ESS BUS Switch Test
 

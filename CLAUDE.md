@@ -41,6 +41,12 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 - `Docs/AMM_p1908_G1000_wiring.png` through `AMM_p1912_G1000_wiring.png` - G1000 NXi wiring diagrams (Drawing D44-9231-60-03, Sheets 2/6-6/6), 5100x3300 px each
 - `Docs/GEA71_InstallationManual.pdf` - Garmin GEA 71 Installation Manual (190-00303-40, Revision F). Pages 23-26 contain P701 and P702 connector pin function lists (78 pins each)
 - `Docs/Instrument Panel - Breakers.png` - AFM p.361 instrument panel layout showing circuit breaker positions grouped by bus (EECU BUS, ESSENTIAL BUS, MAIN BUS, AVIONICS BUS). Confirms ENG INST breaker (GEA 71S power) is on the Essential Bus.
+- `docs/24-31 Battery Installation.png` - IPC drawing showing battery mounting in aft fuselage
+- `docs/24-40 External Power.png` - IPC drawing showing EPU plug location and routing
+- `docs/24-60 Battery Relay.png` - IPC drawing showing battery relay installation
+- `docs/24-60 Relay Panel.png` - IPC drawing showing relay panel adjacent to battery in aft fuselage
+- `docs/an2551-plug.pdf` - AN2551 external power plug technical instructions
+- IPC source: [Diamond Illustrated Parts Catalog](https://ipc.diamond-air.at/ipp/app?__bk_&__windowid=DSQ82466084&__rid=GWT1771620977044#2V10C9D9248E4C6405)
 
 ## Analysis Approach
 
@@ -214,16 +220,13 @@ Ground test with external GPU connected through EPU plug (AN2551):
 - This is within normal measurement tolerance and expected voltage drop from HOT BUS → Essential Bus through relay/breaker contacts
 - **Dramatic improvement** vs Aug 2025 battery test (1.5V offset) and in-flight data (1.4V average offset)
 
-**Why the GPU test reads differently:** The EPU negative cable connects to **GS-RP** (relay panel ground, aft of the firewall) via wire 24405A6N (6 AWG). The battery B1 is mounted **aft** (behind the baggage compartment) and its negative terminal connects back to GS-RP through a wire running from aft to the relay panel. With **battery power**, the battery negative is the current *sink* — ALL return current must physically enter the battery through its negative terminal in the aft fuselage, so it all flows through 24008A4N and any fault in that path. With **GPU power**, the GPU negative at GS-RP (aft of the firewall) is the current *sink*, and return current from GS-IP takes the **path of least resistance** to reach GS-RP:
+**Why the GPU test reads nearly correctly:** The EPU negative cable connects to **GS-RP** via wire 24405A6N (6 AWG). Per the AMM installation drawings (24-31, 24-40, 24-60), the **relay panel, battery, EPU plug, and battery relay are all co-located in the aft fuselage** — right next to each other. GS-RP ground studs and the battery B1 negative terminal are in the same area, connected by short straps.
 
-1. 24008A4N → aft to battery negative → wire from aft back to GS-RP (long round trip, through any fault)
-2. Airframe structure from instrument panel → relay panel (aft of firewall) → GS-RP (shorter structural path, bypasses 24008A4N and battery terminal entirely)
+Since GS-RP and the battery negative are adjacent in the aft fuselage, the GPU does NOT provide a significantly shorter alternate ground path. Return current from the instrument panel (GS-IP) still must travel the full length of wire 24008A4N to reach the aft area regardless of whether the sink is the battery negative or GS-RP.
 
-Current splits proportionally by conductance. Path 2 is physically shorter (IP to relay panel) than path 1 (IP → aft fuselage → back to relay panel). Any elevated resistance in path 1 pushes even more current through path 2, reducing the voltage drop across the fault.
+The near-zero offset with GPU is most likely because the **intermittent connection is currently in good contact on the ground** (no vibration, stable temperature). This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run." The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Feb 8 flight data (-1.4V average, -5.6V worst) was only 12 days before.
 
-**Two contributing factors:**
-1. GPU ground at GS-RP provides parallel return — current bypasses the fault via path of least resistance
-2. Connection may be intermittent/vibration-sensitive — currently in good contact on the ground (shop also couldn't reproduce on Feb 15)
+The GPU ground at GS-RP may still provide a minor parallel return (bypassing the specific battery negative post stacking where multiple ring terminals compete for contact), but the primary explanation is the intermittent nature of the fault.
 
 ### Feb 20, 2026 (ESS BUS Switch Test)
 Tested ESS BUS switch activation with G1000 running:
@@ -271,9 +274,9 @@ The GPU connects through an AN2551 external power plug in the engine compartment
 |---------|------|-------|-------------|
 | Jumper/Sense | 24401B22 → J2421 pin 4 → 24401A22 | 22 AWG | EPU RELAY coil (closes relay when GPU plugged in) |
 | **Positive** | **24403A6** | **6 AWG** | **BATT BUS** (through EPU RELAY contacts + 100A fuse) |
-| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft of firewall) |
+| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft fuselage — adjacent to battery) |
 
-**Important:** The EPU negative connects to **GS-RP**, not to the battery B1 negative terminal. This means GPU return current flows through GS-RP ground studs, providing a parallel ground return path that can bypass wire 24008A4N and the battery negative terminal. This is diagnostically significant — see GPU ground test results in Owner Ground Tests section.
+**Important:** Per AMM installation drawings (24-31, 24-40, 24-60), the relay panel, battery, EPU plug, and battery relay are all co-located in the **aft fuselage**. GS-RP and the battery B1 negative terminal are adjacent, connected by short straps. The EPU negative connects to GS-RP, providing a parallel connection to the same aft ground network. See GPU ground test results in Owner Ground Tests section.
 
 ### Ground Path (Critical for Voltage Sensing)
 The G1000 measures voltage at its power input pins **relative to its own ground pins**. The ground return path is now **fully documented** from the AMM CH.92 schematics:
@@ -288,7 +291,7 @@ G1000 GDU/GIA ground pins
 ```
 **Source:** D44-9224-30-01X03 Sheet 1/1 (Electrical System, Conversion — p1859). Wire 24008A4N is a heavy 4 AWG negative wire providing a dedicated copper path from the GS-IP bus bar to the battery negative. This is NOT a structural ground through the fuselage — it is a wired return.
 
-The relay panel and engine compartment components use separate ground studs (GS-RP series) aft of the firewall. The alternator and starter grounds return through GS-RP. The battery B1 is mounted in the aft fuselage and its negative terminal connects to both GS-RP (relay panel) and GS-IP (instrument panel, via wire 24008A4N).
+The relay panel components use separate ground studs (GS-RP series). Per AMM installation drawings (24-31, 24-40, 24-60), the **relay panel, battery, EPU plug, and battery relay are all co-located in the aft fuselage** — adjacent to each other. The alternator and starter grounds return through GS-RP. The battery B1 negative terminal connects to both GS-RP (short straps, same aft area) and GS-IP (instrument panel, via the long wire 24008A4N running the full length of the fuselage).
 
 ### Alternator Voltage Regulation
 The alternator regulator (J2424) has a **dedicated USENSE wire** (24022A22, 22 AWG, pin 5) for voltage sensing, separate from the G1000's measurement. This means:
@@ -575,12 +578,11 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - 0.19V is within normal measurement tolerance — essentially no fault signature
 - Traced EPU wiring from D44-9224-30-01X03:
   - EPU positive: wire 24403A6 (6 AWG) → EPU RELAY → BATT BUS
-  - EPU negative: wire **24405A6N** (6 AWG) → **GS-RP** (relay panel ground, NOT battery negative terminal)
+  - EPU negative: wire **24405A6N** (6 AWG) → **GS-RP** (aft fuselage, adjacent to battery)
   - EPU jumper: wire 24401B22 → J2421 pin 4 → 24401A22 (triggers EPU relay)
-- **Key finding:** EPU negative at GS-RP provides a parallel ground return path. Instrument panel ground current (from GS-IP bus bar) can flow through the airframe structure directly to GS-RP → GPU negative, bypassing wire 24008A4N and the battery negative terminal entirely.
-- Two contributing factors explain the near-zero offset: (1) GPU ground at GS-RP bypasses the fault area, (2) intermittent connection may be in good contact on the ground (no vibration)
-- Added AN2551 EPU plug PDF to docs/, added EPU wiring to electrical architecture section
-- Updated all documentation with GPU test results
+- **Key finding:** Relay panel, battery, EPU plug, and battery relay are all co-located in the aft fuselage (per AMM 24-31, 24-40, 24-60 installation drawings). GS-RP and battery negative are adjacent — the GPU does NOT provide a significantly shorter alternate ground path. Near-zero offset (0.19V) is primarily because the intermittent fault is in good contact on the ground (no vibration), matching the shop's Feb 15 finding.
+- Added AN2551 EPU plug PDF and AMM installation drawings to docs/
+- Updated all documentation with GPU test results and corrected aft fuselage layout
 
 ## Scripts
 

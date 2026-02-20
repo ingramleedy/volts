@@ -84,14 +84,11 @@ The offset exists on the ground with battery only. This rules out the alternator
 
 Only **0.19V offset** — within normal measurement tolerance. Compare to 1.5V offset with battery (Aug 2025) and 1.4V average in flight.
 
-**Why the GPU test reads nearly correctly:** The EPU negative cable connects to **GS-RP** (relay panel ground studs, aft of the firewall) via wire 24405A6N (6 AWG). The battery B1 is mounted further **aft** (behind the baggage compartment). With battery power, the battery negative is the current *sink* — all return current must travel through 24008A4N to the aft battery terminal. With GPU power, the GPU negative at GS-RP (relay panel, aft of the firewall) is the current *sink*, and return current takes the **path of least resistance**:
+**Why the GPU test reads nearly correctly:** The EPU negative cable connects to **GS-RP** via wire 24405A6N (6 AWG). Per AMM installation drawings (24-31, 24-40, 24-60), the **relay panel, battery, EPU plug, and battery relay are all co-located in the aft fuselage** — adjacent to each other. GS-RP ground studs and the battery B1 negative terminal are in the same area, connected by short straps.
 
-1. 24008A4N → aft to battery negative → wire from aft back to GS-RP (long round trip, through any fault)
-2. Airframe structure from instrument panel → relay panel → GS-RP (shorter path, **bypasses 24008A4N and battery terminal**)
+Since GS-RP and the battery negative are adjacent, the GPU does NOT provide a significantly shorter alternate ground path. Return current from the instrument panel (GS-IP) still must travel the full length of wire 24008A4N to reach the aft area regardless.
 
-More current takes the shorter structural path, reducing the voltage drop across any fault in the wired path.
-
-This is also consistent with the intermittent nature of the fault — no vibration on the ground means the connection may currently be in good contact. The shop also could not reproduce the drop on a ground run (Feb 15, 2026).
+The near-zero offset with GPU is most likely because the **fault is intermittent and currently in good contact on the ground** (no vibration, stable temperature). This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run." The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Feb 8 flight data (-1.4V average, -5.6V worst) was only 12 days earlier.
 
 ### Why the Battery Matters (but isn't the cause)
 
@@ -560,9 +557,9 @@ The GPU connects through an AN2551 plug in the engine compartment. Per D44-9224-
 |---------|------|-------|-------------|
 | Jumper/Sense | 24401B22 → J2421 pin 4 → 24401A22 | 22 AWG | EPU RELAY coil |
 | **Positive** | **24403A6** | **6 AWG** | **BATT BUS** (through EPU RELAY + 100A fuse) |
-| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground) |
+| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft fuselage — adjacent to battery) |
 
-**Diagnostic significance:** The EPU negative connects to **GS-RP** (relay panel, aft of the firewall), not the battery negative terminal (further aft in the fuselage). With battery power, all return current must travel through 24008A4N to the aft battery terminal — the only current sink. With GPU power, the GPU negative at GS-RP is the current sink, and return current takes the path of least resistance: the airframe structure from instrument panel to relay panel is physically shorter than the round trip through 24008A4N → aft battery → back to GS-RP. More current bypasses the fault, reducing the voltage drop. This is why the G1000 reads nearly correctly with GPU power (0.19V offset) but reads low with battery power (1.5V offset on the ground, 1.4V average in flight). See the GPU ground test results in the Evidence Summary section above.
+**Physical layout:** Per AMM installation drawings (24-31, 24-40, 24-60), the relay panel, battery, EPU plug, and battery relay are all **co-located in the aft fuselage**. GS-RP ground studs and the battery B1 negative terminal are adjacent, connected by short straps. The GPU ground at GS-RP does not provide a significantly shorter alternate path — the near-zero offset with GPU (0.19V) is primarily because the intermittent fault is in good contact on the ground (no vibration). See the GPU ground test results in the Evidence Summary section above.
 
 **Battery Bus 2:**
 The battery bus 2 is connected to the battery bus 1 via a 100 A fuse and provides power to the ECU bus via a 80 A fuse. It also provides power to the main bus via the power-relay which can be controlled by the ELECTRIC MASTER key switch and the ESSENTIAL BUS switch. The ELECTRIC MASTER key switch must be set to ON and the ESSENTIAL BUS switch must be set to OFF to connect the battery bus to the main bus.
