@@ -117,7 +117,7 @@ The GEA 71 has two 78-pin connectors: **P701** and **P702**. Pin assignments fro
 | **44** | **ANALOG IN 4 HI** | **In** | **Wire 77015A22 (tied to Pin 35 power) — measures GEA supply voltage** |
 | **45** | **ANALOG IN 4 LO** | **In** | **Wire 77016A22N (tied to Pin 20 power ground) → GS-IP-14 — GEA power ground pin** |
 | **46** | **ANALOG IN 5 HI** | **In** | **BUS VOLTS ESSENTIAL BUS (HI) — wire 31299A22WH (shielded), 3A fuse in path (location unknown). Open fuse = 0V reading (not low).** |
-| **47** | **ANALOG IN 5 LO** | **In** | **BUS VOLTS ESSENTIAL BUS (LO) — wire 31299A22BL (shielded). This is the voltage measurement reference. Per G1000 wiring diagram (D44-9231-60-03), connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows a generic ground symbol — physical termination point is unknown and needs to be traced. PRIMARY SUSPECT.** |
+| **47** | **ANALOG IN 5 LO** | **In** | **BUS VOLTS ESSENTIAL BUS (LO) — wire 31299A22BL (shielded). This is the voltage measurement reference. Per G1000 wiring diagram (D44-9231-60-03), connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows a generic ground symbol — physical termination point is unknown and needs to be traced. NOTE: Other Diamond variant AMM wiring diagrams explicitly call out a specific ground stud (e.g. GS-IP-X) for the GEA voltage sense LO pin, but the DA40 NG schematic uses only a generic ground symbol. This makes the DA40 NG Pin 47 ground uniquely difficult to troubleshoot — there is no documented stud number to inspect. PRIMARY SUSPECT.** |
 
 ### P701 — All Pins (Complete Reference)
 
@@ -328,7 +328,7 @@ The alternator regulator (J2424) has a **dedicated USENSE wire** (24022A22, 22 A
 ### Where to Look for the Problem
 The ECU grounds through GS-IP-3/GS-IP-4 (per D44-9274-10-00) and reads correctly, proving the shared GS-IP bus bar, wire 24008A4N, and aft termination are healthy. The fault is isolated to the GEA 71S's own connections. In order of priority:
 
-1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows a generic ground symbol — **the physical termination point is unknown and must be traced by the shop**. Since Pin 47 is the voltage measurement reference (GEA reads Pin 46 minus Pin 47), any resistance at this ground directly causes a low reading. This is the #1 suspect.
+1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows a generic ground symbol — **the physical termination point is unknown and must be traced by the shop**. Since Pin 47 is the voltage measurement reference (GEA reads Pin 46 minus Pin 47), any resistance at this ground directly causes a low reading. This is the #1 suspect. **Note:** Other Diamond variant AMM wiring diagrams explicitly specify a ground stud (e.g. GS-IP-X) for this pin, but the DA40 NG schematic uses only a generic ground symbol — making this ground uniquely undocumented and difficult to troubleshoot.
 2. **GS-IP-14 ground stud** — where GEA Pin 20 (POWER GROUND) terminates via wire 77016A22N. If the measurement is truly differential, Pin 20 may not directly affect the reading, but it could cause ADC common-mode issues if it floats too far.
 3. **Wire 77016A22N** — from P701 Pin 20 to GS-IP-14. Corrosion, chafing, or bad crimp.
 4. **GEA P701 connector** — Pin 47 and Pin 20 contacts specifically. Corrosion, loose pin, or poor contact at J701.
@@ -627,6 +627,12 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - **24V threshold:** The G1000 LOW VOLTS annunciation triggers at 24V (FlySto uses a 25V threshold for its own alerts)
 - Also added: `docs/24-31 Battery Installation.png`, `docs/24-40 External Power.png`, `docs/24-60 Battery Relay.png`, `docs/24-60 Relay Panel.png` — IPC diagrams showing battery area, EPU (External Power Unit) plug, and relay panel physical layouts
 - Added image and reference to README.md (inline after Key Finding) and MAINTENANCE_GUIDE.md (new "Garmin's Prescribed Troubleshooting" subsection under The Problem, plus AMM References table)
+
+### 2026-02-20: DA40 NG Pin 47 Ground — Undocumented vs Other Variants
+- Owner observed that other Diamond variant AMM wiring diagrams explicitly specify a ground stud number (e.g. GS-IP-X) for the GEA voltage sense LO pin, but the DA40 NG schematic (D44-9231-60-03 / D44-9224-30-01X03) uses only a generic ground symbol
+- This means a mechanic on another Diamond variant can look up the stud number and go inspect it directly, but on the DA40 NG there is no documented stud — the wire must be physically traced
+- This likely explains why the ground path has never been found despite years of troubleshooting — it's not documented in the schematic
+- Updated all three documents (CLAUDE.md Pin 47 table entry and Where to Look, README.md primary suspects section, MAINTENANCE_GUIDE.md suspects section and Where to Look inspection instructions)
 
 ## Scripts
 

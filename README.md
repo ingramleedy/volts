@@ -802,11 +802,11 @@ The EPU wiring (from D44-9224-30-01X03):
 
 **Two primary suspects — both unique to the GEA 71S:**
 
-1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential measurement), Pin 47 is the actual voltage reference. Any resistance at this ground directly causes a low reading.
+1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential measurement), Pin 47 is the actual voltage reference. Any resistance at this ground directly causes a low reading. **Notably, other Diamond variant AMM wiring diagrams explicitly specify a ground stud (e.g. GS-IP-X) for the GEA voltage sense LO pin, but the DA40 NG schematic uses only a generic ground symbol.** This makes Pin 47's ground on the DA40 NG uniquely undocumented — a mechanic cannot simply look up the stud number and go inspect it; the wire must be physically traced.
 
 2. **GS-IP-14 / Pin 20 (POWER GROUND)** — wire 77016A22N from P701 Pin 20 to GS-IP-14. This is the GEA's power ground. If the measurement is truly differential, Pin 20 may not directly affect the reading, but could cause ADC common-mode issues if it floats too far from Pin 47.
 
-**The key unknown is where wire 31299A22BL (Pin 47) physically terminates.**
+**The key unknown is where wire 31299A22BL (Pin 47) physically terminates.** Unlike other Diamond variants where the GEA voltage sense ground is explicitly documented to a specific GS-IP stud, the DA40 NG schematic provides no stud number — only a generic ground symbol.
 
 The near-zero GPU offset is likely because the GPU **bypasses the fault**, not merely because the fault is intermittent. The Aug 2025 battery test showed 1.5V offset on the ground (fault present without vibration), while the Feb 2026 GPU test showed 0.19V (fault bypassed). The fault also worsens in flight due to vibration and thermal cycling (Feb 8 data: -1.4V average, -5.6V worst). The ECU is unaffected because it uses a wired ground path (GS-IP-3/4 → GS-IP bus bar → 24008A4N) that is intact and does not depend on the same structural ground as Pin 47.
 

@@ -107,6 +107,8 @@ This means the GPU test is **diagnostic**: it specifically supports Pin 47's gro
 
 1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential), Pin 47 is the voltage measurement reference. Any resistance at this ground directly causes a low reading.
 
+   **Why this is hard to find:** Other Diamond variant AMM wiring diagrams explicitly call out a specific ground stud (e.g. GS-IP-X) for the GEA voltage sense LO pin. On those aircraft, a mechanic can look up the stud number and go straight to it. **The DA40 NG schematic does not** — it shows only a generic ground symbol. This means Pin 47's ground on N238PS cannot be found from the schematic alone; the wire must be physically traced from P701 Pin 47 to wherever it terminates.
+
 2. **GS-IP-14 / Pin 20 (POWER GROUND)** — wire 77016A22N. The GEA's power ground. May affect the reading through ADC common-mode issues if it floats far from Pin 47.
 
 **The key unknown is where wire 31299A22BL (Pin 47) physically terminates. The shop must trace this wire.**
@@ -288,7 +290,7 @@ This means the G1000 has no way to cross-check the GEA's voltage reading against
 The **GEA 71S** — the unit that actually measures the voltage — is on the **instrument panel shelf** (AMM 31-40-00, p.985). Its harness connector **P701** (mates to receptacle **J701** on the unit) and ground stud **GS-IP-14** are in this area. The GEA also has a second connector pair (**P702 / J702**) but the voltage-related pins are all on P701.
 
 **Inspect:**
-- **TRACE wire 31299A22BL (Pin 47, ANALOG IN 5 LO)** — this is the voltage sense reference wire. Per the G1000 wiring diagram (D44-9231-60-03), it connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol. **Find where this wire physically terminates** — that ground connection is the #1 suspect. Check for loose connection, corrosion, or paint under the ring terminal at the termination point.
+- **TRACE wire 31299A22BL (Pin 47, ANALOG IN 5 LO)** — this is the voltage sense reference wire. Per the G1000 wiring diagram (D44-9231-60-03), it connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol. **Find where this wire physically terminates** — that ground connection is the #1 suspect. Check for loose connection, corrosion, or paint under the ring terminal at the termination point. Note: other Diamond variants explicitly document a ground stud number (GS-IP-X) for this pin — the DA40 NG schematic does not, so the wire must be physically traced.
 - **GEA 71S harness plug P701** — is it fully seated with lock engaged on the J701 receptacle? Check Pin 47 (ANALOG IN 5 LO), Pin 46 (ANALOG IN 5 HI), Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO), and Pin 35 (AIRCRAFT POWER) specifically.
 - **Ground stud GS-IP-14** — this is where the GEA 71S power ground wires (Pin 20 (POWER GROUND) and Pin 45 (ANALOG IN 4 LO), wire 77016A22N) terminate. Check for loose nut, corrosion, or paint under the ring terminals.
 - Look for anything that appears disturbed, loose, or not fully reconnected
