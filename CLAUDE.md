@@ -243,6 +243,11 @@ Tested ESS BUS switch activation with G1000 running:
 - Test requires a multimeter on the Essential Bus to provide reference reading
 - Updated MAINTENANCE_GUIDE.md procedure accordingly
 
+**AMM ESS BUS Switch Operation (24-60-00):**
+- **OFF (normal):** Gives ground to power relay coil → relay closes → battery bus connects to main bus. Essential Bus is fed from Main Bus via Main Tie + Ess Tie Relay.
+- **ON (emergency):** Disconnects ground from power relay coil → power relay opens → main bus disconnected. Also gives ground to essential tie relay coil → relay energizes → breaks main-to-essential connection AND connects battery bus directly to essential bus.
+- The ground path does not change — Pin 47 (voltage sense LO) and Pin 20 (power ground) remain on the same ground connections regardless of switch position. Only the power source changes.
+
 ## Electrical System Architecture (from AMM CH.92 Wiring Diagrams)
 
 Schematics extracted from DA40 NG AMM pages 1857-1861 (Drawing Nos. D44-9224-30-01 through D44-9224-30-05).

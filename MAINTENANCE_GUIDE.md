@@ -406,13 +406,18 @@ This test isolates the **power path** from the **ground path** using a cockpit s
 Battery → BATT BUS → Power Relay → MAIN BUS → Main Tie → Ess Tie Relay → ESSENTIAL BUS → GEA Pin 46 (ANALOG IN 5 HI)
 ```
 
-When the **ESS BUS switch** is activated, the Essential Bus is fed directly from Battery Bus 2, bypassing the Main Bus, Power Relay, Main Tie breaker, and Essential Tie Relay entirely. Per the AFM (Section 7.10.1, p.7-42): *"This separates the essential bus from the main bus. The essential bus is then connected to the battery bus 2."*
+When the **ESS BUS switch** is activated (ON position), the Essential Bus is fed directly from Battery Bus 2, bypassing the Main Bus, Power Relay, Main Tie breaker, and Essential Tie Relay entirely.
+
+Per the AMM (24-60-00):
+> In the **OFF** position (normal), the ESS BUS switch gives a ground to the power relay coil. The relay closes and connects the battery bus to the main bus.
+>
+> In the **ON** position (emergency), the ESS BUS switch disconnects the ground from the power relay coil. The power relay opens and disconnects the main bus from the power supply. It also gives a ground to the coil of the essential tie relay. The relay energizes to break the connection between the main bus and the essential bus. At the same time, it connects the battery bus to the essential bus.
 
 ```
 Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (ANALOG IN 5 HI)
 ```
 
-**Critically, the ground path does not change either way** — the GEA 71S ground pins (Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO)) still return through GS-IP-14 → GS-IP bus bar → wire 24008A4N (4 AWG) → battery B1 negative.
+**Critically, the ground path does not change either way** — the GEA 71S power ground pins (Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO)) still return through GS-IP-14, and the voltage sense reference (Pin 47, ANALOG IN 5 LO) still connects to the same Essential Bus ground point. The ESS BUS switch changes only the power source, not the ground return.
 
 **Procedure:**
 1. Connect a multimeter (DC volts) to the Essential Bus (e.g., at the ENG INST breaker output or any accessible Essential Bus point)
@@ -426,7 +431,7 @@ Battery → BATT BUS 2 → (direct) → ESSENTIAL BUS → GEA Pin 46 (ANALOG IN 
 
 | Result | What It Means | Where to Look |
 |--------|---------------|---------------|
-| **Multimeter reading stays the same** | **The Essential Bus voltage is the same regardless of power source.** The power path (Main Bus → Essential Bus) is fine. Combined with the known G1000 offset from step 3, this **confirms the ground path** as the problem. | **GS-IP-14** ground stud, GEA P701 ground pins (Pin 20 (POWER GROUND), Pin 45 (ANALOG IN 4 LO)), IP bus bar. Proceed to resistance measurements below. |
+| **Multimeter reading stays the same** | **The Essential Bus voltage is the same regardless of power source.** The power path (Main Bus → Essential Bus) is fine. Combined with the known G1000 offset from step 3, this **confirms the ground/sense path** as the problem. | Trace **Pin 47 (wire 31299A22BL)** to find its ground termination. Also check **GS-IP-14** ground stud and GEA P701 connector pins. Proceed to resistance measurements below. |
 | Multimeter reading changes noticeably | **Power path resistance** — the normal Main Bus → Essential Bus path has degraded contacts. The ESS switch bypasses those components, and the bus voltage changes as a result. | **Essential Tie Relay contacts**, **Main Tie 30A breaker contacts**, **Power Relay contacts**, Main Bus bar connections. Inspect relay contact surfaces for pitting/corrosion. Check breaker resistance (should be < 0.005 Ω across contacts). |
 
 Note: If the multimeter reads the same in both modes but the G1000 was reading low in step 3, that directly proves the G1000's own sensing/ground path is the issue — the bus itself is healthy.

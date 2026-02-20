@@ -807,7 +807,11 @@ This test confirms:
 
 ### ESS BUS Switch Test
 
-The ESS BUS switch was also tested. When activated, the MFD turns off (Avionic Bus loses power) and the PFD enters reversionary mode with engine parameters. However, **the voltage display is MFD-only** — it does not appear on the PFD in reversionary mode. This test requires a multimeter on the Essential Bus to provide a reference reading.
+The ESS BUS switch was also tested. Per the AMM (24-60-00):
+- **OFF (normal):** Gives ground to power relay coil → relay closes → battery bus connects to main bus. Essential Bus is fed from Main Bus via Main Tie + Ess Tie Relay.
+- **ON (emergency):** Disconnects ground from power relay coil → power relay opens → main bus disconnected. Also gives ground to essential tie relay coil → relay energizes → breaks main-to-essential connection AND connects battery bus directly to essential bus.
+
+When activated, the MFD turns off (Avionic Bus loses power) and the PFD enters reversionary mode with engine parameters. However, **the voltage display is MFD-only** — it does not appear on the PFD in reversionary mode. This test requires a multimeter on the Essential Bus to provide a reference reading. The ground path (Pin 47 sense reference, Pin 20 power ground) does not change — only the power source changes.
 
 ## External Comparison: DA40NG Voltage Stability (N541SA)
 
