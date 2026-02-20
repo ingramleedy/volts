@@ -42,6 +42,17 @@ These FlySto screenshots show actual LOW VOLTS events captured from G1000 flight
 
 These dips are **not real** — the independent VDL48 logger shows the bus voltage is steady at ~28V during these same periods. The G1000 is the only instrument seeing these drops.
 
+### Garmin's Prescribed Troubleshooting for LOW VOLTS
+
+The Garmin G1000 System Maintenance Manual (190-00545-01) CAUTION Alerts table specifies what to do when LOW VOLTS appears:
+
+![G1000 System Maintenance Manual — CAUTION Alerts](docs/G100%20System%20Maintenance%20Manaual%20DA40%20-%20CAUTION%20ALERTS.png)
+
+> **LOW VOLTS** — On-board voltage is below 24 volts.
+> **Solution:** Inspect GEA 71 connector & wiring. Troubleshoot aircraft electrical system according to DA 40 Airplane Maintenance Manual instructions.
+
+Garmin's own manual names the **GEA 71 connector & wiring** as the first thing to inspect — which is exactly what this guide recommends. The analysis in this document identifies *which specific* GEA 71 connector pins and wires are the most likely problem.
+
 ## How We Know It's Real
 
 Three independent measurements were taken on the same aircraft, on the same flights. Two agree. One doesn't.
@@ -540,6 +551,7 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 | AMM CH.34 | GIA 63W connector pinouts |
 | AMM CH.23 | GMA, GTX, GDL connector pinouts |
 | [Garmin 190-00303-40](docs/GEA71_InstallationManual.pdf) | GEA 71 Installation Manual — P701/P702 connector pin function lists (pages 23-26) |
+| [Garmin 190-00545-01](docs/G100%20System%20Maintenance%20Manaual%20DA40%20-%20CAUTION%20ALERTS.png) | G1000 System Maintenance Manual — CAUTION Alerts table. LOW VOLTS (below 24V): "Inspect GEA 71 connector & wiring" |
 | [Concorde 5-0324 Rev G](docs/5-0324-rg-manual.pdf) | RG-series battery manual — State of Charge vs Open Circuit Voltage table (p.13): 24V battery at 25.8V+ = 100% SOC, 25.2V = 75%, 24.6V = 50%, 24.0V = 25%, 23.4V = 0% |
 
 ## Summary

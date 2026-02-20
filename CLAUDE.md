@@ -41,6 +41,7 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 - `Docs/AMM_p1908_G1000_wiring.png` through `AMM_p1912_G1000_wiring.png` - G1000 NXi wiring diagrams (Drawing D44-9231-60-03, Sheets 2/6-6/6), 5100x3300 px each
 - `Docs/GEA71_InstallationManual.pdf` - Garmin GEA 71 Installation Manual (190-00303-40, Revision F). Pages 23-26 contain P701 and P702 connector pin function lists (78 pins each)
 - `Docs/Instrument Panel - Breakers.png` - AFM p.361 instrument panel layout showing circuit breaker positions grouped by bus (EECU BUS, ESSENTIAL BUS, MAIN BUS, AVIONICS BUS). Confirms ENG INST breaker (GEA 71S power) is on the Essential Bus.
+- `docs/G100 System Maintenance Manaual DA40 - CAUTION ALERTS.png` - G1000 System Maintenance Manual (Garmin 190-00545-01) CAUTION Alerts table. **LOW VOLTS** entry: "On-board voltage is below 24 volts" → Solution: "Inspect GEA 71 connector & wiring. Troubleshoot aircraft electrical system according to DA 40 Airplane Maintenance Manual instructions." Garmin's own troubleshooting procedure names the GEA 71 connector & wiring as the first inspection target for LOW VOLTS — directly supporting our analysis.
 - `docs/24-31 Battery Installation.png` - IPC drawing showing battery mounting in aft fuselage
 - `docs/24-40 External Power.png` - IPC drawing showing EPU (External Power Unit) plug location and routing
 - `docs/24-60 Battery Relay.png` - IPC drawing showing battery relay installation
@@ -618,6 +619,14 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - The ECU is unaffected because it uses a wired ground path (GS-IP-3/4 → GS-IP bus bar → 24008A4N) that doesn't depend on the same structural ground as Pin 47
 - Added AMM ESS BUS switch operation description (24-60-00): OFF = power relay closes, ON = power relay opens + essential tie relay connects battery bus directly to essential bus
 - Updated all documentation with corrected ECU ground path, Pin 47 analysis, GPU bypass hypothesis, and ESS BUS switch description
+
+### 2026-02-20: G1000 System Maintenance Manual — CAUTION Alerts
+- Owner added `docs/G100 System Maintenance Manaual DA40 - CAUTION ALERTS.png` — screenshot from Garmin G1000 System Maintenance Manual (190-00545-01) showing the CAUTION Alerts table
+- **LOW VOLTS** entry: "On-board voltage is below 24 volts" → Solution: "Inspect GEA 71 connector & wiring. Troubleshoot aircraft electrical system according to DA 40 Airplane Maintenance Manual instructions."
+- **Significance:** Garmin's own troubleshooting procedure names the GEA 71 connector & wiring as the **first** inspection target for LOW VOLTS — directly validates our entire analysis
+- **24V threshold:** The G1000 LOW VOLTS annunciation triggers at 24V (FlySto uses a 25V threshold for its own alerts)
+- Also added: `docs/24-31 Battery Installation.png`, `docs/24-40 External Power.png`, `docs/24-60 Battery Relay.png`, `docs/24-60 Relay Panel.png` — IPC diagrams showing battery area, EPU (External Power Unit) plug, and relay panel physical layouts
+- Added image and reference to README.md (inline after Key Finding) and MAINTENANCE_GUIDE.md (new "Garmin's Prescribed Troubleshooting" subsection under The Problem, plus AMM References table)
 
 ## Scripts
 
