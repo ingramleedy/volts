@@ -84,10 +84,10 @@ The offset exists on the ground with battery only. This rules out the alternator
 
 Only **0.19V offset** — within normal measurement tolerance. Compare to 1.5V offset with battery (Aug 2025) and 1.4V average in flight.
 
-**Why the GPU test reads nearly correctly:** The EPU negative cable connects to **GS-RP** (relay panel ground studs, near the firewall) via wire 24405A6N (6 AWG). The battery B1 is mounted **aft** (behind the baggage compartment). With battery power, the battery negative is the current *sink* — all return current must travel through 24008A4N to the aft battery terminal. With GPU power, the GPU negative at GS-RP (near the firewall) is the current *sink*, and return current takes the **path of least resistance**:
+**Why the GPU test reads nearly correctly:** The EPU negative cable connects to **GS-RP** (relay panel ground studs, aft of the firewall) via wire 24405A6N (6 AWG). The battery B1 is mounted further **aft** (behind the baggage compartment). With battery power, the battery negative is the current *sink* — all return current must travel through 24008A4N to the aft battery terminal. With GPU power, the GPU negative at GS-RP (relay panel, aft of the firewall) is the current *sink*, and return current takes the **path of least resistance**:
 
 1. 24008A4N → aft to battery negative → wire from aft back to GS-RP (long round trip, through any fault)
-2. Airframe structure from instrument panel → firewall → GS-RP (shorter path, **bypasses 24008A4N and battery terminal**)
+2. Airframe structure from instrument panel → relay panel → GS-RP (shorter path, **bypasses 24008A4N and battery terminal**)
 
 More current takes the shorter structural path, reducing the voltage drop across any fault in the wired path.
 
@@ -562,7 +562,7 @@ The GPU connects through an AN2551 plug in the engine compartment. Per D44-9224-
 | **Positive** | **24403A6** | **6 AWG** | **BATT BUS** (through EPU RELAY + 100A fuse) |
 | **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground) |
 
-**Diagnostic significance:** The EPU negative connects to **GS-RP** (near the firewall), not the battery negative terminal (aft fuselage). With battery power, all return current must travel through 24008A4N to the aft battery terminal — the only current sink. With GPU power, the GPU negative at GS-RP is the current sink, and return current takes the path of least resistance: the airframe structure from instrument panel to firewall is physically shorter than the round trip through 24008A4N → aft battery → back to GS-RP. More current bypasses the fault, reducing the voltage drop. This is why the G1000 reads nearly correctly with GPU power (0.19V offset) but reads low with battery power (1.5V offset on the ground, 1.4V average in flight). See the GPU ground test results in the Evidence Summary section above.
+**Diagnostic significance:** The EPU negative connects to **GS-RP** (relay panel, aft of the firewall), not the battery negative terminal (further aft in the fuselage). With battery power, all return current must travel through 24008A4N to the aft battery terminal — the only current sink. With GPU power, the GPU negative at GS-RP is the current sink, and return current takes the path of least resistance: the airframe structure from instrument panel to relay panel is physically shorter than the round trip through 24008A4N → aft battery → back to GS-RP. More current bypasses the fault, reducing the voltage drop. This is why the G1000 reads nearly correctly with GPU power (0.19V offset) but reads low with battery power (1.5V offset on the ground, 1.4V average in flight). See the GPU ground test results in the Evidence Summary section above.
 
 **Battery Bus 2:**
 The battery bus 2 is connected to the battery bus 1 via a 100 A fuse and provides power to the ECU bus via a 80 A fuse. It also provides power to the main bus via the power-relay which can be controlled by the ELECTRIC MASTER key switch and the ESSENTIAL BUS switch. The ELECTRIC MASTER key switch must be set to ON and the ESSENTIAL BUS switch must be set to OFF to connect the battery bus to the main bus.

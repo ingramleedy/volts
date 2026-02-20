@@ -214,12 +214,12 @@ Ground test with external GPU connected through EPU plug (AN2551):
 - This is within normal measurement tolerance and expected voltage drop from HOT BUS → Essential Bus through relay/breaker contacts
 - **Dramatic improvement** vs Aug 2025 battery test (1.5V offset) and in-flight data (1.4V average offset)
 
-**Why the GPU test reads differently:** The EPU negative cable connects to **GS-RP** (relay panel ground, near the firewall) via wire 24405A6N (6 AWG). The battery B1 is mounted **aft** (behind the baggage compartment) and its negative terminal connects back to GS-RP through a wire running from aft to the relay panel. With **battery power**, the battery negative is the current *sink* — ALL return current must physically enter the battery through its negative terminal in the aft fuselage, so it all flows through 24008A4N and any fault in that path. With **GPU power**, the GPU negative at GS-RP (near the firewall) is the current *sink*, and return current from GS-IP takes the **path of least resistance** to reach GS-RP:
+**Why the GPU test reads differently:** The EPU negative cable connects to **GS-RP** (relay panel ground, aft of the firewall) via wire 24405A6N (6 AWG). The battery B1 is mounted **aft** (behind the baggage compartment) and its negative terminal connects back to GS-RP through a wire running from aft to the relay panel. With **battery power**, the battery negative is the current *sink* — ALL return current must physically enter the battery through its negative terminal in the aft fuselage, so it all flows through 24008A4N and any fault in that path. With **GPU power**, the GPU negative at GS-RP (aft of the firewall) is the current *sink*, and return current from GS-IP takes the **path of least resistance** to reach GS-RP:
 
 1. 24008A4N → aft to battery negative → wire from aft back to GS-RP (long round trip, through any fault)
-2. Airframe structure from instrument panel → firewall/relay panel → GS-RP (shorter structural path, bypasses 24008A4N and battery terminal entirely)
+2. Airframe structure from instrument panel → relay panel (aft of firewall) → GS-RP (shorter structural path, bypasses 24008A4N and battery terminal entirely)
 
-Current splits proportionally by conductance. Path 2 is physically shorter (IP to firewall) than path 1 (IP → aft → back to firewall). Any elevated resistance in path 1 pushes even more current through path 2, reducing the voltage drop across the fault.
+Current splits proportionally by conductance. Path 2 is physically shorter (IP to relay panel) than path 1 (IP → aft fuselage → back to relay panel). Any elevated resistance in path 1 pushes even more current through path 2, reducing the voltage drop across the fault.
 
 **Two contributing factors:**
 1. GPU ground at GS-RP provides parallel return — current bypasses the fault via path of least resistance
@@ -271,7 +271,7 @@ The GPU connects through an AN2551 external power plug in the engine compartment
 |---------|------|-------|-------------|
 | Jumper/Sense | 24401B22 → J2421 pin 4 → 24401A22 | 22 AWG | EPU RELAY coil (closes relay when GPU plugged in) |
 | **Positive** | **24403A6** | **6 AWG** | **BATT BUS** (through EPU RELAY contacts + 100A fuse) |
-| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, near firewall) |
+| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft of firewall) |
 
 **Important:** The EPU negative connects to **GS-RP**, not to the battery B1 negative terminal. This means GPU return current flows through GS-RP ground studs, providing a parallel ground return path that can bypass wire 24008A4N and the battery negative terminal. This is diagnostically significant — see GPU ground test results in Owner Ground Tests section.
 
@@ -288,7 +288,7 @@ G1000 GDU/GIA ground pins
 ```
 **Source:** D44-9224-30-01X03 Sheet 1/1 (Electrical System, Conversion — p1859). Wire 24008A4N is a heavy 4 AWG negative wire providing a dedicated copper path from the GS-IP bus bar to the battery negative. This is NOT a structural ground through the fuselage — it is a wired return.
 
-The relay panel and engine compartment components use separate ground studs (GS-RP series) near the firewall. The alternator and starter grounds return through GS-RP. The battery B1 is mounted in the aft fuselage and its negative terminal connects to both GS-RP (relay panel) and GS-IP (instrument panel, via wire 24008A4N).
+The relay panel and engine compartment components use separate ground studs (GS-RP series) aft of the firewall. The alternator and starter grounds return through GS-RP. The battery B1 is mounted in the aft fuselage and its negative terminal connects to both GS-RP (relay panel) and GS-IP (instrument panel, via wire 24008A4N).
 
 ### Alternator Voltage Regulation
 The alternator regulator (J2424) has a **dedicated USENSE wire** (24022A22, 22 AWG, pin 5) for voltage sensing, separate from the G1000's measurement. This means:

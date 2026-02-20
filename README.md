@@ -782,12 +782,12 @@ The EPU wiring (from D44-9224-30-01X03) reveals the explanation:
 | EPU Pin | Wire | Gauge | Connects To |
 |---------|------|-------|-------------|
 | Positive | 24403A6 | 6 AWG | BATT BUS (through EPU RELAY) |
-| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, near firewall) |
+| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft of firewall) |
 
-The EPU negative connects to **GS-RP** (near the firewall), while the battery B1 is mounted **aft** (behind the baggage compartment). With **battery power**, the battery negative is the only current sink — all return current must travel through 24008A4N to the aft battery terminal. With **GPU power**, the GPU negative at GS-RP is the current sink, and return current takes the **path of least resistance** to reach it:
+The EPU negative connects to **GS-RP** (relay panel, aft of the firewall), while the battery B1 is mounted further **aft** (behind the baggage compartment). With **battery power**, the battery negative is the only current sink — all return current must travel through 24008A4N to the aft battery terminal. With **GPU power**, the GPU negative at GS-RP is the current sink, and return current takes the **path of least resistance** to reach it:
 
 1. 24008A4N → aft to battery negative → wire from aft back to GS-RP (long round trip, through any fault)
-2. Airframe structure from instrument panel → firewall → GS-RP (shorter structural path, **bypasses 24008A4N and battery terminal**)
+2. Airframe structure from instrument panel → relay panel → GS-RP (shorter structural path, **bypasses 24008A4N and battery terminal**)
 
 More current takes the shorter structural path, reducing the voltage drop across any fault in the wired path.
 
