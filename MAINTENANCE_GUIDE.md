@@ -86,7 +86,9 @@ Only **0.19V offset** — within normal measurement tolerance. Compare to 1.5V o
 
 **Why the GPU test reads nearly correctly — and why it does NOT point to the battery negative terminal:**
 
-The GPU does NOT bypass the fault. The G1000's ground path goes through GS-IP (Ground Stud - Instrument Panel) → wire 24008A4N → aft area regardless of power source. The EPU (External Power Unit) negative connects to **GS-RP** via wire 24405A6N (6 AWG), but GS-RP and battery B1 negative are co-located in the aft fuselage — return current still travels the full length of 24008A4N either way.
+**The GPU may actually bypass the fault — specifically at Pin 47's ground.** The EPU (External Power Unit) negative connects to **GS-RP** via wire 24405A6N (6 AWG), providing a second current sink in the aft fuselage. If Pin 47's Essential Bus ground (wire 31299A22BL) terminates at a structural/airframe ground point (consistent with the generic ground symbol on the schematic), that point may have a **lower-impedance path to GS-RP** than to battery negative through the degraded connection. The GPU at GS-RP effectively "pulls down" Pin 47's ground to the correct potential — explaining the near-zero offset.
+
+This means the GPU test is **diagnostic**: it specifically supports Pin 47's ground as the fault location. The Aug 2025 battery test showed 1.5V offset on the ground (fault present without vibration), while the GPU test showed 0.19V (fault bypassed). The ECU is unaffected because it uses a wired ground path (GS-IP-3/4 → GS-IP bus bar → 24008A4N) that is intact and doesn't depend on the same structural ground as Pin 47.
 
 **The ECU proves the shared GS-IP ground infrastructure is healthy:** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, correct. Since the ECU shares the GS-IP bus bar, wire 24008A4N, and aft ground termination with the G1000, all of that is proven healthy.
 

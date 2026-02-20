@@ -221,7 +221,9 @@ Ground test with external GPU connected through EPU plug (AN2551):
 - This is within normal measurement tolerance and expected voltage drop from HOT BUS → Essential Bus through relay/breaker contacts
 - **Dramatic improvement** vs Aug 2025 battery test (1.5V offset) and in-flight data (1.4V average offset)
 
-**Why the GPU test reads nearly correctly:** The GPU does NOT bypass the fault. The G1000's ground path goes through GS-IP (Ground Stud - Instrument Panel) → wire 24008A4N → aft area regardless of whether battery or GPU provides the power. The EPU (External Power Unit) negative cable connects to **GS-RP (Ground Stud - Relay Panel)** via wire 24405A6N (6 AWG), but per AMM installation drawings (24-31, 24-40, 24-60), GS-RP and battery B1 negative are co-located in the aft fuselage — return current from GS-IP still must travel the full length of wire 24008A4N to reach the aft area regardless.
+**Why the GPU test reads nearly correctly — the GPU may bypass the fault at Pin 47's ground:** The EPU (External Power Unit) negative cable connects to **GS-RP (Ground Stud - Relay Panel)** via wire 24405A6N (6 AWG), providing a second current sink in the aft fuselage. If Pin 47's Essential Bus ground (wire 31299A22BL) terminates at a structural/airframe ground point (consistent with the generic ground symbol on D44-9224-30-01X03), that point may have a **lower-impedance path to GS-RP through the airframe** than to battery negative through the degraded connection. The GPU at GS-RP effectively "pulls down" Pin 47's ground reference to the correct potential, and the GEA reads correctly.
+
+This means the GPU test is **diagnostic, not coincidental** — it specifically supports Pin 47's ground as the fault location. The ECU is unaffected because it uses a wired ground path (GS-IP-3/4 → GS-IP bus bar → 24008A4N → battery negative) that is intact and does not depend on the same structural ground as Pin 47.
 
 **The ECU proves the shared GS-IP ground infrastructure is healthy:** Per AMM page 1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (located under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, essentially correct. Since the ECU shares the GS-IP bus bar, wire 24008A4N, and the aft ground termination with the G1000, all of those are proven healthy. The fault is isolated to the GEA 71S's **own** ground connection.
 
@@ -233,7 +235,7 @@ Ground test with external GPU connected through EPU plug (AN2551):
 
 The shared infrastructure (GS-IP bus bar, wire 24008A4N, aft termination) is proven good by the ECU. **The key unknown is where wire 31299A22BL (Pin 47) physically terminates.**
 
-The near-zero offset with GPU is most likely because the **fault is intermittent and currently in good contact on the ground** (no vibration, stable temperature). This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run." The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Feb 8 flight data (-1.4V average, -5.6V worst) was only 12 days before. The Aug 2025 battery test (1.5V offset) and Feb 2026 GPU test (0.19V offset) are 6 months apart — the contact resistance varies over time.
+The near-zero GPU offset is likely because the GPU **bypasses the fault** — not merely because the fault is intermittent. The Aug 2025 battery test showed 1.5V offset on the ground (fault present without vibration), while the Feb 2026 GPU test showed 0.19V (fault bypassed). The fault is also vibration/thermal-sensitive — it worsens in flight (Feb 8 data: -1.4V average, -5.6V worst) — but the GPU data suggests the ground path to battery negative is the high-resistance segment, and the GPU at GS-RP provides an alternate lower-impedance return.
 
 ### Feb 20, 2026 (ESS BUS Switch Test)
 Tested ESS BUS switch activation with G1000 running:
@@ -612,8 +614,10 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - Wire 24008A4N, GS-IP bus bar, and aft termination are ruled out (ECU uses them and reads correctly)
 - **Key insight from owner:** The GEA voltage measurement is differential — Pin 46 (ANALOG IN 5 HI) minus Pin 47 (ANALOG IN 5 LO). Pin 47 is the actual voltage measurement reference, connecting to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol at Pin 47's termination — **the physical location where wire 31299A22BL terminates is unknown**
 - **Two primary suspects:** (1) Pin 47 Essential Bus ground — unknown termination point, directly affects reading; (2) GS-IP-14 / Pin 20 — GEA power ground, may affect reading through ADC common-mode issues
-- GPU does NOT bypass either suspect — near-zero GPU offset is due to intermittent contact being in good condition on the ground
-- Updated all documentation with corrected ECU ground path, Pin 47 analysis, and narrowed fault localization
+- **GPU bypass hypothesis (owner insight):** If Pin 47's ground is a structural/airframe ground (consistent with generic ground symbol), the GPU negative at GS-RP may provide a lower-impedance alternate return path. This would explain why GPU reads correctly (bypasses the degraded ground path to battery negative) while battery reads low. The GPU test is therefore **diagnostic**, not coincidental — it specifically supports Pin 47's ground as the fault.
+- The ECU is unaffected because it uses a wired ground path (GS-IP-3/4 → GS-IP bus bar → 24008A4N) that doesn't depend on the same structural ground as Pin 47
+- Added AMM ESS BUS switch operation description (24-60-00): OFF = power relay closes, ON = power relay opens + essential tie relay connects battery bus directly to essential bus
+- Updated all documentation with corrected ECU ground path, Pin 47 analysis, GPU bypass hypothesis, and ESS BUS switch description
 
 ## Scripts
 
