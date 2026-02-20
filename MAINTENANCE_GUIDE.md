@@ -115,7 +115,7 @@ This means the GPU test is **diagnostic**: it specifically supports Pin 47's gro
 
 **The key unknown is where wire 31299A22BL (Pin 47) physically terminates. The shop must trace this wire.**
 
-The near-zero offset with GPU is most likely because the **fault is intermittent and in good contact on the ground** (no vibration, stable temperature). This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run." The fault is vibration/thermal-sensitive — it degrades in flight but tests fine on the ground. The Feb 8 flight data (-1.4V average, -5.6V worst) was only 12 days earlier. The Aug 2025 battery test (1.5V offset) and Feb 2026 GPU test (0.19V offset) are 6 months apart — contact resistance varies over time.
+The near-zero offset with GPU (0.19V) vs the 1.5V offset on battery is explained by the **different test conditions**, not by time passing — the GPU provides an alternate ground return path that bypasses Pin 47's degraded ground. The fault is also **vibration/thermal-sensitive** — it worsens in flight (Feb 8 data: -1.4V average, -5.6V worst) but may test better on the ground without vibration. This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run."
 
 ### Why the Battery Matters (but isn't the cause)
 
