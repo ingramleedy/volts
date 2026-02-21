@@ -106,9 +106,23 @@ The GEA 71S measures bus voltage using two sense wires on its P701 connector: **
 
 Per the IPC (24-31 Battery Installation), the battery negative terminal has only two connections: **wire 24008A4N (4 AWG) to the instrument panel** and **wire 24405A6N (6 AWG) to the EPU plug**. Both the GPU negative and the instrument panel ground return connect to the **same battery negative terminal**. This means the GPU does not provide a fundamentally different ground path — both battery-only and GPU tests share the same negative terminal and the same positive path from BATT BUS to the Essential Bus.
 
-**The reason for the different readings is not yet fully explained.** Possible factors include:
-- **Battery negative terminal condition** — if the terminal or its connections are degraded (loose, corroded, poorly torqued), connecting the GPU's heavy 6 AWG cable may improve the contact. The terminal has been disturbed during both engine R&Rs and the battery replacement.
-- **Positive path between BATT BUS and Essential Bus** — four relay/breaker contacts (Power Relay, MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A) sit between BATT BUS and the Essential Bus. The ECU is on the ECU BUS (directly off BATT BUS through a 100A fuse) and bypasses all of them. Any degraded contact in this chain would make the Essential Bus genuinely lower than what the AUX POWER meter and ECU see.
+**The explanation is current reversal at the battery negative terminal.** The key is that current flows in **opposite directions** through this terminal depending on the power source:
+
+**Battery only (current returns to battery):**
+The buses draw current from the battery. Return current flows through wire 24008A4N back to the battery negative terminal. If there is resistance at the terminal (corrosion, loose torque, stacked ring terminals — say 0.05Ω), the return current creates a voltage drop: e.g. 20A × 0.05Ω = 1.0V. This lifts the GS-IP bus bar (instrument panel ground) ABOVE true battery negative. Pin 47 references the GS-IP side, so it sits 1.0V high — and the GEA reads **1.0V low**.
+
+**GPU connected (GPU charges the battery):**
+The GPU powers the buses AND pushes charging current into the battery. Current now flows through the battery negative terminal in the **opposite direction** — out of the terminal toward the buses. The same resistance now drops voltage in reverse: GS-IP sits slightly BELOW battery negative. Pin 47 sits slightly low → the GEA reads **correct or slightly high**, canceling the error.
+
+```
+Battery only:  Buses → 24008A4N → [bad terminal, +1.0V] → Battery(-)     → reads LOW
+GPU charging:  Battery(-) → [bad terminal, -0.25V] → 24008A4N → Buses    → reads CORRECT
+```
+
+The same physical fault produces **opposite effects** depending on current direction. The GPU doesn't fix the fault — it **reverses** its effect. This is why the battery test shows -1.3V offset while the GPU test shows only -0.19V on the same day.
+
+**Other contributing factors:**
+- **Positive path between BATT BUS and Essential Bus** — four relay/breaker contacts (Power Relay, MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A) sit between BATT BUS and the Essential Bus. The ECU bypasses all of them. Any degraded contact would make the Essential Bus genuinely lower.
 - **Pin 47 ground termination** — still unknown, still needs to be traced.
 
 **The definitive test:** Put a meter directly on the **Essential Bus** (at the ENG INST breaker output or the bus bar itself) and compare to the AUX POWER reading simultaneously. If the Essential Bus matches AUX POWER, the problem is in the GEA's measurement/ground path. If the Essential Bus is 1.3V lower, the problem is in the positive path between BATT BUS and the Essential Bus.
