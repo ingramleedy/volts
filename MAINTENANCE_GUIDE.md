@@ -647,7 +647,7 @@ The GPU connects through an AN2551 plug in the engine compartment. Per D44-9224-
 | **Positive** | **24403A6** | **6 AWG** | **BATT BUS** (through EPU RELAY + 100A fuse) |
 | **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft fuselage — adjacent to battery) |
 
-**Physical layout:** Per AMM installation drawings (24-31, 24-40, 24-60), the relay panel, battery, EPU plug, and battery relay are all **co-located in the aft fuselage**. GS-RP ground studs and the battery B1 negative terminal are adjacent, connected by short straps. The GPU ground at GS-RP does not provide a significantly shorter alternate path — the near-zero offset with GPU (0.19V) is primarily because the intermittent fault is in good contact on the ground (no vibration). See the GPU ground test results in the Evidence Summary section above.
+**Physical layout:** Per AMM installation drawings (24-31, 24-40, 24-60), the relay panel, battery, EPU plug, and battery relay are all **co-located in the aft fuselage**. The GPU negative (wire 24405A6N) connects to the battery B1 negative terminal. See the GPU ground test results in the Evidence Summary section above, and the [IPC 24-40 External Power image](#ipc-24-40-external-power) in the Reference Images section.
 
 **Battery Bus 2:**
 The battery bus 2 is connected to the battery bus 1 via a 100 A fuse and provides power to the ECU bus via a 80 A fuse. It also provides power to the main bus via the power-relay which can be controlled by the ELECTRIC MASTER key switch and the ESSENTIAL BUS switch. The ELECTRIC MASTER key switch must be set to ON and the ESSENTIAL BUS switch must be set to OFF to connect the battery bus to the main bus.
