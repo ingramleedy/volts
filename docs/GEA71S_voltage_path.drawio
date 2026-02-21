@@ -241,6 +241,24 @@
                         <mxPoint x="300" y="440" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
+                <mxCell id="p47_gnd_line" value="" style="endArrow=none;strokeColor=#CC0000;strokeWidth=2;dashed=1;dashPattern=8 4;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="635" y="398" as="sourcePoint"/>
+                        <mxPoint x="635" y="470" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="p47_question" value="?" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#CC0000;" vertex="1" parent="1">
+                    <mxGeometry x="622" y="465" width="26" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="p47_unknown" value="UNKNOWN&lt;br&gt;GROUND TERMINATION" style="text;html=1;align=center;verticalAlign=top;fontSize=9;fontStyle=1;fontColor=#CC0000;" vertex="1" parent="1">
+                    <mxGeometry x="555" y="490" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="p47_note" value="DA40 NG schematic shows only a&lt;br&gt;generic ground symbol — other Diamond&lt;br&gt;variants specify a GS-IP-X stud number" style="text;html=1;align=center;verticalAlign=top;fontSize=8;fontStyle=2;fontColor=#CC0000;" vertex="1" parent="1">
+                    <mxGeometry x="530" y="518" width="210" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="suspect_label" value="PRIMARY SUSPECT" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontStyle=1;fontColor=#CC0000;labelBackgroundColor=#FFFFFF;" vertex="1" parent="1">
+                    <mxGeometry x="290" y="388" width="110" height="16" as="geometry"/>
+                </mxCell>
             </root>
         </mxGraphModel>
     </diagram>
