@@ -117,7 +117,16 @@ Per the IPC (24-31 Battery Installation), the battery negative terminal has only
 
 **Three areas to inspect (in order of accessibility):**
 
-1. **Battery negative terminal (aft fuselage)** — Per the IPC (24-31), only two wires connect here: 24008A4N (instrument panel ground return) and 24405A6N (EPU). Also check the **BatteryMinder interface** connection (installed Sep 2024) — verify how it connects to the battery terminals and whether it adds resistance or a poor contact to the negative post. This terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025). Clean all connections, check for corrosion under ring terminals, verify torque. This is the easiest item to inspect and could resolve the issue.
+1. **Battery negative terminal (aft fuselage)** — Per the IPC (24-31), two wires connect here: 24008A4N (instrument panel ground return) and 24405A6N (EPU). The **BatteryMinder interface** (installed Sep 2024) also connects here. This terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025). This is the easiest item to inspect and could resolve the issue.
+
+   **Battery negative terminal inspection checklist:**
+   - Count the total number of ring terminals on the negative post
+   - Identify what each terminal connects to (24008A4N, 24405A6N, BatteryMinder, any others)
+   - Document the stacking order (which terminal is against the post vs on top — a buried terminal may not make good contact even if the nut is torqued)
+   - Check condition of each terminal: corrosion, deformation, discoloration, adequate contact area
+   - Check for star washer or flat washer between terminals
+   - Verify nut torque
+   - Clean all contact surfaces, reassemble with proper stacking and torque
 
 2. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential), Pin 47 is the voltage measurement reference. Any resistance at this ground directly causes a low reading.
 
