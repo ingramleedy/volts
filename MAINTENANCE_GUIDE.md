@@ -110,16 +110,41 @@ Per the IPC (24-31 Battery Installation), the battery negative terminal has thre
 
 See [IPC 24-31 Battery Installation image](#ipc-24-31-battery-installation) at the end of this document.
 
-Both the GPU negative and the instrument panel ground return connect to the **same battery negative terminal**. Both battery-only and GPU tests share the same negative terminal and the same positive path from BATT BUS to the Essential Bus.
+All these ring terminals — plus the **BatteryMinder interface** (installed Sep 2024) — are stacked on the same battery negative bolt. The GPU cable (24405A6N), instrument panel ground (24008A4N), structural ground (Cable 200), and BatteryMinder all share the same bolt.
 
-**The reason for the different readings is not yet fully explained**, but **Cable 200 may be a key factor.** The bus return current through wire 24008A4N flows in the same direction (from GS-IP toward the battery negative terminal) regardless of battery or GPU, so a bad connection on that specific wire does not explain the difference. However, **Cable 200 connects the battery negative to the aircraft's structural grounding system**. If Pin 47's ground (wire 31299A22BL) terminates at a structural ground point that returns to battery negative through Cable 200's path, then any resistance in Cable 200 or its termination would affect the voltage reading. The GPU's heavy 6 AWG cable (24405A6N) connects directly to the battery negative terminal and could provide a **lower-impedance alternate return path** that bypasses a degraded Cable 200 connection — potentially explaining why the GPU test reads correctly.
+### Why GPU Reads Correctly: Battery Post Bypass
 
-**Cable 200's termination point and condition must be inspected.** There may also be additional grounding connections in the aft fuselage (engine ground straps, relay panel grounds, firewall ground straps) that are documented elsewhere in the AMM. **Document ALL ground connections visible in the battery area**, not just what the IPC shows.
+If the ring terminals on the bolt are well-bonded **to each other** but the whole stack has **poor contact to the battery post itself** (corrosion, loose nut, worn surfaces from repeated disturbance), the GPU cable creates a bypass:
 
-Possible contributing factors:
-- **Cable 200 (Battery GND)** — if degraded, it would affect any ground path that returns through the structural grounding system. The GPU may bypass this. **Inspect Cable 200 end-to-end.**
-- **Positive path between BATT BUS and Essential Bus** — four relay/breaker contacts (Power Relay, MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A) sit between BATT BUS and the Essential Bus. The ECU bypasses all of them. Any degraded contact would make the Essential Bus genuinely lower.
-- **Pin 47 ground termination** — still unknown, may connect through the structural grounding system that Cable 200 serves.
+**On battery:** All return current (~20A) must flow from the ring terminal stack through the bad connection to the battery post. At 0.065Ω: 20A × 0.065Ω = **1.3V drop**. Pin 47's ground reference sits 1.3V above true battery negative → GEA reads 1.3V low.
+
+**On GPU:** The GPU cable (24405A6N) is on the same stack, well-bonded to the other wires. Bus return current takes a shortcut — from 24008A4N through the stack to 24405A6N and back to the GPU — **never crossing the bad connection to the battery post**. Only charging current (~3A) crosses the bad connection. 3A × 0.065Ω = **0.2V drop**. GEA reads nearly correctly.
+
+**In flight (alternator):** The alternator is permanent aircraft wiring — its return current must cross the same bad connection. No bypass. Higher total current (~25A+) = worse drop. Consistent with -1.4V average in flight data.
+
+```
+Battery only:  Loads → 24008A4N → [STACK] → [BAD CONNECTION] → Battery post
+                                                    ↑
+                                               ~20A → 1.3V drop
+
+GPU connected: Loads → 24008A4N → [STACK] → 24405A6N → GPU(-)    (bypass!)
+                                                    ↑
+                                     only ~3A charging → 0.2V drop
+```
+
+| Condition | Current through bad connection | Drop (at 0.065Ω) | Observed |
+|-----------|-------------------------------|-------------------|----------|
+| Battery only, ground | ~20A (all return) | 1.3V | **-1.3V** |
+| GPU, ground | ~3A (charging only) | 0.2V | **-0.19V** |
+| Flight (alternator) | ~25A+ | 1.6V+ | **-1.4V avg** |
+
+The BatteryMinder adds another ring terminal to the stack — more terminals stacked means the outermost have progressively worse contact to the post. The terminal has been disturbed during both engine R&Rs and the battery replacement.
+
+**This needs to be verified by inspection.** Also trace Cable 200 to its termination and **document ALL ground connections visible in the battery area** — there may be additional connections not shown on the IPC.
+
+Other contributing factors:
+- **Pin 47 ground termination** — still unknown, may connect through the structural grounding system that Cable 200 serves
+- **Positive path between BATT BUS and Essential Bus** — four relay/breaker contacts (Power Relay, MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A) between BATT BUS and Essential Bus. The ECU bypasses all. Any degraded contact would make the Essential Bus genuinely lower.
 
 **The definitive test:** Put a meter directly on the **Essential Bus** (at the ENG INST breaker output or the bus bar itself) and compare to the AUX POWER reading simultaneously. If the Essential Bus matches AUX POWER, the problem is in the GEA's measurement/ground path. If the Essential Bus is 1.3V lower, the problem is in the positive path between BATT BUS and the Essential Bus.
 
