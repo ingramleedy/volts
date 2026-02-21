@@ -835,7 +835,14 @@ GPU connected: Loads → GS-IP → 24008A4N → [STACK] → 24405A6N → GPU(-)
 | GPU, ground | ~3A (charging only) | 0.2V | **-0.19V** |
 | Flight (alternator) | ~25A+ (all loads + charging) | 1.6V+ | **-1.4V avg** |
 
-The BatteryMinder interface (installed Sep 2024) adds another ring terminal to the stack — more terminals means the outermost terminals have progressively worse contact to the post, especially if nut torque is marginal or contact surfaces are corroded. The terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025).
+**Stacking order on the battery negative bolt** (per IPC 24-31, closest to post first):
+
+1. **Cable 200** (Battery GND) — closest to post
+2. **24008A4N** (instrument panel)
+3. **24405A6N** (EPU)
+4. **BatteryMinder** (aftermarket addition, last)
+
+The contact between the bottom of the stack (Cable 200) and the battery post is the critical junction — if degraded, all connections above it are affected. The terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025). The BatteryMinder (installed Sep 2024) adds a fourth terminal to the stack.
 
 **This hypothesis needs verification:** Inspect the contact between the ring terminal stack and the battery post. Trace where Cable 200 terminates — it connects battery negative to the structural grounding system, and Pin 47's unknown ground may return through this path.
 

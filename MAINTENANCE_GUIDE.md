@@ -157,8 +157,14 @@ Other contributing factors:
    **Battery negative terminal inspection checklist:**
    - Count the total number of ring terminals on the negative post
    - Identify what each terminal connects to (24008A4N, 24405A6N, Cable 200, BatteryMinder, any others)
-   - Document the stacking order (which terminal is against the post vs on top — a buried terminal may not make good contact even if the nut is torqued)
+   - Document the stacking order and compare to IPC expected order (closest to post first):
+     1. **Cable 200** (Battery GND) — closest to post
+     2. **24008A4N** (instrument panel)
+     3. **24405A6N** (EPU)
+     4. **BatteryMinder** — last (aftermarket addition)
+   - Verify this matches the actual order — if a terminal has been placed out of order (e.g. BatteryMinder inserted between factory terminals), the factory connections above it may have degraded contact to the post
    - Check condition of each terminal: corrosion, deformation, discoloration, adequate contact area
+   - **Inspect the contact surface between the bottom terminal (Cable 200) and the battery post** — this is where the bypass hypothesis predicts the fault. Corrosion, pitting, or film on either surface would affect all connections in the stack
    - Check for star washer or flat washer between terminals
    - Verify nut torque
    - Clean all contact surfaces, reassemble with proper stacking and torque
