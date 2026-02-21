@@ -104,16 +104,24 @@ The **24.0V G1000 reading on battery** is right at the LOW VOLTS annunciation th
 
 The GEA 71S measures bus voltage using two sense wires on its P701 connector: **Pin 46 (ANALOG IN 5 HI)** reads the Essential Bus positive rail, and **Pin 47 (ANALOG IN 5 LO)** reads the Essential Bus ground. The displayed voltage is the difference: Pin 46 minus Pin 47. If either path has resistance — high side dropping the voltage or low side floating above true ground — the reading drops.
 
-Per the IPC (24-31 Battery Installation), the battery negative terminal has only two connections: **wire 24008A4N (4 AWG) to the instrument panel** and **wire 24405A6N (6 AWG) to the EPU plug**. Both the GPU negative and the instrument panel ground return connect to the **same battery negative terminal**. This means the GPU does not provide a fundamentally different ground path — both battery-only and GPU tests share the same negative terminal and the same positive path from BATT BUS to the Essential Bus.
+Per the IPC (24-31 Battery Installation), the battery negative terminal has three connections:
 
-**The reason for the different readings is not yet fully explained.** The bus return current through wire 24008A4N flows in the same direction (from GS-IP toward the battery negative terminal) regardless of whether the aircraft is on battery or GPU — the GPU's charging current exits B1(-) through wire 24405A6N back to the GPU, not through 24008A4N. A bad connection at the battery negative terminal alone does not explain the GPU vs battery difference.
+1. **Wire 24008A4N** (4 AWG) — to instrument panel (GS-IP bus bar)
+2. **Wire 24405A6N** (6 AWG) — to EPU plug (GPU negative)
+3. **Cable 200** (P/N D44-2403-160-00, "Cable, Battery GND") — routes to a structural/airframe ground point
 
-**Note on aircraft grounding:** The IPC (24-31) shows only two wires on the battery negative terminal bolt, but the aircraft requires additional grounding connections (engine ground straps, relay panel grounds, firewall ground straps) that may exist in the aft fuselage area. A GS-RP (relay panel ground) or other ground stud/strap near the battery — not shown on the IPC drawing — could provide an alternate return path that the GPU affects differently. **This needs to be verified by physical inspection of the battery area** — document ALL ground connections visible, not just what the IPC shows.
+See [IPC 24-31 Battery Installation image](#ipc-24-31-battery-installation) at the end of this document.
+
+Both the GPU negative and the instrument panel ground return connect to the **same battery negative terminal**. Both battery-only and GPU tests share the same negative terminal and the same positive path from BATT BUS to the Essential Bus.
+
+**The reason for the different readings is not yet fully explained**, but **Cable 200 may be a key factor.** The bus return current through wire 24008A4N flows in the same direction (from GS-IP toward the battery negative terminal) regardless of battery or GPU, so a bad connection on that specific wire does not explain the difference. However, **Cable 200 connects the battery negative to the aircraft's structural grounding system**. If Pin 47's ground (wire 31299A22BL) terminates at a structural ground point that returns to battery negative through Cable 200's path, then any resistance in Cable 200 or its termination would affect the voltage reading. The GPU's heavy 6 AWG cable (24405A6N) connects directly to the battery negative terminal and could provide a **lower-impedance alternate return path** that bypasses a degraded Cable 200 connection — potentially explaining why the GPU test reads correctly.
+
+**Cable 200's termination point and condition must be inspected.** There may also be additional grounding connections in the aft fuselage (engine ground straps, relay panel grounds, firewall ground straps) that are documented elsewhere in the AMM. **Document ALL ground connections visible in the battery area**, not just what the IPC shows.
 
 Possible contributing factors:
-- **Undocumented ground connections** in the aft fuselage (ground straps, structural bonds, GS-RP) that aren't on the IPC battery drawing
+- **Cable 200 (Battery GND)** — if degraded, it would affect any ground path that returns through the structural grounding system. The GPU may bypass this. **Inspect Cable 200 end-to-end.**
 - **Positive path between BATT BUS and Essential Bus** — four relay/breaker contacts (Power Relay, MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A) sit between BATT BUS and the Essential Bus. The ECU bypasses all of them. Any degraded contact would make the Essential Bus genuinely lower.
-- **Pin 47 ground termination** — still unknown, still needs to be traced.
+- **Pin 47 ground termination** — still unknown, may connect through the structural grounding system that Cable 200 serves.
 
 **The definitive test:** Put a meter directly on the **Essential Bus** (at the ENG INST breaker output or the bus bar itself) and compare to the AUX POWER reading simultaneously. If the Essential Bus matches AUX POWER, the problem is in the GEA's measurement/ground path. If the Essential Bus is 1.3V lower, the problem is in the positive path between BATT BUS and the Essential Bus.
 
@@ -121,16 +129,23 @@ Possible contributing factors:
 
 **Three areas to inspect (in order of accessibility):**
 
-1. **Battery negative terminal (aft fuselage)** — Per the IPC (24-31), two wires connect here: 24008A4N (instrument panel ground return) and 24405A6N (EPU). The **BatteryMinder interface** (installed Sep 2024) also connects here. This terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025). This is the easiest item to inspect and could resolve the issue.
+1. **Battery negative terminal and Cable 200 (aft fuselage)** — Per the IPC (24-31), three connections at battery negative: wire 24008A4N (instrument panel ground return), wire 24405A6N (EPU), and **Cable 200** (D44-2403-160-00, "Cable, Battery GND" — routes to structural/airframe ground). The **BatteryMinder interface** (installed Sep 2024) also connects here. This terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025). This is the easiest area to inspect and could resolve the issue.
 
    **Battery negative terminal inspection checklist:**
    - Count the total number of ring terminals on the negative post
-   - Identify what each terminal connects to (24008A4N, 24405A6N, BatteryMinder, any others)
+   - Identify what each terminal connects to (24008A4N, 24405A6N, Cable 200, BatteryMinder, any others)
    - Document the stacking order (which terminal is against the post vs on top — a buried terminal may not make good contact even if the nut is torqued)
    - Check condition of each terminal: corrosion, deformation, discoloration, adequate contact area
    - Check for star washer or flat washer between terminals
    - Verify nut torque
    - Clean all contact surfaces, reassemble with proper stacking and torque
+
+   **Cable 200 (Battery GND) inspection:**
+   - Trace Cable 200 from the battery negative terminal to its termination point
+   - Document where it terminates (structural ground, ground stud, airframe attachment)
+   - Inspect the termination: corrosion, loose fastener, poor contact area
+   - Check the cable itself for chafing, damage, or corrosion
+   - If Cable 200 terminates at a structural ground that could be part of Pin 47's return path, this is a high-priority suspect
 
 2. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential), Pin 47 is the voltage measurement reference. Any resistance at this ground directly causes a low reading.
 
@@ -741,3 +756,31 @@ The **ENG INST** breaker (which powers the GEA 71S voltage sensor) is physically
 1. The GEA 71S stays powered even when the Avionic Master is OFF
 2. When the ESS BUS switch is activated (emergency mode), the GEA 71S switches to direct Battery Bus 2 power along with all other Essential Bus loads
 3. The GEA 71S power path is: Main Bus → Main Tie 30A → Ess Tie Relay → ESS TIE 30A → Essential Bus → ENG INST 5A → GEA 71S
+
+---
+
+## Reference Images
+
+### IPC 24-31 Battery Installation
+
+Battery mounting in aft fuselage. Shows three connections at battery negative terminal: wire 24008A4N ("To Instrument Panel, See 31-10"), wire 24405A6N ("To EPU, See 24-40"), and **Cable 200** (P/N D44-2403-160-00, "Cable, Battery GND") which routes to a structural/airframe ground point.
+
+![IPC 24-31 Battery Installation](docs/24-31%20Battery%20Installation.png)
+
+### IPC 24-40 External Power
+
+EPU (External Power Unit) plug location and routing. Shows GPU connection path to the battery area.
+
+![IPC 24-40 External Power](docs/24-40%20External%20Power.png)
+
+### IPC 24-60 Battery Relay
+
+Battery relay installation in aft fuselage, adjacent to battery.
+
+![IPC 24-60 Battery Relay](docs/24-60%20Battery%20Relay.png)
+
+### IPC 24-60 Relay Panel
+
+Relay panel adjacent to battery in aft fuselage. Shows proximity of relay panel components to battery area.
+
+![IPC 24-60 Relay Panel](docs/24-60%20Relay%20Panel.png)

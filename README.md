@@ -801,23 +801,29 @@ The EPU wiring (from D44-9224-30-01X03):
 
 **Why does the GPU read correctly while battery does not?**
 
-Per the IPC (24-31 Battery Installation), the battery negative terminal has only two connections: wire 24008A4N (4 AWG, to instrument panel) and wire 24405A6N (6 AWG, to EPU plug). The GPU negative connects to the **same battery negative terminal** as the instrument panel ground return — there is no separate GS-RP stud. Both battery-only and GPU tests share the same negative terminal, and the same positive path from BATT BUS through the Power Relay, MAIN TIE, Ess Tie Relay, and ESS TIE to the Essential Bus.
+Per the IPC (24-31 Battery Installation), the battery negative terminal has three connections:
 
-**The reason for the different readings is not yet fully explained.** The bus return current through wire 24008A4N flows in the same direction (from GS-IP toward the battery negative terminal) regardless of whether the aircraft is on battery or GPU — the GPU's charging current exits B1(-) through wire 24405A6N back to the GPU, not through 24008A4N. A bad connection at the battery negative terminal would therefore produce the same polarity voltage drop in both cases and does not by itself explain the GPU vs battery difference.
+1. **Wire 24008A4N** (4 AWG) — to instrument panel (GS-IP bus bar)
+2. **Wire 24405A6N** (6 AWG) — to EPU plug (GPU negative)
+3. **Cable 200** (P/N D44-2403-160-00, "Cable, Battery GND") — routes to a structural/airframe ground point
 
-**Note on aircraft grounding system:** The IPC (24-31) shows only two wires on the battery negative terminal bolt, but the aircraft requires additional grounding connections (engine ground straps, relay panel grounds, firewall ground straps) that may exist in the aft fuselage area and be documented in other AMM sections or not fully documented. A GS-RP (relay panel ground) or other ground stud/strap near the battery could provide an alternate return path that the GPU affects differently. This needs to be verified by physical inspection of the battery area.
+![IPC 24-31 Battery Installation — showing Cable 200 (Battery GND), wire 24008A4N (to instrument panel), and wire 24405A6N (to EPU)](docs/24-31%20Battery%20Installation.png)
+
+The GPU negative connects to the same battery negative terminal via wire 24405A6N. Both battery-only and GPU tests share the same negative terminal and the same positive path from BATT BUS through the Power Relay, MAIN TIE, Ess Tie Relay, and ESS TIE to the Essential Bus.
+
+**The reason for the different readings is not yet fully explained**, but Cable 200 may be a key factor. The bus return current through wire 24008A4N flows in the same direction (from GS-IP toward the battery negative terminal) regardless of battery or GPU, so a bad connection on that specific path does not explain the difference. However, **Cable 200 connects the battery negative to the aircraft's structural grounding system**. If Pin 47's ground (wire 31299A22BL) terminates at a structural ground point that returns to battery negative through Cable 200's path, then any resistance in Cable 200 or its termination would affect the voltage reading. The GPU's heavy 6 AWG cable (24405A6N) connects directly to the battery negative terminal and could provide a **lower-impedance alternate return path** that bypasses a degraded Cable 200 connection — potentially explaining why the GPU test reads correctly.
 
 Possible factors:
-- **Undocumented ground connections** — ground straps, structural bonds, or a GS-RP stud near the battery that aren't shown on the IPC battery installation drawing but exist in the aircraft
+- **Cable 200 (Battery GND)** — if degraded, it would affect any ground path that returns through the structural grounding system. The GPU may bypass this by providing a direct path to battery negative. **Cable 200's termination point and condition must be inspected.**
 - **Positive path relay/breaker contacts** — may behave differently under different source voltage/current conditions
-- **Pin 47 ground termination** — unknown physical location, may be affected by the GPU's presence at the battery area
+- **Pin 47 ground termination** — unknown physical location, may connect through the structural grounding system that Cable 200 serves
 - The battery negative terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025), and the **BatteryMinder interface** (installed Sep 2024) also connects here
 
 **The ECU proves the shared ground infrastructure is healthy but does NOT rule out the BATT BUS → Essential Bus path.** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, essentially correct. The ECU is on the **ECU BUS** (directly off BATT BUS through a 100A fuse) — it bypasses the Power Relay, MAIN TIE, Ess Tie Relay, and ESS TIE that the Essential Bus must go through.
 
 **Areas to inspect (in order of accessibility):**
 
-1. **Battery negative terminal (aft fuselage)** — Per IPC (24-31), only two wires connect here: 24008A4N (instrument panel) and 24405A6N (EPU). Also check the **BatteryMinder interface** (installed Sep 2024) — verify how it connects and whether it introduces resistance at the negative post. This terminal has been disturbed during both R&Rs and battery replacement. Clean all connections, check for corrosion under ring terminals, verify torque.
+1. **Battery negative terminal and Cable 200 (aft fuselage)** — Per IPC (24-31), three connections at battery negative: wire 24008A4N (instrument panel), wire 24405A6N (EPU), and **Cable 200** (D44-2403-160-00, "Cable, Battery GND" — routes to structural/airframe ground). Also check the **BatteryMinder interface** (installed Sep 2024). This terminal has been disturbed during both R&Rs and battery replacement. Clean all connections, check for corrosion under ring terminals, verify torque. **Trace where Cable 200 terminates and inspect that connection.**
 
 2. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential measurement), Pin 47 is the actual voltage reference. Any resistance at this ground directly causes a low reading. **Notably, other Diamond variant AMM wiring diagrams explicitly specify a ground stud (e.g. GS-IP-X) for the GEA voltage sense LO pin, but the DA40 NG schematic uses only a generic ground symbol.** The wire must be physically traced.
 
