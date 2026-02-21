@@ -106,22 +106,12 @@ The GEA 71S measures bus voltage using two sense wires on its P701 connector: **
 
 Per the IPC (24-31 Battery Installation), the battery negative terminal has only two connections: **wire 24008A4N (4 AWG) to the instrument panel** and **wire 24405A6N (6 AWG) to the EPU plug**. Both the GPU negative and the instrument panel ground return connect to the **same battery negative terminal**. This means the GPU does not provide a fundamentally different ground path — both battery-only and GPU tests share the same negative terminal and the same positive path from BATT BUS to the Essential Bus.
 
-**The explanation is current reversal at the battery negative terminal.** The key is that current flows in **opposite directions** through this terminal depending on the power source:
+**The reason for the different readings is not yet fully explained.** The bus return current through wire 24008A4N flows in the same direction (from GS-IP toward the battery negative terminal) regardless of whether the aircraft is on battery or GPU — the GPU's charging current exits B1(-) through wire 24405A6N back to the GPU, not through 24008A4N. A bad connection at the battery negative terminal alone does not explain the GPU vs battery difference.
 
-**Battery only (current returns to battery):**
-The buses draw current from the battery. Return current flows through wire 24008A4N back to the battery negative terminal. If there is resistance at the terminal (corrosion, loose torque, stacked ring terminals — say 0.05Ω), the return current creates a voltage drop: e.g. 20A × 0.05Ω = 1.0V. This lifts the GS-IP bus bar (instrument panel ground) ABOVE true battery negative. Pin 47 references the GS-IP side, so it sits 1.0V high — and the GEA reads **1.0V low**.
+**Note on aircraft grounding:** The IPC (24-31) shows only two wires on the battery negative terminal bolt, but the aircraft requires additional grounding connections (engine ground straps, relay panel grounds, firewall ground straps) that may exist in the aft fuselage area. A GS-RP (relay panel ground) or other ground stud/strap near the battery — not shown on the IPC drawing — could provide an alternate return path that the GPU affects differently. **This needs to be verified by physical inspection of the battery area** — document ALL ground connections visible, not just what the IPC shows.
 
-**GPU connected (GPU charges the battery):**
-The GPU powers the buses AND pushes charging current into the battery. Current now flows through the battery negative terminal in the **opposite direction** — out of the terminal toward the buses. The same resistance now drops voltage in reverse: GS-IP sits slightly BELOW battery negative. Pin 47 sits slightly low → the GEA reads **correct or slightly high**, canceling the error.
-
-```
-Battery only:  Buses → 24008A4N → [bad terminal, +1.0V] → Battery(-)     → reads LOW
-GPU charging:  Battery(-) → [bad terminal, -0.25V] → 24008A4N → Buses    → reads CORRECT
-```
-
-The same physical fault produces **opposite effects** depending on current direction. The GPU doesn't fix the fault — it **reverses** its effect. This is why the battery test shows -1.3V offset while the GPU test shows only -0.19V on the same day.
-
-**Other contributing factors:**
+Possible contributing factors:
+- **Undocumented ground connections** in the aft fuselage (ground straps, structural bonds, GS-RP) that aren't on the IPC battery drawing
 - **Positive path between BATT BUS and Essential Bus** — four relay/breaker contacts (Power Relay, MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A) sit between BATT BUS and the Essential Bus. The ECU bypasses all of them. Any degraded contact would make the Essential Bus genuinely lower.
 - **Pin 47 ground termination** — still unknown, still needs to be traced.
 

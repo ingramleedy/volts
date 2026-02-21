@@ -803,19 +803,15 @@ The EPU wiring (from D44-9224-30-01X03):
 
 Per the IPC (24-31 Battery Installation), the battery negative terminal has only two connections: wire 24008A4N (4 AWG, to instrument panel) and wire 24405A6N (6 AWG, to EPU plug). The GPU negative connects to the **same battery negative terminal** as the instrument panel ground return — there is no separate GS-RP stud. Both battery-only and GPU tests share the same negative terminal, and the same positive path from BATT BUS through the Power Relay, MAIN TIE, Ess Tie Relay, and ESS TIE to the Essential Bus.
 
-**The explanation is current reversal at a degraded battery negative terminal.** When the aircraft runs on battery alone, current flows OUT of the battery, through the buses, and RETURNS through wire 24008A4N to the battery negative terminal. If there is resistance at the terminal connection (e.g. 0.05Ω from corrosion, loose torque, or stacked ring terminals), the return current creates a voltage drop (I×R) that lifts the GS-IP bus bar ABOVE true battery negative. Pin 47 (voltage sense ground) references the GS-IP side, so it sits high — and the GEA reads low.
+**The reason for the different readings is not yet fully explained.** The bus return current through wire 24008A4N flows in the same direction (from GS-IP toward the battery negative terminal) regardless of whether the aircraft is on battery or GPU — the GPU's charging current exits B1(-) through wire 24405A6N back to the GPU, not through 24008A4N. A bad connection at the battery negative terminal would therefore produce the same polarity voltage drop in both cases and does not by itself explain the GPU vs battery difference.
 
-When the GPU is connected, the GPU charges the battery — current flows INTO the battery positive and OUT of the battery negative toward the buses. The current through the same bad connection now flows in the **opposite direction**. The I×R drop reverses polarity: the GS-IP bus bar now sits BELOW battery negative. Pin 47 sits slightly low, which makes the GEA read slightly high — canceling the error.
+**Note on aircraft grounding system:** The IPC (24-31) shows only two wires on the battery negative terminal bolt, but the aircraft requires additional grounding connections (engine ground straps, relay panel grounds, firewall ground straps) that may exist in the aft fuselage area and be documented in other AMM sections or not fully documented. A GS-RP (relay panel ground) or other ground stud/strap near the battery could provide an alternate return path that the GPU affects differently. This needs to be verified by physical inspection of the battery area.
 
-```
-Battery only:  Buses → wire 24008A4N → [bad connection, +1.0V drop] → Battery B1(-)
-               Pin 47 sits HIGH → GEA reads LOW (-1.3V)
-
-GPU charging:  Battery B1(-) → [bad connection, -0.25V drop] → wire 24008A4N → Buses
-               Pin 47 sits LOW → GEA reads CORRECT or slightly HIGH (-0.19V)
-```
-
-The same physical fault produces **opposite effects** depending on current direction. The GPU doesn't fix the fault — it **reverses** its effect. This accounts for the dramatic difference between -1.3V (battery) and -0.19V (GPU) on the same day without invoking intermittency, and puts the battery negative terminal back as a primary suspect.
+Possible factors:
+- **Undocumented ground connections** — ground straps, structural bonds, or a GS-RP stud near the battery that aren't shown on the IPC battery installation drawing but exist in the aircraft
+- **Positive path relay/breaker contacts** — may behave differently under different source voltage/current conditions
+- **Pin 47 ground termination** — unknown physical location, may be affected by the GPU's presence at the battery area
+- The battery negative terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025), and the **BatteryMinder interface** (installed Sep 2024) also connects here
 
 **The ECU proves the shared ground infrastructure is healthy but does NOT rule out the BATT BUS → Essential Bus path.** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, essentially correct. The ECU is on the **ECU BUS** (directly off BATT BUS through a 100A fuse) — it bypasses the Power Relay, MAIN TIE, Ess Tie Relay, and ESS TIE that the Essential Bus must go through.
 
