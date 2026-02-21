@@ -37,13 +37,11 @@ The difference is highly statistically significant (p < 0.001) with worst-case t
 
 The Garmin G1000 System Maintenance Manual (190-00545-01) CAUTION Alerts table specifies the LOW VOLTS annunciation and its prescribed solution:
 
-![G1000 System Maintenance Manual — CAUTION Alerts](docs/G100%20System%20Maintenance%20Manaual%20DA40%20-%20CAUTION%20ALERTS.png)
-
 | Annunciation | Alert Message | Solution |
 |---|---|---|
 | **LOW VOLTS** | On-board voltage is below 24 volts | **Inspect GEA 71 connector & wiring.** Troubleshoot aircraft electrical system according to DA 40 Airplane Maintenance Manual instructions. |
 
-Garmin's own maintenance procedure names the **GEA 71 connector & wiring** as the first inspection target for LOW VOLTS — directly supporting our analysis that the fault is in the GEA 71S's connection path, not in the alternator, voltage regulator, or battery.
+Garmin's own maintenance procedure names the **GEA 71 connector & wiring** as the first inspection target for LOW VOLTS — directly supporting our analysis that the fault is in the GEA 71S's connection path, not in the alternator, voltage regulator, or battery. (Source: [G1000 System Maintenance Manual CAUTION Alerts image](docs/G100%20System%20Maintenance%20Manaual%20DA40%20-%20CAUTION%20ALERTS.png))
 
 ## Visualizations
 

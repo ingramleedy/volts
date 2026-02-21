@@ -46,12 +46,10 @@ These dips are **not real** — the independent VDL48 logger shows the bus volta
 
 The Garmin G1000 System Maintenance Manual (190-00545-01) CAUTION Alerts table specifies what to do when LOW VOLTS appears:
 
-![G1000 System Maintenance Manual — CAUTION Alerts](docs/G100%20System%20Maintenance%20Manaual%20DA40%20-%20CAUTION%20ALERTS.png)
-
 > **LOW VOLTS** — On-board voltage is below 24 volts.
 > **Solution:** Inspect GEA 71 connector & wiring. Troubleshoot aircraft electrical system according to DA 40 Airplane Maintenance Manual instructions.
 
-Garmin's own manual names the **GEA 71 connector & wiring** as the first thing to inspect — which is exactly what this guide recommends. The analysis in this document identifies *which specific* GEA 71 connector pins and wires are the most likely problem.
+Garmin's own manual names the **GEA 71 connector & wiring** as the first thing to inspect — which is exactly what this guide recommends. The analysis in this document identifies *which specific* GEA 71 connector pins and wires are the most likely problem. See [G1000 System Maintenance Manual CAUTION Alerts image](#g1000-system-maintenance-manual--caution-alerts) in the Reference Images section.
 
 ## How We Know It's Real
 
@@ -784,3 +782,9 @@ Battery relay installation in aft fuselage, adjacent to battery.
 Relay panel adjacent to battery in aft fuselage. Shows proximity of relay panel components to battery area.
 
 ![IPC 24-60 Relay Panel](docs/24-60%20Relay%20Panel.png)
+
+### G1000 System Maintenance Manual — CAUTION Alerts
+
+Garmin G1000 System Maintenance Manual (190-00545-01) CAUTION Alerts table. Shows LOW VOLTS annunciation: "On-board voltage is below 24 volts" with solution: "Inspect GEA 71 connector & wiring."
+
+![G1000 System Maintenance Manual — CAUTION Alerts](docs/G100%20System%20Maintenance%20Manaual%20DA40%20-%20CAUTION%20ALERTS.png)
