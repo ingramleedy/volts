@@ -844,6 +844,13 @@ GPU connected: Loads → GS-IP → 24008A4N → [STACK] → 24405A6N → GPU(-)
 
 The contact between the bottom of the stack (Cable 200) and the battery post is the critical junction — if degraded, all connections above it are affected. The terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025). The BatteryMinder (installed Sep 2024) adds a fourth terminal to the stack.
 
+**Quick voltage drop test (owner can perform with just a multimeter):**
+
+With Master ON, G1000 running, battery only (no engine, no GPU):
+
+- **Test A (direct):** Meter on DC volts. Red probe on the **BatteryMinder ring terminal** (top of stack on B1(-) bolt), black probe on the **battery post metal** (below the stack, not the bolt). Good: < 0.05V. Bad (confirms hypothesis): 0.5V to 1.5V+.
+- **Test B (if post is inaccessible):** Measure from **B1(+) terminal** to **BatteryMinder ring terminal** on B1(-). Compare to G1000 display. If both read ~24V → stack is elevated, bypass hypothesis confirmed. If meter reads significantly higher than G1000 → problem is upstream in GEA-specific path (Pin 47, GS-IP-14).
+
 **This hypothesis needs verification:** Inspect the contact between the ring terminal stack and the battery post. Trace where Cable 200 terminates — it connects battery negative to the structural grounding system, and Pin 47's unknown ground may return through this path.
 
 **The ECU proves the shared ground infrastructure is healthy but does NOT rule out the BATT BUS → Essential Bus path.** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, essentially correct. The ECU is on the **ECU BUS** (directly off BATT BUS through a 100A fuse) — it bypasses the Power Relay, MAIN TIE, Ess Tie Relay, and ESS TIE that the Essential Bus must go through.

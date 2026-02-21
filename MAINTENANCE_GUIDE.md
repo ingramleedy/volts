@@ -169,6 +169,25 @@ Other contributing factors:
    - Verify nut torque
    - Clean all contact surfaces, reassemble with proper stacking and torque
 
+   **Quick voltage drop test (owner can perform — requires only a multimeter):**
+
+   With Master ON, G1000 running, battery only (no engine, no GPU):
+
+   *Test A — Direct voltage drop across the connection:*
+   - Multimeter set to DC volts (millivolt range if available)
+   - Red probe on the **BatteryMinder ring terminal** (top of the stack on the B1(-) bolt)
+   - Black probe on the **battery post metal itself** (touch the actual lead post below the ring terminal stack, not the bolt or nut)
+   - **Good connection:** < 0.05V (50 millivolts)
+   - **Bad connection (confirms bypass hypothesis):** 0.5V to 1.5V+
+   - This directly measures the I×R drop across the stack-to-post contact with current flowing
+
+   *Test B — If you cannot reach the post metal below the stack:*
+   - Meter positive probe on **B1(+) terminal**
+   - Meter negative probe on the **BatteryMinder ring terminal** on B1(-)
+   - Note the reading, then compare to the G1000 display
+   - **If both read ~24V** → the battery terminal stack is elevated above battery negative, confirming the bypass hypothesis (bad stack-to-post contact)
+   - **If the meter reads significantly higher than G1000** (e.g. meter ~25.5V, G1000 ~24.0V) → the problem is further upstream in the GEA-specific path (Pin 47, GS-IP-14), not at the battery terminal
+
    **Cable 200 (Battery GND) inspection:**
    - Trace Cable 200 from the battery negative terminal to its termination point
    - Document where it terminates (structural ground, ground stud, airframe attachment)
