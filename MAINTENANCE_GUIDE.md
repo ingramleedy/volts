@@ -272,6 +272,15 @@ The engine R&R (oil leak) was not the only work performed. During the same visit
 
 The scope of this visit was extensive — engine R&R, alternator swap, relay troubleshooting in the aft bay, servo replacement. Panels were opened, harnesses were moved, and connectors were handled throughout the aircraft. Something during this visit disturbed a ground connection, and nobody noticed the G1000 was now reading a volt low.
 
+**Probable mechanism — battery terminal corrosion:** During the engine R&R, the battery was disconnected and the ring terminals on the battery negative post were removed and left exposed in a humid Florida hangar for the duration of the repair. The bare copper/tin contact surfaces of the ring terminals (24008A4N, 24405A6N, Cable 200) and the battery post itself oxidized and developed a corrosion film. When everything was reassembled, the contact surfaces were not cleaned and **Dow Corning DC4 compound was likely not applied** (per AMM 24-31, DC4 should be applied to the battery terminal and cable lugs during reconnection). The result: a thin but persistent oxide/corrosion layer at the ring terminal-to-post interface, creating the ~0.065Ω contact resistance that produces the 1.3V offset.
+
+This also explains why subsequent work didn't fix it:
+- **Jul 2025 battery replacement** — new battery post, but the **ring terminals on the wires were not cleaned**. New post + old corroded lugs = still a bad connection.
+- **Sep 2024 BatteryMinder install** — added a fourth ring terminal to the stack, possibly without cleaning the existing terminals, and potentially disrupting the contact pressure on the terminals below it.
+- **Jul 2025 engine R&R #2** — battery disconnected again, but ring terminals likely not cleaned or treated with DC4 before reassembly.
+
+The fix may be as simple as: remove all ring terminals from the battery negative post, clean every contact surface to bright metal, reassemble in the correct stacking order, and apply DC4 per the AMM.
+
 A second engine R&R in Jul 2025 (piston crack) did **not** fix the problem, ruling out the firewall pass-through connectors (which were reconnected during that work). The GSA 91 pitch servo was also replaced a second time — also with no improvement.
 
 ## What Has Already Been Tried (and didn't fix it)

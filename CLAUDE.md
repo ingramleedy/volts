@@ -428,13 +428,14 @@ ECU battery voltage from 265 parsed sessions (Oct 2023 - Feb 2026) shows:
 ### Key Findings from Maintenance Correlation
 1. The **Feb 28, 2024 engine R&R** aligns precisely (within 1 day) with the statistically detected change-point
 2. When the engine was removed, all firewall pass-through connections (ground straps, harness connectors) were disconnected and reconnected
-3. The shop then chased the voltage issue for over a year with component replacements:
+3. **Probable mechanism — battery terminal corrosion:** During the R&R, the battery was disconnected and ring terminals on the B1(-) post were removed and left exposed in a humid Florida hangar. The bare contact surfaces oxidized. When reassembled, the contact surfaces were likely not cleaned and DC4 compound was likely not applied (per AMM 24-31). This created the persistent contact resistance at the ring terminal-to-post interface. Subsequent work (Jul 2025 battery replacement, Sep 2024 BatteryMinder install, Jul 2025 R&R #2) also did not clean the ring terminals or apply DC4 — new battery post + old corroded lugs = still bad.
+4. The shop then chased the voltage issue for over a year with component replacements:
    - 3 voltage regulator replacements
    - 2 alternator replacements (secondary + main)
    - 1 wire terminal repair
    - None resolved the issue because it's a ground path resistance problem
-4. The ECU reads correctly throughout (27.82V), proving the alternator and regulators are functioning normally
-5. The main battery failed capacity test at 68% in Jul 2025 — possibly degraded from chronic undercharging due to the G1000 reporting low voltage
+5. The ECU reads correctly throughout (27.82V), proving the alternator and regulators are functioning normally
+6. The main battery failed capacity test at 68% in Jul 2025 — possibly degraded from chronic undercharging due to the G1000 reporting low voltage
 
 ### Second Engine R&R Analysis (Differential Diagnosis)
 
