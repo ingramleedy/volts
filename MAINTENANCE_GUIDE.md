@@ -100,27 +100,34 @@ Two tests performed back-to-back on the same day, same conditions:
 
 The **24.0V G1000 reading on battery** is right at the LOW VOLTS annunciation threshold (24V per the Garmin G1000 System Maintenance Manual). Any additional electrical load would push it below threshold and trigger the annunciation — which is exactly what happens in flight.
 
-**Why the GPU test reads nearly correctly — and why it does NOT point to the battery negative terminal:**
+**Why does the GPU test read correctly while battery does not?**
 
-The GEA 71S measures bus voltage using two sense wires on its P701 connector: **Pin 46 (ANALOG IN 5 HI)** reads the Essential Bus positive rail, and **Pin 47 (ANALOG IN 5 LO)** reads the Essential Bus ground. The displayed voltage is the difference: Pin 46 minus Pin 47. If Pin 47's ground connection has resistance, it "floats" above true ground, and the reading drops by that amount.
+The GEA 71S measures bus voltage using two sense wires on its P701 connector: **Pin 46 (ANALOG IN 5 HI)** reads the Essential Bus positive rail, and **Pin 47 (ANALOG IN 5 LO)** reads the Essential Bus ground. The displayed voltage is the difference: Pin 46 minus Pin 47. If either path has resistance — high side dropping the voltage or low side floating above true ground — the reading drops.
 
-**The GPU may actually bypass the fault — specifically at Pin 47's ground.** The EPU (External Power Unit) negative connects to **GS-RP (Ground Stud - Relay Panel)** via wire 24405A6N (6 AWG), providing a second current sink in the aft fuselage. If Pin 47's Essential Bus ground (wire 31299A22BL) terminates at a structural/airframe ground point (consistent with the generic ground symbol on the schematic), that point may have a **lower-impedance path to GS-RP** than to battery negative through the degraded connection. The GPU at GS-RP effectively "pulls down" Pin 47's ground to the correct potential — explaining the near-zero offset.
+Per the IPC (24-31 Battery Installation), the battery negative terminal has only two connections: **wire 24008A4N (4 AWG) to the instrument panel** and **wire 24405A6N (6 AWG) to the EPU plug**. Both the GPU negative and the instrument panel ground return connect to the **same battery negative terminal**. This means the GPU does not provide a fundamentally different ground path — both battery-only and GPU tests share the same negative terminal and the same positive path from BATT BUS to the Essential Bus.
 
-This means the GPU test is **diagnostic**: it specifically supports Pin 47's ground as the fault location. The Aug 2025 battery test showed 1.5V offset on the ground (fault present without vibration), while the GPU test showed 0.19V (fault bypassed). The ECU is unaffected because it uses a wired ground path (GS-IP-3/4 → GS-IP bus bar → 24008A4N) that is intact and doesn't depend on the same structural ground as Pin 47.
+**The reason for the different readings is not yet fully explained.** Possible factors include:
+- **Battery negative terminal condition** — if the terminal or its connections are degraded (loose, corroded, poorly torqued), connecting the GPU's heavy 6 AWG cable may improve the contact. The terminal has been disturbed during both engine R&Rs and the battery replacement.
+- **Positive path between BATT BUS and Essential Bus** — four relay/breaker contacts (Power Relay, MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A) sit between BATT BUS and the Essential Bus. The ECU is on the ECU BUS (directly off BATT BUS through a 100A fuse) and bypasses all of them. Any degraded contact in this chain would make the Essential Bus genuinely lower than what the AUX POWER meter and ECU see.
+- **Pin 47 ground termination** — still unknown, still needs to be traced.
+
+**The definitive test:** Put a meter directly on the **Essential Bus** (at the ENG INST breaker output or the bus bar itself) and compare to the AUX POWER reading simultaneously. If the Essential Bus matches AUX POWER, the problem is in the GEA's measurement/ground path. If the Essential Bus is 1.3V lower, the problem is in the positive path between BATT BUS and the Essential Bus.
 
 **The ECU proves the shared GS-IP ground infrastructure is healthy:** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, correct. Since the ECU shares the GS-IP bus bar, wire 24008A4N, and aft ground termination with the G1000, all of that is proven healthy.
 
-**Two primary suspects — both unique to the GEA 71S:**
+**Three areas to inspect (in order of accessibility):**
 
-1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential), Pin 47 is the voltage measurement reference. Any resistance at this ground directly causes a low reading.
+1. **Battery negative terminal (aft fuselage)** — Per the IPC (24-31), only two wires connect here: 24008A4N (instrument panel ground return) and 24405A6N (EPU). Also check the **BatteryMinder interface** connection (installed Sep 2024) — verify how it connects to the battery terminals and whether it adds resistance or a poor contact to the negative post. This terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025). Clean all connections, check for corrosion under ring terminals, verify torque. This is the easiest item to inspect and could resolve the issue.
+
+2. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential), Pin 47 is the voltage measurement reference. Any resistance at this ground directly causes a low reading.
 
    **Why this is hard to find:** Other Diamond variant AMM wiring diagrams explicitly call out a specific ground stud (e.g. GS-IP-X) for the GEA voltage sense LO pin. On those aircraft, a mechanic can look up the stud number and go straight to it. **The DA40 NG schematic does not** — it shows only a generic ground symbol. This means Pin 47's ground on N238PS cannot be found from the schematic alone; the wire must be physically traced from P701 Pin 47 to wherever it terminates.
 
-2. **GS-IP-14 / Pin 20 (POWER GROUND)** — wire 77016A22N. The GEA's power ground. May affect the reading through ADC common-mode issues if it floats far from Pin 47.
+3. **Positive path: BATT BUS → Essential Bus** — Four relay/breaker contacts sit between BATT BUS and the Essential Bus: Power Relay (PWR 60A), MAIN TIE 30A, Ess Tie Relay, and ESS TIE 30A. The ECU bypasses all of these (it's on ECU BUS, directly off BATT BUS). Any degraded contact would make the Essential Bus genuinely lower than BATT BUS. Check by measuring Essential Bus voltage directly and comparing to AUX POWER.
 
-**The key unknown is where wire 31299A22BL (Pin 47) physically terminates. The shop must trace this wire.**
+4. **GS-IP-14 / Pin 20 (POWER GROUND)** — wire 77016A22N. The GEA's power ground. May affect the reading through ADC common-mode issues if it floats far from Pin 47.
 
-The near-zero offset with GPU (0.19V) vs the 1.5V offset on battery is explained by the **different test conditions**, not by time passing — the GPU provides an alternate ground return path that bypasses Pin 47's degraded ground. The fault is also **vibration/thermal-sensitive** — it worsens in flight (Feb 8 data: -1.4V average, -5.6V worst) but may test better on the ground without vibration. This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run."
+The fault is **vibration/thermal-sensitive** — it worsens in flight (Feb 8 data: -1.4V average, -5.6V worst) but may test better on the ground without vibration. This matches the shop's Feb 15 finding that they "could not reproduce voltage drop on ground run."
 
 ### Why the Battery Matters (but isn't the cause)
 

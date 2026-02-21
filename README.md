@@ -797,29 +797,33 @@ The EPU wiring (from D44-9224-30-01X03):
 | EPU Pin | Wire | Gauge | Connects To |
 |---------|------|-------|-------------|
 | Positive | 24403A6 | 6 AWG | BATT BUS (through EPU RELAY) |
-| **Negative** | **24405A6N** | **6 AWG** | **GS-RP** (relay panel ground, aft fuselage — adjacent to battery) |
+| **Negative** | **24405A6N** | **6 AWG** | **Battery B1 negative terminal** (per IPC 24-31; schematic labels this GS-RP) |
 
-**The GPU may actually bypass the fault — specifically at Pin 47's ground.** The EPU negative cable connects to GS-RP via wire 24405A6N (6 AWG), providing a second current sink in the aft fuselage. If Pin 47's Essential Bus ground (wire 31299A22BL) terminates at a structural/airframe ground point (consistent with the generic ground symbol on D44-9224-30-01X03), that point may have a **lower-impedance path to GS-RP through the airframe** than to battery negative through the degraded connection. The GPU at GS-RP effectively "pulls down" Pin 47's ground reference to the correct potential.
+**Why does the GPU read correctly while battery does not?**
 
-**The ECU proves the shared GS-IP ground infrastructure is healthy.** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, essentially correct. Since the ECU shares the GS-IP bus bar, wire 24008A4N, and aft ground termination with the G1000, all of that infrastructure is proven healthy.
+Per the IPC (24-31 Battery Installation), the battery negative terminal has only two connections: wire 24008A4N (4 AWG, to instrument panel) and wire 24405A6N (6 AWG, to EPU plug). The GPU negative connects to the **same battery negative terminal** as the instrument panel ground return — there is no separate GS-RP stud. Both battery-only and GPU tests share the same negative terminal, and the same positive path from BATT BUS through the Power Relay, MAIN TIE, Ess Tie Relay, and ESS TIE to the Essential Bus.
 
-**Two primary suspects — both unique to the GEA 71S:**
+**The reason for the different readings is not yet fully explained.** The battery negative terminal has been disturbed during both engine R&Rs (Feb 2024, Jul 2025) and the battery replacement (Jul 2025). Connecting the GPU's heavy 6 AWG cable may improve contact at the terminal. Alternatively, the positive path relays/breakers between BATT BUS and the Essential Bus may behave differently under different source conditions.
 
-1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential measurement), Pin 47 is the actual voltage reference. Any resistance at this ground directly causes a low reading. **Notably, other Diamond variant AMM wiring diagrams explicitly specify a ground stud (e.g. GS-IP-X) for the GEA voltage sense LO pin, but the DA40 NG schematic uses only a generic ground symbol.** This makes Pin 47's ground on the DA40 NG uniquely undocumented — a mechanic cannot simply look up the stud number and go inspect it; the wire must be physically traced.
+**The ECU proves the shared ground infrastructure is healthy but does NOT rule out the BATT BUS → Essential Bus path.** Per AMM p1936-1937 (Drawing D44-9274-10-00, EECU Wiring), the AE300 ECU (under the pilot's seat) grounds to **GS-IP-3 and GS-IP-4** — the same instrument panel ground bus as the G1000. The ECU reads ~27.8V, essentially correct. The ECU is on the **ECU BUS** (directly off BATT BUS through a 100A fuse) — it bypasses the Power Relay, MAIN TIE, Ess Tie Relay, and ESS TIE that the Essential Bus must go through.
 
-2. **GS-IP-14 / Pin 20 (POWER GROUND)** — wire 77016A22N from P701 Pin 20 to GS-IP-14. This is the GEA's power ground. If the measurement is truly differential, Pin 20 may not directly affect the reading, but could cause ADC common-mode issues if it floats too far from Pin 47.
+**Areas to inspect (in order of accessibility):**
 
-**The key unknown is where wire 31299A22BL (Pin 47) physically terminates.** Unlike other Diamond variants where the GEA voltage sense ground is explicitly documented to a specific GS-IP stud, the DA40 NG schematic provides no stud number — only a generic ground symbol.
+1. **Battery negative terminal (aft fuselage)** — Per IPC (24-31), only two wires connect here: 24008A4N (instrument panel) and 24405A6N (EPU). Also check the **BatteryMinder interface** (installed Sep 2024) — verify how it connects and whether it introduces resistance at the negative post. This terminal has been disturbed during both R&Rs and battery replacement. Clean all connections, check for corrosion under ring terminals, verify torque.
 
-The near-zero GPU offset is likely because the GPU **bypasses the fault**, not merely because the fault is intermittent. The Aug 2025 battery test showed 1.5V offset on the ground (fault present without vibration), while the Feb 2026 GPU test showed 0.19V (fault bypassed). The fault also worsens in flight due to vibration and thermal cycling (Feb 8 data: -1.4V average, -5.6V worst). The ECU is unaffected because it uses a wired ground path (GS-IP-3/4 → GS-IP bus bar → 24008A4N) that is intact and does not depend on the same structural ground as Pin 47.
+2. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus per the G1000 wiring diagram (D44-9231-60-03). The Electrical System schematic (D44-9224-30-01X03) shows only a generic ground symbol — **the physical termination point is unknown and must be traced**. Since the GEA reads Pin 46 minus Pin 47 (differential measurement), Pin 47 is the actual voltage reference. Any resistance at this ground directly causes a low reading. **Notably, other Diamond variant AMM wiring diagrams explicitly specify a ground stud (e.g. GS-IP-X) for the GEA voltage sense LO pin, but the DA40 NG schematic uses only a generic ground symbol.** The wire must be physically traced.
+
+3. **Positive path: BATT BUS → Essential Bus** — Four relay/breaker contacts (Power Relay PWR 60A, MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A) sit between BATT BUS and the Essential Bus. The ECU bypasses all of them. Measure Essential Bus voltage directly and compare to AUX POWER to determine if the Essential Bus is genuinely lower.
+
+4. **GS-IP-14 / Pin 20 (POWER GROUND)** — wire 77016A22N from P701 Pin 20 to GS-IP-14. The GEA's power ground. May affect the reading through ADC common-mode issues if it floats too far from Pin 47.
 
 This test confirms:
-1. The G1000 **can read correctly** — the GEA hardware and firmware are functioning properly
-2. The offset is a **ground/sense path issue**, not calibration
-3. The fault is **vibration/thermal-sensitive** — worsens in flight
+1. The G1000 **can read correctly** — the GEA hardware and firmware are functioning properly (GPU test: 0.19V offset)
+2. The offset is **not a calibration or firmware issue** — the GEA reads what it sees at its pins
+3. The fault is **vibration/thermal-sensitive** — worsens in flight (Feb 8 data: -1.4V average, -5.6V worst)
 4. The **shared GS-IP ground infrastructure is healthy** — ECU uses the same GS-IP bus bar and wire 24008A4N and reads correctly
-5. The **GPU bypasses the fault** — the GPU negative at GS-RP provides a lower-impedance return path for Pin 47's ground, specifically supporting Pin 47's ground as the fault location
-6. **Pin 47's ground termination must be traced** — the generic ground symbol on the schematic suggests a structural/airframe ground that may have a degraded bonding point
+5. **Pin 47's ground termination must be traced** — the generic ground symbol on the schematic means the physical termination is unknown
+6. **The battery negative terminal should be inspected** — it's the common connection point and has been disturbed multiple times
 
 ### ESS BUS Switch Test
 
