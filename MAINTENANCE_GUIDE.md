@@ -193,11 +193,17 @@ Other contributing factors:
    2. Remove the nut and lift off each ring terminal, noting the stacking order
    3. Clean the battery post with a battery terminal cleaner brush or fine scotch-brite pad — remove all corrosion, oxide film, and discoloration until bright metal is visible
    4. Clean each ring terminal contact surface the same way (both sides)
-   5. Reassemble in the correct stacking order (closest to post first): Cable 200, 24008A4N, 24405A6N, BatteryMinder
-   6. Apply **Dow Corning DC4** compound to the battery terminal and each cable lug (per AMM)
-   7. Torque the nut per AMM specification
-   8. Reconnect battery (negative cable first, then positive)
-   9. Retest with the voltage drop test above to verify < 0.05V
+   5. Inspect each crimp and ring terminal per AMM 20-30-00 Section C: crimp not damaged or bent, conductor visible and properly seated, no strand breakage
+   6. If any terminal screws were varnish/lacquer-locked, reapply **Loctite 222** thread locking compound per AMM 20-30-00 Section B
+   7. Reassemble in the correct stacking order (closest to post first): Cable 200, 24008A4N, 24405A6N, BatteryMinder. **Use only the bolt and bevel lock washer provided with the battery** — do not substitute stainless steel or steel washers between ring terminals and battery terminal (per Concorde 5-0324 Rev G, p.11)
+   8. Apply **Dow Corning DC4** compound to the battery terminal and each cable lug (per AMM 24-31)
+   9. Torque the terminal bolt to **70 in-lbs (7.9 Nm)** — per the battery label for M8 threaded terminals typical of Concorde RG series. Use a calibrated torque wrench. **Hold the flat portion of the terminal with an open-end wrench while torquing** to avoid rupturing the battery seal (per Concorde 5-0324 Rev G, p.11). Do not over-torque.
+   10. Reconnect battery (negative cable first, then positive)
+   11. Post-repair checks per AMM 20-30-00 Section C:
+       - **Continuity:** Verify continuity between conductor ends of each repaired/disturbed wire
+       - **Isolation:** Verify no continuity between the conductor and aircraft ground (where isolation is expected)
+       - **Visual:** Confirm crimps are not damaged, bent, or deformed
+   12. Retest with the voltage drop test above to verify < 0.05V
 
    **Cable 200 (Battery GND) inspection:**
    - Trace Cable 200 from the battery negative terminal to its termination point
@@ -625,6 +631,12 @@ Start with **Test 1**. If high, the bad segment will stand out — everything el
 
 **Important: Don't stop after finding one bad connection.** The data shows the ground path was never as clean as other DA40NGs — even from the factory. There may be more than one marginal connection. Clean and retorque **all** GS-IP ground studs and reseat **all** G1000 LRU connectors while the panels are open.
 
+**After any wire/terminal repair or disturbance**, perform the AMM 20-30-00 Section C post-repair checks:
+- **Visual:** Crimps not damaged, bent, or deformed; conductor properly seated
+- **Continuity:** Verify end-to-end continuity of each disturbed wire
+- **Isolation:** Verify no unintended continuity to aircraft ground
+- If any terminal screws were varnish/lacquer-locked, reapply **Loctite 222** per AMM 20-30-00 Section B
+
 ### What the Numbers Mean
 
 | End-to-End Resistance | Voltage Drop at 20A | What It Means |
@@ -642,9 +654,10 @@ Start with **Test 1**. If high, the bad segment will stand out — everything el
 A ground test alone cannot reproduce the problem reliably. The offset is worse in flight due to vibration and thermal effects on the bad connection.
 
 **After repair:**
-1. Repeat the end-to-end resistance measurement — should be < 0.010 Ω
-2. Power on avionics and check G1000 voltage reads within 0.3V of a meter at the AUX POWER plug
-3. **Flight test** — fly at least 30 minutes with varied loads (radio TX, autopilot, flaps), then compare:
+1. Complete AMM 20-30-00 Section C post-repair checks on all disturbed connections: visual crimp inspection, continuity (end-to-end), isolation (no unintended ground), crimp condition (not damaged/bent)
+2. Repeat the end-to-end resistance measurement — should be < 0.010 Ω
+3. Power on avionics and check G1000 voltage reads within 0.3V of a meter at the AUX POWER plug
+4. **Flight test** — fly at least 30 minutes with varied loads (radio TX, autopilot, flaps), then compare:
    - **Option A — ECU data (easiest):** The AE300 ECU logs battery voltage every flight automatically. Download the ECU session log and compare against the G1000 log. No extra equipment needed.
    - **Option B — VDL48 (independent reference):** Install VDL48 on AUX POWER plug, same setup as the Feb 8 analysis.
    - **Pass criteria:** G1000 vs reference mean offset < 0.3V, no dips > 1.0V, noise < 0.30V
@@ -664,7 +677,8 @@ A ground test alone cannot reproduce the problem reliably. The offset is worse i
 | AMM CH.23 | GMA, GTX, GDL connector pinouts |
 | [Garmin 190-00303-40](docs/GEA71_InstallationManual.pdf) | GEA 71 Installation Manual — P701/P702 connector pin function lists (pages 23-26) |
 | [Garmin 190-00545-01](docs/G100%20System%20Maintenance%20Manaual%20DA40%20-%20CAUTION%20ALERTS.png) | G1000 System Maintenance Manual — CAUTION Alerts table. LOW VOLTS (below 24V): "Inspect GEA 71 connector & wiring" |
-| [Concorde 5-0324 Rev G](docs/5-0324-rg-manual.pdf) | RG-series battery manual — State of Charge vs Open Circuit Voltage table (p.13): 24V battery at 25.8V+ = 100% SOC, 25.2V = 75%, 24.6V = 50%, 24.0V = 25%, 23.4V = 0% |
+| AMM 20-30-00 (pp. 361–363) | Standard Practices — Electrical. Section A: repair scope (wire/cable/ring terminal replacement), approved wires (M22759/16, M22759/34). Section B: thread locking — Loctite 222 for varnish/lacquer-locked terminal screws. Section C: post-repair testing — visual crimp inspection, continuity check (conductor end-to-end), isolation check (no continuity to aircraft ground), crimp condition (not damaged/bent). |
+| [Concorde 5-0324 Rev G](docs/5-0324-rg-manual.pdf) | RG-series battery manual — State of Charge vs OCV table (p.13): 25.8V+ = 100%, 25.2V = 75%, 24.6V = 50%, 24.0V = 25%. Installation (pp.10-11): ring terminals with bolt + bevel lock washer, torque per battery label (70 in-lbs / 7.9 Nm typical for M8 terminals), hold terminal flat with open-end wrench while torquing, use only hardware provided with battery — no stainless/steel washers between ring terminal and battery terminal. |
 
 ## Summary
 

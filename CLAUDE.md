@@ -47,6 +47,8 @@ This project analyzes a voltage measurement discrepancy between the Garmin G1000
 - `docs/24-60 Battery Relay.png` - IPC drawing showing battery relay installation
 - `docs/24-60 Relay Panel.png` - IPC drawing showing relay panel adjacent to battery in aft fuselage
 - `docs/an2551-plug.pdf` - AN2551 external power plug technical instructions
+- `docs/5-0324-rg-manual.pdf` - Concorde RG-series Aircraft Battery Owner/Operator Manual (Document No. 5-0324 Rev G). State of Charge vs OCV table (p.13). Installation (pp.10-11): ring terminals with bolt + bevel lock washer, torque per battery label (70 in-lbs / 7.9 Nm typical for M8 terminals on RG series), hold terminal flat with open-end wrench while torquing to avoid seal rupture, use only hardware provided with battery — no stainless/steel washers between ring terminal and battery terminal. AMM 24-31 defers torque to battery manufacturer.
+- AMM 20-30-00 (Standard Practices - Electrical), pages 361-363 of `docs/60215-r5-DA40-NG-AMM-complete.pdf` — Thread locking (Loctite 222 for varnish/lacquer-locked terminals), repair scope (wire/cable/ring terminal replacement), approved wire specs (M22759/16, M22759/34), and **post-repair testing requirements**: visual crimp inspection, continuity check, isolation check (no continuity to aircraft ground), crimp contact condition
 - AMM pages 1936-1937 (Drawing D44-9274-10-00, EECU Wiring) — confirms ECU B grounds to GS-IP-3 and GS-IP-4 (not extracted as images yet)
 - IPC source: [Diamond Illustrated Parts Catalog](https://ipc.diamond-air.at/ipp/app?__bk_&__windowid=DSQ82466084&__rid=GWT1771620977044#2V10C9D9248E4C6405)
 
