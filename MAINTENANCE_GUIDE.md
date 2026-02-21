@@ -188,6 +188,17 @@ Other contributing factors:
    - **If both read ~24V** → the battery terminal stack is elevated above battery negative, confirming the bypass hypothesis (bad stack-to-post contact)
    - **If the meter reads significantly higher than G1000** (e.g. meter ~25.5V, G1000 ~24.0V) → the problem is further upstream in the GEA-specific path (Pin 47, GS-IP-14), not at the battery terminal
 
+   **Battery negative terminal cleaning and reassembly (per AMM 24-31):**
+   1. Disconnect battery (Master OFF, remove positive cable first)
+   2. Remove the nut and lift off each ring terminal, noting the stacking order
+   3. Clean the battery post with a battery terminal cleaner brush or fine scotch-brite pad — remove all corrosion, oxide film, and discoloration until bright metal is visible
+   4. Clean each ring terminal contact surface the same way (both sides)
+   5. Reassemble in the correct stacking order (closest to post first): Cable 200, 24008A4N, 24405A6N, BatteryMinder
+   6. Apply **Dow Corning DC4** compound to the battery terminal and each cable lug (per AMM)
+   7. Torque the nut per AMM specification
+   8. Reconnect battery (negative cable first, then positive)
+   9. Retest with the voltage drop test above to verify < 0.05V
+
    **Cable 200 (Battery GND) inspection:**
    - Trace Cable 200 from the battery negative terminal to its termination point
    - Document where it terminates (structural ground, ground stud, airframe attachment)
