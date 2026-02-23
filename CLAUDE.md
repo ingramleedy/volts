@@ -349,14 +349,17 @@ The alternator regulator (J2424) has a **dedicated USENSE wire** (24022A22, 22 A
 | 4 | GROUND | 24018A20N (20 AWG) |
 
 ### Where to Look for the Problem
-The ECU grounds through GS-IP-3/GS-IP-4 (per D44-9274-10-00) and reads correctly, proving the shared GS-IP bus bar, wire 24008A4N, and aft termination are healthy. The fault is isolated to the GEA 71S's own connections. In order of priority:
 
-1. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows a generic ground symbol — **the physical termination point is unknown and must be traced by the shop**. Since Pin 47 is the voltage measurement reference (GEA reads Pin 46 minus Pin 47), any resistance at this ground directly causes a low reading. This is the #1 suspect. **Note:** Other Diamond variant AMM wiring diagrams explicitly specify a ground stud (e.g. GS-IP-X) for this pin, but the DA40 NG schematic uses only a generic ground symbol — making this ground uniquely undocumented and difficult to troubleshoot.
-2. **GS-IP-14 ground stud** — where GEA Pin 20 (POWER GROUND) terminates via wire 77016A22N. If the measurement is truly differential, Pin 20 may not directly affect the reading, but it could cause ADC common-mode issues if it floats too far.
-3. **Wire 77016A22N** — from P701 Pin 20 to GS-IP-14. Corrosion, chafing, or bad crimp.
+The aircraft has two types of ground return paths: **dedicated wire** (continuous copper, e.g. wire 24008A4N) and **structural/airframe** (metal-to-metal joints, shown as generic ground symbols on schematics). The ECU uses a dedicated wire ground (GS-IP-3/4 → bus bar → 24008A4N → battery negative) and reads correctly. Pin 47 and the alternator both use structural ground (generic ground symbols). The GPU provides a dedicated wire bypass (24405A6N, 6 AWG) that shunts current away from the degraded structural path.
+
+In order of priority:
+
+1. **Battery negative terminal, Cable 200, and structural grounds** — The battery negative post is where the structural ground (via Cable 200), instrument panel ground (24008A4N), GPU ground (24405A6N), and BatteryMinder all connect. Cable 200 ("Cable, Battery GND") bridges the structural ground network to the battery. A degraded connection at the stack-to-post contact, at Cable 200's termination, or at any structural ground joint explains all observations. This is the most accessible inspection point and the most likely primary fault location.
+2. **Pin 47 (ANALOG IN 5 LO) Essential Bus ground** — wire 31299A22BL (shielded) connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows a generic ground symbol — **Pin 47 likely connects to structural ground, not a named GS-IP stud**. The physical termination point is unknown and must be traced. Since Pin 47 is the voltage measurement reference (GEA reads Pin 46 minus Pin 47), its ground connection directly determines the reading. **Note:** Other Diamond variant AMM wiring diagrams explicitly specify a ground stud for this pin — the DA40 NG does not.
+3. **GS-IP-14 ground stud** — where GEA Pin 20 (POWER GROUND) terminates via wire 77016A22N. Pin 20 is on the dedicated wire path (healthy), but if Pin 20 and Pin 47 are on different ground networks (dedicated vs structural), the potential difference between them could exceed the ADC common-mode range, causing erratic readings.
 4. **GEA P701 connector** — Pin 47 and Pin 20 contacts specifically. Corrosion, loose pin, or poor contact at J701.
 
-**Ruled out by ECU data** (ECU shares these and reads correctly):
+**Ruled out by ECU data** (ECU uses dedicated wire ground and reads correctly):
 - GS-IP bus bar connections
 - Wire 24008A4N and its terminations at both ends
 - Other GS-IP studs (GS-IP-3, GS-IP-4, GS-IP-6, etc.)
@@ -658,6 +661,76 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - This likely explains why the ground path has never been found despite years of troubleshooting — it's not documented in the schematic
 - Updated all three documents (CLAUDE.md Pin 47 table entry and Where to Look, README.md primary suspects section, MAINTENANCE_GUIDE.md suspects section and Where to Look inspection instructions)
 
+### 2026-02-22: ECU Change-Point & Three-Period Differential Analysis
+- Owner asked to run Pettitt change-point test on ECU data to check whether ECU shows a change-point at Feb 2024
+- **ECU Pettitt result:** Change-point at Aug 2024, ECU went **UP** by +0.234V (opposite of what battery bolt degradation would predict). This is confounded by alternator and VR replacements that improved bus output voltage.
+- **G1000-ECU differential Pettitt:** Split at Feb 2024: gap widened by 0.711V (p=4.14e-13) — entirely GEA-specific
+- Created `ecu_changepoint.py` — three-period G1000-ECU differential analysis matching 114 flight pairs (184 G1000 flights × 265 ECU sessions, same-day matching)
+- **Three-period differential results:**
+  - Period 1 (before R&R #1, 25 pairs): G1000−ECU = −0.312V, G1000 noise excess = −0.108V
+  - Period 2 (between R&Rs, 58 pairs): G1000−ECU = −0.876V, G1000 noise excess = +0.115V
+  - Period 3 (after R&R #2, 31 pairs): G1000−ECU = −1.190V, G1000 noise excess = +0.248V
+- **Step changes:** R&R #1 step: −0.564V (p=2.2e-08), R&R #2 step: −0.314V (p=6.9e-03), Total: −0.878V (p=5.4e-12)
+- **Key finding:** Both R&Rs worsened the GEA-specific path. Before R&R #1, G1000 was actually quieter than ECU. Differential analysis eliminates all shared factors (bus voltage, battery bolt, 24008A4N, GS-IP bus bar).
+- ECU absolute values went UP across periods (27.605 → 27.774 → 28.086V) — confounded by alternator/VR replacements, confirming the differential analysis was essential to isolate GEA-specific effects
+- Generated two plots: `output/ecu_differential_three_period.png` (3-panel time series) and `output/ecu_differential_distributions.png` (box plots + histograms by period)
+- Updated MAINTENANCE_GUIDE.md with ECU differential evidence, README.md with analysis section and plots, CLAUDE.md with session notes
+
+### 2026-02-22: Fault Model Refinement — Truth Table Analysis & Battery Post Theory
+- Owner asked to evaluate logical validity of battery negative post theory
+- Built comprehensive truth tables testing four theories against all observed data:
+  - Theory A (battery post only): FAILS — ECU shares same path and reads stable
+  - Theory B (Pin 47 only): PARTIALLY FAILS — can't fully explain GPU result
+  - Theory C (positive path only): FAILS — can't explain noise or change-point
+  - Theory D (Pin 47 + something GPU bypasses): Survives all observations
+- Owner identified that the alternator ground is structural (generic ground symbol on wiring diagram) — goes through engine block → engine mount → firewall → airframe, NOT a dedicated wire to GS-RP. This explains why the alternator provides minimal bypass compared to GPU's direct 6 AWG wire.
+- Owner noted the battery post was definitely removed during the Feb 2024 engine R&R
+- Developed combined two-fault model: battery post providing shared offset + Pin 47 providing GEA-specific offset
+- ECU differential analysis proved 0.878V of total degradation is entirely GEA-specific, ruling out battery post as primary cause
+- Added AMM 20-30-00 Standard Practices (Electrical) references and Concorde battery torque specs (70 in-lbs / 7.9 Nm for M8 terminals) to MAINTENANCE_GUIDE.md
+
+## ECU Differential Analysis Results
+
+### Three-Period G1000−ECU Differential
+
+| Period | Pairs | G1000 Mean | ECU Mean | G1000−ECU | G1000 Noise Excess |
+|--------|-------|-----------|---------|-----------|-------------------|
+| Before R&R #1 | 25 | 27.293V | 27.605V | −0.312V | −0.108V |
+| Between R&Rs | 58 | 26.898V | 27.774V | −0.876V | +0.115V |
+| After R&R #2 | 31 | 26.896V | 28.086V | −1.190V | +0.248V |
+
+### Step Changes (GEA-Specific Only)
+
+| Event | Step | Welch t | p-value |
+|-------|------|---------|---------|
+| R&R #1 (Feb 2024) | −0.564V | −5.98 | 2.2e-08 |
+| R&R #2 (Jul 2025) | −0.314V | −2.82 | 6.9e-03 |
+| Total degradation | −0.878V | −7.36 | 5.4e-12 |
+
+### 2026-02-22: Structural Ground Theory Refinement
+- Owner identified that both Pin 47 (ANALOG IN 5 LO) and the alternator use **generic ground symbols** on the schematic — meaning they both connect to structural/airframe ground, not dedicated wire ground
+- The ECU uses a **dedicated wire** ground (GS-IP-3/4 → bus bar → wire 24008A4N → battery negative) — a continuous copper path that reads correctly
+- The GPU provides a **dedicated 6 AWG wire** (24405A6N) to battery negative — when connected, it shunts return current away from the degraded structural ground path
+- **Unified theory:** The structural ground network (used by Pin 47 and alternator) has resistance — at structural joints, at Cable 200's termination, and/or at the battery post stack-to-post contact. The GPU wire bypasses all of this. The ECU is unaffected because it uses a dedicated wire path.
+- This explains all observations: battery offset (-1.3V), GPU near-correct (-0.19V), flight offset (-1.4V avg), ECU stable (27.8V)
+- **Key inspection targets:** battery negative terminal (stack-to-post contact), Cable 200 and its termination, structural ground connections in battery area, Pin 47 wire trace to find where it connects to structural ground
+- Updated MAINTENANCE_GUIDE.md and README.md with structural ground vs dedicated wire theory, revised GPU bypass explanation, and updated inspection priorities
+
+### 2026-02-22: Document Reorganization — Single Unified README.md
+- Merged README.md (1,087 lines) and MAINTENANCE_GUIDE.md (942 lines) into a single well-organized README.md (866 lines)
+- Archived originals as `README_ARCHIVE.md` and `MAINTENANCE_GUIDE_ARCHIVE.md`
+- New document organized into 7 major parts:
+  1. **The Problem** — FlySto screenshots, key statistics table, Garmin's prescribed troubleshooting
+  2. **Evidence** — three-source comparison, flight visualizations, ground tests, structural ground theory, N541SA comparison, ECU differential analysis
+  3. **Root Cause Analysis** — how voltage is measured, differential reading explanation, why only G1000 reads low, data flow, probable cause summary
+  4. **Maintenance History** — historical analysis (184 flights), change-point detection, what was tried, second R&R differential diagnosis, timeline
+  5. **Troubleshooting & Repair Guide** — "For Mechanics: Start Here" callout, four areas to inspect, ground stud locations, GEA P701 pin reference, quick voltage drop test, ESS BUS switch test, resistance measurements, verification criteria
+  6. **Technical Reference** — electrical architecture, Mermaid diagrams, wire-level detail, ground stud inventory, AMM references, AFM appendices, reference images
+  7. **Analysis Tools & Repository** — repo structure, scripts, data sources, statistical methods
+- Key decisions: MAINTENANCE_GUIDE structural ground theory as primary version, all plots retained, wire-level detail moved to Technical Reference section, ground tests consolidated, Mermaid diagrams kept (tables used for ground stud groups instead of Mermaid)
+- All 27 image references verified (20 direct match + 7 URL-encoded space names)
+- All PDF and schematic link references verified
+
 ## Scripts
 
 ### voltage_analysis.py
@@ -670,6 +743,12 @@ python voltage_analysis.py
 Three-source analysis adding AE300 ECU data. Requires AustroView parsed CSVs at `../AustroView/Data/Parsed/`.
 ```bash
 python correlate_ecu.py
+```
+
+### ecu_changepoint.py
+Three-period G1000-ECU differential analysis with Pettitt change-point test. Matches G1000 flights to ECU sessions by same day (114 pairs), runs Pettitt on ECU standalone and G1000-ECU differential, computes three-period split with Welch t-tests, generates two PNG plots. Requires G1000 CSVs in `data/source/` and AustroView parsed ECU data at `../AustroView/Data/Parsed/`.
+```bash
+python ecu_changepoint.py
 ```
 
 ### voltage_history.py
