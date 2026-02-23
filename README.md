@@ -366,7 +366,23 @@ If there's extra resistance in the ground path, current flowing through that res
 V_displayed = V_actual - (I_load × R_bad_ground)
 ```
 
-At 20 amps of avionics load, just **0.05 ohms** of extra ground resistance = **1.0 volt** of under-reading. That's all it takes.
+**Estimating the resistance from our data:** The G1000-to-ECU offset averages 1.19V. With ~15A avionics load (typical with engine running, per MFD amps display), this implies **R ≈ 1.19V / 15A = 0.079Ω** (79 milliohms) of extra resistance in the ground path. That's all it takes.
+
+**How this triggers LOW VOLTS at normal load levels (15-20A):**
+
+The G1000 LOW VOLTS annunciation triggers at **24V** (per Garmin G1000 System Maintenance Manual). During cruise the alternator holds the bus at ~28V, so even with a 1.3V drop the G1000 reads ~26.7V — above threshold. But during **landing and taxi** (when the FlySto LOW VOLTS events occurred), the engine is at idle RPM, alternator output drops, and the bus voltage sags toward battery voltage:
+
+| Actual bus voltage | At 15A (0.079Ω) | G1000 reads | At 20A (0.079Ω) | G1000 reads |
+|---|---|---|---|---|
+| 28.0V (cruise) | -1.19V | 26.8V | -1.58V | 26.4V |
+| 27.0V (low alt output) | -1.19V | 25.8V | -1.58V | 25.4V |
+| **26.5V** (idle/taxi) | -1.19V | **25.3V** | -1.58V | **24.9V** |
+| **26.0V** (battery sag) | -1.19V | **24.8V** | -1.58V | **24.4V** |
+| **25.5V** (weak battery) | -1.19V | **24.3V** | -1.58V | **23.9V** |
+
+At 26V actual bus with 20A load → G1000 reads **24.4V** — any momentary load spike (radio TX, flap retraction, autopilot servo) pushes it below the 24V threshold and triggers LOW VOLTS.
+
+**This compounds in both directions:** higher resistance increases the drop at any given current, AND higher current increases the drop at any given resistance. A connection that degrades over time (corrosion, thermal cycling, vibration) faces both — worsening resistance while the same loads keep flowing. The battery that failed capacity testing at 68% (Jul 2025) makes it worse still, as a degraded battery sags more under load, lowering the starting bus voltage during idle/taxi phases.
 
 ### 3.3 The Voltage Measurement Path
 
