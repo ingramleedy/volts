@@ -79,6 +79,10 @@ These FlySto screenshots show actual LOW VOLTS events captured from G1000 flight
 
 ![LOW VOLTS events — 18 sec and 5 sec below 25V](docs/lowvolts_page3_img1.jpeg)
 
+**In-flight cockpit photo** — G1000 MFD showing 25.0V (at the LOW VOLTS threshold) with +13A alternator output during normal flight:
+
+![G1000 MFD in flight showing 25.0V and +13A — at LOW VOLTS threshold](docs/inflight-low-volts.png)
+
 These dips are **not real** — the independent VDL48 logger shows the bus voltage is steady at ~28V during these same periods. The G1000 is the only instrument seeing these drops.
 
 ### 1.2 Key Finding
