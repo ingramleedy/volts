@@ -229,7 +229,7 @@ The key to understanding the GPU test result is that there are **two different t
 
 2. **Structural/airframe grounds** — shown as generic ground symbols on the schematic. The component connects to the airframe structure, and current returns to battery negative through a chain of metal-to-metal joints (frame sections, bonding straps, engine mounts, etc.) and ultimately through **Cable 200** ("Cable, Battery GND") which connects the structural ground network to the battery negative post. Higher resistance, susceptible to corrosion at each joint.
 
-**Pin 47 (ANALOG IN 5 LO)** — the GEA's voltage measurement reference — is shown with a **generic ground symbol** on the Electrical System schematic (D44-9224-30-01X03). This means Pin 47 connects to the **structural ground**, not to a named GS-IP stud.
+**Pin 47 (ANALOG IN 5 LO)** — the GEA's voltage measurement reference — is shown on the Electrical System schematic (D44-9224-30-01X03) connected to the **ECU BUS**. However, the ECU BUS is a positive bus (fed from BATT BUS through a 100A fuse), and connecting a voltage sense LO (ground reference) to a positive bus makes no electrical sense. We infer that Pin 47 actually connects to **airplane/structural ground**, but the schematic does not explicitly show where — there is no named GS-IP stud, only the ambiguous ECU BUS connection. **The physical termination point is unknown.**
 
 **The alternator** is also shown with a **generic ground symbol** — it grounds through the engine block → engine mount bolts → firewall → airframe structure. It too depends on the structural ground network.
 
@@ -243,8 +243,8 @@ ECU → GS-IP-3/4 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1(-)
                                     ^^^^^^^^^^^^^^^^^^^^^^^^
                                     Continuous copper wire, low resistance
 
-STRUCTURAL GROUND PATH (suspect — Pin 47 and alternator use this):
-Pin 47 → structural ground → [joint] → [joint] → Cable 200 → Battery B1(-)
+STRUCTURAL GROUND PATH (suspect — Pin 47 and alternator inferred to use this):
+Pin 47 → airplane ground (unknown termination) → [joint] → [joint] → Cable 200 → Battery B1(-)
 Alternator → engine block → engine mount → firewall → structure → Cable 200 → Battery B1(-)
                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                 Multiple metal-to-metal joints, any one can corrode
@@ -252,7 +252,7 @@ Alternator → engine block → engine mount → firewall → structure → Cabl
 
 If the structural ground path has resistance — at any joint in the chain, at Cable 200's termination, or at the battery post where Cable 200 and the ring terminal stack make contact — then:
 
-**On battery:** All return current (~20A) must flow back to the battery post. The structural ground path (with its resistance) is the only return for Pin 47's reference. 20A × 0.065Ω = **1.3V drop**. Pin 47 floats 1.3V above true battery negative → GEA reads 1.3V low.
+**On battery:** All return current (~20A) must flow back to the battery post. Whatever ground path Pin 47 uses (inferred to be structural/airframe ground, since its physical termination is unknown), any resistance in that path is the only return for Pin 47's reference. 20A × 0.065Ω = **1.3V drop**. Pin 47 floats 1.3V above true battery negative → GEA reads 1.3V low.
 
 **On GPU:** The GPU cable (24405A6N) is a **dedicated 6 AWG copper wire** connected to the battery negative terminal stack. It provides a **parallel low-impedance return path** that the structural ground cannot match. Return current preferentially flows through the GPU wire (lower resistance) instead of through the degraded structural ground joints. Pin 47's ground reference is pulled down toward the GPU's clean ground → GEA reads nearly correctly.
 
@@ -354,7 +354,7 @@ The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe 
 - Per the AFM (Doc 6.01.15-E, Section 7.10.1, p.7-43): *"The voltmeter shows the voltage of the essential bus. Under normal operating conditions the alternator voltage is shown, otherwise it is the voltage of the main battery."*
 - The GEA 71S **senses bus voltage via a dedicated analog input** — Pin 46 (ANALOG IN 5 HI) and Pin 47 (ANALOG IN 5 LO), connected to the **Essential Bus** via shielded wires 31299A22WH/BL. A **3A fuse** protects the HI wire; an open fuse would produce a **0V reading**, not a low reading.
 - **The displayed voltage = Pin 46 (HI) minus Pin 47 (LO)** — a differential measurement. Pin 47 is the measurement reference. Any resistance at Pin 47's ground termination directly shifts the reading down.
-- **Critical unknown:** Pin 47 (wire 31299A22BL) connects to the low side of the Essential Bus, but the schematic shows only a generic ground symbol. **The physical ground point where wire 31299A22BL terminates is unknown and must be traced by the shop.**
+- **Critical unknown:** Pin 47 (wire 31299A22BL) connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows it connected to the ECU BUS — but the ECU BUS is a positive bus, so this cannot be a literal connection. We infer Pin 47 connects to airplane ground, but **the physical ground point where wire 31299A22BL terminates is unknown and must be traced by the shop.**
 
 No software calibration or correction is applied — with m=1.0 and b=0.0, the G1000 displays exactly what the GEA 71S hardware measures. The offset is a **hardware voltage drop**, not a calibration or firmware problem.
 
@@ -382,14 +382,14 @@ This is the master electrical system schematic for the MAM40-858 conversion (N23
 
 ### 3.5 Why Only the G1000 Reads Low
 
-The GEA 71S measures voltage as a **differential reading: Pin 46 (HI) minus Pin 47 (LO)**. Pin 47 connects to the low side of the Essential Bus via wire 31299A22BL — shown with only a generic ground symbol.
+The GEA 71S measures voltage as a **differential reading: Pin 46 (HI) minus Pin 47 (LO)**. Pin 47 connects to the low side of the Essential Bus via wire 31299A22BL. The schematic shows this wire connected to the ECU BUS (a positive bus), which makes no sense for a ground reference — we infer it connects to airplane ground, but the physical termination is unknown.
 
 The ECU (under the pilot's seat) grounds through **GS-IP-3 and GS-IP-4** (per AMM p1936-1937, Drawing D44-9274-10-00) — the same instrument panel ground bus. The ECU reads correctly (~27.8V), proving the shared GS-IP bus bar, wire 24008A4N, and aft ground termination are all healthy. The fault is isolated to connections unique to the GEA 71S.
 
 ```
 VOLTAGE MEASUREMENT PATH (differential — determines the reading):
 Pin 46 (HI) ← wire 31299A22WH ← Essential Bus positive (via fuse)
-Pin 47 (LO) ← wire 31299A22BL ← Essential Bus ground (UNKNOWN termination)
+Pin 47 (LO) ← wire 31299A22BL ← shown as ECU BUS on schematic (UNKNOWN actual termination)
                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                   SUSPECT #1 — trace this wire
 
@@ -556,9 +556,9 @@ Per the IPC (24-31), three connections at battery negative: wire 24008A4N (instr
 
 **2. Pin 47 (ANALOG IN 5 LO) Essential Bus ground**
 
-Wire 31299A22BL (shielded) — the voltage measurement reference. Per the G1000 wiring diagram (D44-9231-60-03), connects to the low side of the Essential Bus. Schematic shows only a generic ground symbol — **physical termination unknown, must be traced**. Pin 47's generic ground symbol likely means it connects to the structural ground network.
+Wire 31299A22BL (shielded) — the voltage measurement reference. Per the G1000 wiring diagram (D44-9231-60-03), connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows this wire connected to the ECU BUS — but the ECU BUS is a positive bus, so this cannot be a literal ground connection. We infer Pin 47 connects to airplane ground, but **the physical termination is unknown and must be traced**.
 
-**Why this is hard to find:** Other Diamond variants explicitly specify a ground stud (e.g. GS-IP-X) for this pin. **The DA40 NG schematic does not** — the wire must be physically traced from P701 Pin 47.
+**Why this is hard to find:** Other Diamond variants explicitly specify a ground stud (e.g. GS-IP-X) for this pin. **The DA40 NG schematic does not** — it shows only an ambiguous ECU BUS connection. The wire must be physically traced from P701 Pin 47.
 
 **3. Positive path: BATT BUS → Essential Bus**
 
@@ -566,7 +566,7 @@ Four relay/breaker contacts between BATT BUS and Essential Bus: Power Relay (PWR
 
 **4. GS-IP-14 / Pin 20 (POWER GROUND)**
 
-Wire 77016A22N. The GEA's power ground goes through the dedicated wire path (proven healthy by ECU data). However, if Pin 20 (dedicated wire) and Pin 47 (structural ground) are at different potentials, ADC common-mode range could be exceeded, causing erratic readings.
+Wire 77016A22N. The GEA's power ground goes through the dedicated wire path (proven healthy by ECU data). However, if Pin 20 (dedicated wire) and Pin 47 (unknown ground path) are at different potentials, ADC common-mode range could be exceeded, causing erratic readings.
 
 ### 5.2 Ground Stud Locations (GS-IP Series)
 
