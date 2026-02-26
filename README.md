@@ -661,7 +661,9 @@ The problem **did not resolve** after R&R #2. This **rules out firewall pass-thr
 
 **1. GEA P701/J701 Connector Pins — PRIMARY SUSPECT**
 
-The GEA 71S P701 connector is the single point where all voltage sensing and power wires converge. The load-dependent offset (test D: -1.155V at 6.1A on GPU) implies ~0.19Ω of resistance in a **current-carrying pin**. The vibration sensitivity (ground: -1.155V stable → flight: -1.4V to -2.1V with dips to -5.6V) is characteristic of a loose pin bouncing between contact states.
+> **AMM Procedure:** AMM 31-40-00 covers GEA 71/71B removal, installation, and inspection. The unit is on the instrument panel shelf behind the MFD in a mounting rack (see [photos and Figure 6 in Section 3.1](#31-where-the-voltage-is-actually-measured)). Remove lower instrument panel cover to access connectors from below, or remove retainer screw and slide unit out of rack.
+
+The GEA 71B P701 connector is the single point where all voltage sensing and power wires converge. The load-dependent offset (test D: -1.155V at 6.1A on GPU) implies ~0.19Ω of resistance in a **current-carrying pin**. The vibration sensitivity (ground: -1.155V stable → flight: -1.4V to -2.1V with dips to -5.6V) is characteristic of a loose pin bouncing between contact states.
 
 **Priority pins to inspect (current-carrying — most likely fault):**
 - **Pin 20 (POWER GROUND)** — wire 77016A22N → GS-IP-14. All GEA return current flows through this pin. A bad contact here creates a load-dependent offset AND corrupts the ADC ground reference.
@@ -897,7 +899,7 @@ The alternator voltage regulator (J2424) has its own **dedicated USENSE wire** (
 |-----------|---------|
 | AFM Doc 6.01.15-E, Section 7.10.1 | Electrical system description, bus architecture (pp. 7-39 to 7-43) |
 | AMM 24-60-00 | Bus structure, power distribution, troubleshooting |
-| AMM 31-40-00, p.985-986 | GEA 71S location (instrument panel shelf) |
+| AMM 31-40-00 | **GEA 71/71B removal, installation, and inspection procedure.** Location on instrument panel shelf (p.985-986, Figure 6). This is the AMM chapter for the GEA unit itself — use this for connector demate/remate and unit removal from mounting rack. |
 | AMM CH.92, D44-9224-30-01X03 | Electrical system wiring — [p1859](docs/AMM_p1859_D44-9224-30-01X03_Electrical_System_Conversion.png). Other variants: [p1857](docs/AMM_p1857_D44-9224-30-01_Electrical_System.png) · [p1858](docs/AMM_p1858_D44-9224-30-01_02_Electrical_System_Wiring.png) · [p1861](docs/AMM_p1861_D44-9224-30-05_Second_Alternator.png) |
 | AMM CH.92, D44-9231-60-03 | G1000 NXi wiring: [p1908](docs/AMM_p1908_G1000_wiring.png) · [p1909](docs/AMM_p1909_G1000_wiring.png) · [p1910](docs/AMM_p1910_G1000_wiring.png) · [p1911](docs/AMM_p1911_G1000_wiring.png) · [p1912](docs/AMM_p1912_G1000_wiring.png) |
 | [Garmin 190-00303-40](docs/GEA71_InstallationManual.pdf) | GEA 71 Installation Manual — P701/P702 pin lists (pp. 23-26) |
