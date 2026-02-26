@@ -19,7 +19,7 @@
 - [2.2 Flight Data Visualizations](#22-flight-data-visualizations)
 - [2.3 Three-Source Correlation](#23-three-source-correlation-adding-ecu-battery-voltage)
 - [2.4 Ground Tests](#24-ground-tests)
-- [2.5 Structural Ground vs Dedicated Wire](#25-structural-ground-vs-dedicated-wire--why-gpu-reads-correctly)
+- [2.5 Load-Dependent Offset and Vibration Sensitivity](#25-load-dependent-offset-and-vibration-sensitivity--p701-pin-contact)
 - [2.6 Why the Battery Matters](#26-why-the-battery-matters-but-isnt-the-cause)
 - [2.7 External Comparison (N541SA)](#27-external-comparison-da40ng-voltage-stability-n541sa)
 - [2.8 ECU Differential Analysis](#28-ecu-differential-analysis-gea-specific-isolation)
@@ -214,77 +214,138 @@ The offset exists on the ground with battery only. This rules out the alternator
 
 #### 2.4.2 Feb 20, 2026 — Battery vs GPU, Same Session
 
-Two tests performed back-to-back on the same day, same conditions:
+Two tests performed back-to-back on the same day, same conditions. **Both tests were Master ON only (no Avionics Bus)** — low electrical load (~1-2A):
 
 | Condition | Meter at AUX POWER | G1000 Display | Difference |
 |-----------|-------------------|---------------|------------|
-| Battery only, G1000 on, no engine | **25.3V** | **24.0V** | **-1.3V** |
-| GPU (Ground Power Unit) connected, G1000 on | **28.79V** | **28.6V** | **-0.19V** |
-
-**Same aircraft, same day, same ground conditions** — the only variable is battery vs GPU power source. The 1.3V offset is present on battery and gone on GPU in the same session. This eliminates any argument about intermittency or contact resistance changing over time.
+| Battery only, Master ON (no Avionics) | **25.3V** | **24.0V** | **-1.3V** |
+| GPU connected, Master ON (no Avionics) | **28.79V** | **28.6V** | **-0.19V** |
 
 The **24.0V G1000 reading on battery** is right at the LOW VOLTS annunciation threshold (24V per the Garmin G1000 System Maintenance Manual). Any additional electrical load would push it below threshold and trigger the annunciation — which is exactly what happens in flight.
 
-### 2.5 Structural Ground vs Dedicated Wire — Why GPU Reads Correctly
+> **Important context (discovered Feb 25):** These GPU tests were conducted at low load (Master ON only, Avionics Bus off). When tested at full avionics load on GPU (test D, Feb 25), the offset was **-1.155V** — not the near-zero result seen here. The -0.19V result reflects low current through the bad connection, not the GPU fixing the problem. See [Section 2.4.3](#243-feb-25-2026--battery-terminal-cleaning-structural-ground-test-and-flight-test).
 
-The key to understanding the GPU test result is that there are **two different types of ground paths** in this aircraft, and they behave very differently:
+#### 2.4.3 Feb 25, 2026 — Battery Terminal Cleaning, Structural Ground Test, and Flight Test
 
-1. **Dedicated wire grounds** — a continuous copper wire from the component to the battery negative terminal. Examples: wire 24008A4N (4 AWG, GS-IP bus bar → battery negative), wire 24405A6N (6 AWG, GPU negative → battery negative). Low resistance, reliable.
+**Battery terminal cleaned, structural grounds verified < 6 mV, problem persists in flight.**
 
-2. **Structural/airframe grounds** — shown as generic ground symbols on the schematic. The component connects to the airframe structure, and current returns to battery negative through a chain of metal-to-metal joints (frame sections, bonding straps, engine mounts, etc.) and ultimately through **Cable 200** ("Cable, Battery GND") which connects the structural ground network to the battery negative post. Higher resistance, susceptible to corrosion at each joint.
+**A. Before cleaning — Battery only vs GPU, Master ON only (no Avionics Bus — low load):**
 
-**Pin 47 (ANALOG IN 5 LO)** — the GEA's voltage measurement reference — is shown on the Electrical System schematic (D44-9224-30-01X03) connected to the **ECU BUS**. However, the ECU BUS is a positive bus (fed from BATT BUS through a 100A fuse), and connecting a voltage sense LO (ground reference) to a positive bus makes no electrical sense. We infer that Pin 47 actually connects to **airplane/structural ground**, but the schematic does not explicitly show where — there is no named GS-IP stud, only the ambiguous ECU BUS connection. **The physical termination point is unknown.**
+| Condition | AUX POWER | G1000 GEA | Offset |
+|-----------|-----------|-----------|--------|
+| Battery only, Master ON (no Avionics) | 26.2V | 24.7V | **-1.5V** |
+| GPU, Master ON (no Avionics) | 28.8V | 28.6V | **-0.2V** |
 
-**The alternator** is also shown with a **generic ground symbol** — it grounds through the engine block → engine mount bolts → firewall → airframe structure. It too depends on the structural ground network.
+> **Note:** The -0.2V GPU offset at low load appeared to show the GPU "fixing" the problem. This was misleading — test D below (GPU at full avionics load) shows **-1.155V** offset, proving the fault is load-dependent and present regardless of power source.
 
-**The ECU** grounds through **GS-IP-3 and GS-IP-4** → GS-IP bus bar → **wire 24008A4N** (4 AWG) → battery negative terminal. This is a **dedicated wire** ground, not structural.
+**B. Battery negative terminal inspection** — found three cables (bottom to top):
 
-This creates two parallel ground return paths to battery negative:
+| Position | Wire | Destination | Notes |
+|----------|------|-------------|-------|
+| Bottom (closest to post) | 24008A4N | GS-IP (Instrument Panel) | 4 AWG, as documented |
+| Middle | **24008B4N** | **GS-RP (Relay Panel)** | **NOT IN AMM SCHEMATICS — new discovery** |
+| Top | 24405A6N | GPU/EPU | Black sheath cable, as documented |
 
-```
-DEDICATED WIRE PATH (healthy — ECU uses this):
-ECU → GS-IP-3/4 → GS-IP bus bar → wire 24008A4N (4 AWG) → Battery B1(-)
-                                    ^^^^^^^^^^^^^^^^^^^^^^^^
-                                    Continuous copper wire, low resistance
+**Cable 24008B4N** is a companion ground wire to 24008A4N — both are heavy-gauge dedicated wires from battery negative to their respective ground stud groups. "Cable 200" is a **generic IPC item number** (IPC P/N D44-2403-160-00, "Cable, Battery GND") — it is simply the IPC catalog's sequential item designation for this cable, not a wire number or engineering identifier. The actual wire is **24008B4N**, as labeled on the cable itself. The wire number 24008B4N does not appear in AMM schematics, but the IPC lists it as item "Cable 200".
 
-STRUCTURAL GROUND PATH (suspect — Pin 47 and alternator inferred to use this):
-Pin 47 → airplane ground (unknown termination) → [joint] → [joint] → Cable 200 → Battery B1(-)
-Alternator → engine block → engine mount → firewall → structure → Cable 200 → Battery B1(-)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                Multiple metal-to-metal joints, any one can corrode
-```
+**C. After cleaning — terminal cleaned, reordered, retorqued.** New order (bottom to top): 24008B4N (GS-RP), 24008A4N (GS-IP), 24405A6N (EPU).
 
-If the structural ground path has resistance — at any joint in the chain, at Cable 200's termination, or at the battery post where Cable 200 and the ring terminal stack make contact — then:
+**D. Structural ground voltage drop test** — on GPU, Master ON, G1000 + Avionics Bus on (full load):
 
-**On battery:** All return current (~20A) must flow back to the battery post. Whatever ground path Pin 47 uses (inferred to be structural/airframe ground, since its physical termination is unknown), any resistance in that path is the only return for Pin 47's reference. 20A × 0.065Ω = **1.3V drop**. Pin 47 floats 1.3V above true battery negative → GEA reads 1.3V low.
+| From B1(-) to | Voltage Drop | Verdict |
+|----------------|-------------|---------|
+| Canopy ground strap (near instrument panel) | **5.6 mV** | Excellent |
+| Pilot step ground (forward fuselage) | **5.7 mV** | Excellent |
+| Wire loom ground (near battery, aft) | **2.3 mV** | Excellent |
+| Relay chassis (GS-RP) | **0 mV** | Perfect |
 
-**On GPU:** The GPU cable (24405A6N) is a **dedicated 6 AWG copper wire** connected to the battery negative terminal stack. It provides a **parallel low-impedance return path** that the structural ground cannot match. Return current preferentially flows through the GPU wire (lower resistance) instead of through the degraded structural ground joints. Pin 47's ground reference is pulled down toward the GPU's clean ground → GEA reads nearly correctly.
+**All structural ground points on the entire airframe are within 6 mV of battery negative.** The structural ground network is healthy.
 
-**In flight (alternator):** The alternator grounds through the **same structural ground path** as Pin 47 — engine block → mount → firewall → airframe → Cable 200 → battery post. It cannot bypass the structural ground; it adds to the current flowing through it. No GPU wire is connected (the EPU plug is an open circuit when no GPU is attached). Total current is higher (~25A+) and must cross the same degraded structural ground connections.
+**G1000 system power draw** (measured with Fluke i410 AC/DC Current Clamp, 1 mV/A, on GPU plug cable):
 
-```
-Battery only:   Pin 47 → [STRUCTURAL GROUND] → Cable 200 → [STACK] → Battery post
-                                                                ↑
-                                               All return current (~20A) → 1.3V drop
+| Metric | Value |
+|--------|-------|
+| Average current | **6.1A** |
+| Peak current | **7.2A** |
+| Voltage at battery terminal | 28.355V (GPU) |
+| Average power | **~173W** |
+| Peak power | **~204W** |
+| Load config | Master ON, G1000 on, Avionics Bus on, engine off |
 
-GPU connected:  Pin 47 → [STRUCTURAL GROUND] → Cable 200 → [STACK] → Battery post
-                                                               ↑
-                                    Current takes easier path ──→ 24405A6N → GPU(-)
-                                    (GPU wire = low R bypass)    only ~3A crosses → 0.2V drop
+*Note: In flight with engine running, the G1000 MFD alternator amp reading shows 13-15A (bouncing), which includes the G1000/avionics load plus battery charging and other aircraft systems.*
 
-In flight:      Pin 47 → [STRUCTURAL GROUND] → Cable 200 → [STACK] → Battery post
-                Alt    → engine → mount → [STRUCTURAL GROUND] → Cable 200 → same path
-                                                                ↑
-                                    No GPU wire, no bypass. ~25A+ → 1.6V+ drop
-```
+**Yet in the same test:** multimeter at battery terminal reads **28.355V**, G1000 GEA reads **27.2V** — an offset of **-1.155V** with every structural ground confirmed good. **The fault is not in any ground path downstream of the battery terminal.**
 
-| Condition | Ground Path for Pin 47 | Bypass Available? | Observed Offset |
-|-----------|----------------------|-------------------|-----------------|
-| Battery only, ground | Structural → Cable 200 → post | **No** — only path to battery | **-1.3V** |
-| GPU connected | Structural → Cable 200 → post **OR** 24405A6N (GPU wire) | **Yes** — GPU wire shunts current | **-0.19V** |
-| Flight (alternator) | Structural → Cable 200 → post | **No** — alternator also on structural ground | **-1.4V avg** |
+**E. Flight test (after cleaning):**
 
-**Why the ECU is unaffected:** The ECU's ground return is on wire 24008A4N — a **dedicated copper wire** that does not depend on any structural ground joints. Even if every structural ground joint in the aircraft is corroded, the ECU's reading stays correct because its current flows through copper wire the entire way. This is exactly what the data shows: ECU reads a stable 27.8V throughout the entire period.
+| Phase | G1000 GEA | AUX POWER | Offset |
+|-------|-----------|-----------|--------|
+| Taxi out | 27.8V | 28.3V | **-0.5V** |
+| Flight | 26.5V | 28.1V | **-1.6V** |
+| Flight | 26.7V | 28.1V | **-1.4V** |
+| Flight | 26.0V | 28.1V | **-2.1V** |
+| Taxi in | 25.0V | 26.2V | **-1.2V** |
+
+**The in-flight offset is unchanged after cleaning** (-1.4V to -2.1V, vs -1.4V average from Feb 8 VDL48 data). The battery terminal was not the fault.
+
+**What this eliminates:**
+- Battery negative terminal contact resistance (just cleaned and torqued)
+- Cable 24008A4N and 24008B4N / IPC "Cable 200" (structural ground tests prove continuity)
+- Structural ground joints (all < 6 mV from battery negative)
+- The entire structural ground network
+
+**What remains:** The GEA P701 connector, Pin 47's wire (31299A22BL) and its unknown termination, GS-IP-14 stud (Pin 20), the Essential Bus positive path relay/breaker contacts, and/or the Pin 46 3A fuse.
+
+### 2.5 Load-Dependent Offset and Vibration Sensitivity — P701 Pin Contact
+
+The voltage offset is **proportional to electrical load** and **dramatically worsened by vibration**. This pattern points to a resistive connection at one or more GEA P701 connector pins.
+
+#### 2.5.1 The Offset Scales with Load
+
+GPU ground tests on Feb 25 — with structural grounds verified healthy (< 6 mV) and battery terminal cleaned — isolate the GEA's own circuit:
+
+| Test | Power Source | Avionics Load | Current | Offset | Implied R |
+|------|-------------|---------------|---------|--------|-----------|
+| Feb 25-A | GPU | Master ON only (low) | ~1-2A | **-0.2V** | ~0.1-0.2Ω |
+| Feb 25-D | GPU | Master ON + Avionics ON (full) | ~6.1A | **-1.155V** | **~0.19Ω** |
+
+At low load on GPU, the offset is small (-0.2V). At full avionics load on GPU, the offset is **-1.155V**. This is **V = I × R** behavior, implying **~0.19Ω** of resistance in a current-carrying path unique to the GEA.
+
+> **Earlier GPU tests (Feb 20 and Feb 25-A) appeared to show the GEA reading correctly on GPU.** This was misleading — those tests were conducted at low load (Master ON only, no Avionics Bus). The low current produced only a small drop across the bad connection, masking the fault. **The GPU does not fix the problem.**
+
+Because the offset scales with avionics load current, the faulty resistance must be in a **current-carrying pin** — most likely **Pin 20 (POWER GROUND)** or **Pin 35 (AIRCRAFT POWER 1)** rather than Pin 47 (voltage sensing input, near-zero current). However, Pin 47 could contribute if its contact resistance is high enough to interact with the ADC's input bias current.
+
+#### 2.5.2 Vibration Makes It Dramatically Worse
+
+| Condition | Vibration | Offset |
+|-----------|-----------|--------|
+| Ground, GPU, full avionics | None | **-1.155V** (stable) |
+| Taxi | Low | **-0.5V to -1.2V** |
+| Flight | Full engine + airframe | **-1.4V to -2.1V**, worst dip **-5.6V** |
+
+A solid resistive connection would produce a stable, predictable offset proportional to load. The erratic, vibration-dependent swings — especially the deep transient dips to -5.6V — are characteristic of a **loose or corroded pin contact** that bounces between partial contact states under vibration. This also explains the excess noise in the G1000 data: VDL48 sees 0.27V std dev while the G1000 sees 0.69V on the same bus. A healthy DA40 NG (N541SA, [see comparison](#27-external-comparison-da40ng-voltage-stability-n541sa)) shows stable voltage — the instability is specific to N238PS.
+
+#### 2.5.3 Battery vs GPU at Low Load — Unexplained Difference
+
+The battery-only offset at low load (-1.5V) is much larger than the GPU offset at the same low load (-0.2V). This cannot be explained by the P701 pin resistance alone (which depends on current, not power source). The difference may reflect:
+
+- An additional resistive element in the battery return path that the GPU bypasses
+- A difference in how the GEA's ADC responds to different source impedances
+- A voltage drop in the Essential Bus positive feed path (Power Relay + MAIN TIE + Ess Tie Relay + ESS TIE) that is partially compensated when the GPU raises the overall bus voltage
+
+The structural ground network has been tested healthy (< 6 mV) and the battery terminal was cleaned, so neither of those explain it. **The exact mechanism is not fully resolved**, but the dominant fault — the load-dependent, vibration-sensitive resistance at the P701 connector — is clear from the GPU full-load test.
+
+#### 2.5.4 Why the ECU Is Unaffected
+
+The ECU grounds through **GS-IP-3 and GS-IP-4** → GS-IP bus bar → wire 24008A4N (4 AWG) → battery negative. This is a dedicated wire path with **no shared connector pins** with the GEA. The ECU reads a stable 27.8V throughout, proving the shared ground infrastructure is healthy and the fault is specific to the GEA P701 connector and its wiring.
+
+#### 2.5.5 What's Ruled Out
+
+- Battery negative terminal — cleaned and retorqued, no improvement
+- Structural ground network — all points < 6 mV from battery negative under full load
+- Wire 24008A4N and 24008B4N (IPC "Cable 200") — verified healthy
+- GS-IP bus bar — ECU uses it and reads correctly
+- Alternator, voltage regulator, charging system — ECU and VDL48 confirm correct bus voltage
 
 ### 2.6 Why the Battery Matters (but isn't the cause)
 
@@ -370,21 +431,26 @@ If there's extra resistance in the ground path, current flowing through that res
 V_displayed = V_actual - (I_load × R_bad_ground)
 ```
 
-**Estimating the resistance from our data:** The G1000-to-ECU offset averages 1.19V. With ~13A alternator output (typical in-flight load per MFD amps display), this implies **R ≈ 1.19V / 13A = 0.092Ω** (92 milliohms) of extra resistance in the ground path. That's all it takes.
+**Estimating the resistance from our data:**
+
+The Feb 25 ground test (test D) provides the cleanest measurement — GPU power, structural grounds verified healthy, battery terminal cleaned:
+- At 6.1A avionics load: **-1.155V** offset → **R ≈ 1.155V / 6.1A = 0.189Ω** (189 milliohms)
+
+This is consistent with the in-flight G1000-to-ECU offset (avg 1.19V) at ~13A alternator output, which gives R ≈ 0.092Ω — lower because the 13A total alternator current includes loads that don't flow through the GEA's specific bad connection. The ~0.19Ω estimate from the isolated ground test is more accurate.
 
 **How this triggers LOW VOLTS at normal load levels (13-20A):**
 
 The G1000 LOW VOLTS annunciation triggers at **24V** (per Garmin G1000 System Maintenance Manual). During cruise the alternator holds the bus at ~28V, so even with a 1.2V drop the G1000 reads ~26.8V — above threshold. But during **landing and taxi** (when the FlySto LOW VOLTS events occurred), the engine is at idle RPM, alternator output drops, and the bus voltage sags toward battery voltage:
 
-| Actual bus voltage | At 13A (0.092Ω) | G1000 reads | At 20A (0.092Ω) | G1000 reads |
+| Actual bus voltage | At 6A (0.19Ω) | G1000 reads | At 13A (0.19Ω) | G1000 reads |
 |---|---|---|---|---|
-| 28.0V (cruise) | -1.19V | 26.8V | -1.83V | 26.2V |
-| 27.0V (low alt output) | -1.19V | 25.8V | -1.83V | 25.2V |
-| **26.5V** (idle/taxi) | -1.19V | **25.3V** | -1.83V | **24.7V** |
-| **26.0V** (battery sag) | -1.19V | **24.8V** | -1.83V | **24.2V** |
-| **25.5V** (weak battery) | -1.19V | **24.3V** | -1.83V | **23.7V** |
+| 28.0V (cruise) | -1.14V | 26.9V | -2.47V | 25.5V |
+| 27.0V (low alt output) | -1.14V | 25.9V | -2.47V | 24.5V |
+| **26.5V** (idle/taxi) | -1.14V | **25.4V** | -2.47V | **24.0V** |
+| **26.0V** (battery sag) | -1.14V | **24.9V** | -2.47V | **23.5V** |
+| **25.5V** (weak battery) | -1.14V | **24.4V** | -2.47V | **23.0V** |
 
-At 26V actual bus with 20A load → G1000 reads **24.2V** — any momentary load spike (radio TX, flap retraction, autopilot servo) pushes it below the 24V threshold and triggers LOW VOLTS.
+At 26.5V actual bus (idle/taxi) with 13A through the bad connection → G1000 reads **24.0V** — right at the LOW VOLTS threshold. Any momentary load spike (radio TX, flap retraction, autopilot servo) or vibration-induced resistance increase pushes it below 24V and triggers the annunciation.
 
 **This compounds in both directions:** higher resistance increases the drop at any given current, AND higher current increases the drop at any given resistance. A connection that degrades over time (corrosion, thermal cycling, vibration) faces both — worsening resistance while the same loads keep flowing. The battery that failed capacity testing at 68% (Jul 2025) makes it worse still, as a degraded battery sags more under load, lowering the starting bus voltage during idle/taxi phases.
 
@@ -433,7 +499,39 @@ ECU     ──RS-232──→ GIA 63W ──HSDB──→ GDU displays   (engine
 
 The G1000 has no way to cross-check the GEA's voltage reading against the ECU's — it simply displays what the GEA reports. The only way to see the ECU's battery voltage is by downloading the ECU data log separately.
 
-### 3.7 Probable Cause Summary
+### 3.7 Why the G1000 Amps Reading Is Accurate (Despite the Voltage Error)
+
+The alternator current displayed on the MFD ("AMPS") is measured by a **Hall-effect current transducer** (J7700, the ALT AMPS SENSOR) using a **differential** input on GEA P701 Pins 42/43 (ANALOG IN 3 HI/LO). The transducer has its own isolated power supply (+10V from Pin 14) and ground return (Pin 11), completely separate from the POWER GROUND path at Pin 20.
+
+```
+GEA 71S P701                    ALT AMPS SENSOR (J7700)
+─────────────                   ───────────────────────
+Pin 14 (+10V TRANSDUCER PWR) ──→  V+    (wire 24331A22OR)
+Pin 42 (ANALOG IN 3 HI)     ←──  OUT HI (wire 24331A22WH)
+Pin 43 (ANALOG IN 3 LO)     ←──  OUT LO (wire 24331A22BL)
+Pin 11 (TRANSDUCER LO/GND)  ──→  GND
+```
+
+Because the amps measurement is differential and isolated from the power ground, **the bad ground path does NOT affect the amps reading**. The MFD amps display is accurate.
+
+**Observed amps behavior:** The MFD alternator amps reading bounces between **13-15A** both on the ground at idle and during cruise flight. This is **normal voltage regulator hunting** — the regulator constantly adjusts alternator field current to maintain target bus voltage, and the amps display reflects those adjustments. At idle RPM the alternator is near the bottom of its output range, so the regulator hunts more aggressively (wider swing). In cruise at higher RPM the alternator has more headroom and the hunting range narrows. This behavior is not related to the voltage measurement fault — the amps circuit is fully isolated from the bad pin contact.
+
+**G1000 system power draw** (measured Feb 25, 2026 on the ground with Fluke i410 AC/DC Current Clamp, 1 mV/A, clamped on GPU plug cable):
+
+| Metric | Value |
+|--------|-------|
+| Average current draw | **6.1A** |
+| Peak current draw | **7.2A** |
+| Voltage at battery terminal | 28.355V (GPU) |
+| Average power | **~173W** |
+| Peak power | **~204W** |
+| Load config | Master ON, G1000 on, Avionics Bus on, engine off |
+
+The 6.1A G1000/avionics load is a subset of the 13-15A total alternator output — the remainder goes to battery charging, lighting, pitot heat, and other aircraft systems.
+
+**Note:** G1000 CSV data logs do not record amps (only `volt1` and `volt2`). The ECU data logs do not record aircraft electrical current (only fuel system solenoid currents). The MFD amps display is the only source for alternator current data, and it is not logged.
+
+### 3.8 Probable Cause Summary
 
 1. **Variable offset, not constant** — varies from -5.6 V to +1.7 V (σ = 0.71 V). Consistent with current-dependent voltage drops across a resistive connection.
 2. **G1000 shows excess noise** — VDL sees 0.27 V std dev while G1000 sees 0.69 V on the same bus.
@@ -487,7 +585,7 @@ The engine R&R on **February 28, 2024** (oil leak repair) aligns precisely with 
 
 Panels were opened, harnesses were moved, and connectors were handled throughout the aircraft. Something disturbed a ground connection, and nobody noticed the G1000 was now reading a volt low.
 
-**Probable mechanism — battery terminal corrosion:** During the R&R, the battery was disconnected and ring terminals left exposed in a humid Florida hangar. Contact surfaces oxidized. When reassembled, surfaces were not cleaned and DC4 compound was likely not applied (per AMM 24-31). Result: persistent oxide/corrosion creating ~0.065Ω contact resistance.
+**~~Probable mechanism — battery terminal corrosion:~~** ~~During the R&R, the battery was disconnected and ring terminals left exposed in a humid Florida hangar.~~ **ELIMINATED (Feb 25, 2026):** Battery terminal was cleaned, retorqued, and structural grounds verified at < 6 mV — problem persists unchanged. **Revised mechanism:** Something during the Feb 2024 shop visit disturbed the GEA P701 connector, Pin 47's wire termination, or GS-IP-14 stud — these components are unique to the GEA sensing path and were not disturbed during R&R #2.
 
 ### 4.3 What Has Already Been Tried (and didn't fix it)
 
@@ -501,8 +599,9 @@ Panels were opened, harnesses were moved, and connectors were handled throughout
 | Feb 2025 | Replaced main alternator AND voltage regulator (3rd time) | No improvement |
 | Jul 2025 | Engine R&R #2 + new battery + pitch servo replaced again | No improvement |
 | Feb 2026 | Cleaned GDL 69A pins (CH.23) | No improvement — wrong unit |
+| **Feb 25, 2026** | **Cleaned battery negative terminal + retorqued** | **No improvement — structural grounds all < 6 mV, flight offset unchanged (-1.4 to -2.1V)** |
 
-None addressed the ground path. The alternator and regulators were never the problem.
+None addressed the GEA-specific sensing path. The alternator, regulators, and battery terminal were never the problem.
 
 ### 4.4 Second Engine R&R — Differential Diagnosis
 
@@ -533,6 +632,7 @@ The problem **did not resolve** after R&R #2. This **rules out firewall pass-thr
 | **Feb 8, 2026** | ~158 | **VDL48 flight test**: -1.36V mean, -5.6V worst |
 | Feb 15, 2026 | ~160 | Shop cleaned GDL 69A pins (wrong unit) |
 | **Feb 20, 2026** | ~160 | **GPU test**: 0.19V offset with GPU vs 1.3V battery |
+| **Feb 25, 2026** | ~160 | **Battery terminal cleaned/retorqued + structural grounds all < 6 mV + flight test: -1.4 to -2.1V offset unchanged** |
 
 <br>
 
@@ -544,57 +644,59 @@ The problem **did not resolve** after R&R #2. This **rules out firewall pass-thr
 
 > **For Mechanics:** This section contains all the actionable information — where to look, how to test, and how to verify the fix. The preceding sections provide the evidence and analysis.
 
-### 5.1 Where to Look (Four Areas)
+### 5.1 Where to Look
 
-**1. Battery negative terminal, Cable 200, and structural grounds (aft fuselage)**
+> **Updated Feb 25, 2026:** Battery negative terminal, structural grounds, and shared GS-IP infrastructure are all eliminated. The fault is isolated to the GEA P701 connector and its specific wiring. The offset is **load-dependent** (~0.19Ω) and **vibration-sensitive** — characteristic of a loose or corroded pin contact.
 
-Per the IPC (24-31), three connections at battery negative: wire 24008A4N (instrument panel), wire 24405A6N (EPU), and **Cable 200** (D44-2403-160-00, "Cable, Battery GND"). The **BatteryMinder** (installed Sep 2024) also connects here. This terminal has been disturbed during both R&Rs and the battery replacement. **This is the most likely fault location.**
+**1. GEA P701/J701 Connector Pins — PRIMARY SUSPECT**
 
-**Battery negative terminal inspection checklist:**
-- Count total ring terminals on the negative post
-- Identify each terminal (24008A4N, 24405A6N, Cable 200, BatteryMinder)
-- Check stacking order (closest to post first): Cable 200, 24008A4N, 24405A6N, BatteryMinder
-- **Inspect contact between bottom terminal (Cable 200) and battery post** — predicted fault location
-- Check each terminal for corrosion, deformation, discoloration
+The GEA 71S P701 connector is the single point where all voltage sensing and power wires converge. The load-dependent offset (test D: -1.155V at 6.1A on GPU) implies ~0.19Ω of resistance in a **current-carrying pin**. The vibration sensitivity (ground: -1.155V stable → flight: -1.4V to -2.1V with dips to -5.6V) is characteristic of a loose pin bouncing between contact states.
 
-**Battery negative cleaning and reassembly (per AMM 24-31):**
-1. Disconnect battery (Master OFF, positive cable first)
-2. Remove nut, lift each terminal, note stacking order
-3. Clean battery post to bright metal (terminal cleaner brush or scotch-brite)
-4. Clean each ring terminal (both sides)
-5. Inspect crimps per AMM 20-30-00 Section C
-6. Reassemble in correct order; use only bolt + bevel lock washer provided with battery (per Concorde 5-0324 Rev G)
-7. Apply **Dow Corning DC4** compound per AMM 24-31
-8. Torque to **70 in-lbs (7.9 Nm)**; hold flat with open-end wrench while torquing
-9. Reconnect battery (negative first, then positive)
+**Priority pins to inspect (current-carrying — most likely fault):**
+- **Pin 20 (POWER GROUND)** — wire 77016A22N → GS-IP-14. All GEA return current flows through this pin. A bad contact here creates a load-dependent offset AND corrupts the ADC ground reference.
+- **Pin 35 (AIRCRAFT POWER 1)** — wire 77015A22 from Essential Bus via ENG INST 5A breaker. All GEA supply current flows through this pin. A bad contact on the power side has the same effect.
+- **Pin 78 (POWER GROUND)** — second power ground pin, also routes to GS-IP-14.
 
-**Cable 200 inspection — CRITICAL:**
-- Trace Cable 200 from battery negative to its termination point
-- **This cable bridges the structural ground network to the battery** — a bad connection at either end elevates the entire structural ground
-- Inspect termination: corrosion, loose fastener, paint under terminal
-- Measure resistance from Cable 200's far-end termination to battery negative (should be < 0.005Ω)
+**Also inspect (voltage sensing — secondary):**
+- **Pin 47 (ANALOG IN 5 LO)** — wire 31299A22BL, voltage measurement reference. High-impedance input (near-zero current), so a bad contact would cause noise/instability rather than a clean load-dependent offset — but it could contribute to the erratic deep dips.
+- **Pin 46 (ANALOG IN 5 HI)** — wire 31299A22WH, voltage measurement positive. Same reasoning.
+- **Pin 45 (ANALOG IN 4 LO)** — wire 77016A22N (same wire as Pin 20), GEA self-monitoring ground.
 
-**2. Pin 47 (ANALOG IN 5 LO) Essential Bus ground**
+**What to look for:**
+- **Backed-out pins** — check from the rear of the connector. A pin that has partially withdrawn from its socket has intermittent contact under vibration.
+- **Corrosion or discoloration** on pin contacts
+- **Connector not fully seated** — partially mated connector increases contact resistance on all pins
+- **Damaged strain relief** — allows the harness to flex at pin contacts during vibration
+- **Chafed or damaged wires** — especially shielded wires 31299A22WH/BL (Pins 46/47)
+
+**Why this is the top suspect:** The offset scales with avionics load current (V = I × R at ~0.19Ω), worsens dramatically with vibration (bouncing between partial contact states), and produces the excess voltage noise that distinguishes N238PS from a healthy DA40 NG. A loose pin in a connector behind the instrument panel — subject to engine vibration transmitted through the airframe — explains every observation in the data.
+
+**2. Pin 47 (ANALOG IN 5 LO) — Trace This Wire**
 
 Wire 31299A22BL (shielded) — the voltage measurement reference. Per the G1000 wiring diagram (D44-9231-60-03), connects to the low side of the Essential Bus. The Electrical System schematic (D44-9224-30-01X03) shows this wire connected to the ECU BUS — but the ECU BUS is a positive bus, so this cannot be a literal ground connection. We infer Pin 47 connects to airplane ground, but **the physical termination is unknown and must be traced**.
 
 **Why this is hard to find:** Other Diamond variants explicitly specify a ground stud (e.g. GS-IP-X) for this pin. **The DA40 NG schematic does not** — it shows only an ambiguous ECU BUS connection. The wire must be physically traced from P701 Pin 47.
 
-**3. Positive path: BATT BUS → Essential Bus**
+**3. GS-IP-14 / Pin 20 (POWER GROUND)**
 
-Four relay/breaker contacts between BATT BUS and Essential Bus: Power Relay (PWR 60A), MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A. The ECU bypasses all of these. Measure Essential Bus voltage directly vs AUX POWER.
+Wire 77016A22N. The GEA's power ground terminates at GS-IP-14 — the only LRU on this stud. Even though the dedicated wire path downstream is healthy (ECU proves GS-IP bus bar and 24008A4N are fine), if the **GS-IP-14 stud itself** is corroded or loose, it only affects the GEA. Check: loose nut, corrosion under ring terminal, paint/primer between terminal and stud, cracked terminal.
 
-**4. GS-IP-14 / Pin 20 (POWER GROUND)**
+**4. Positive path: BATT BUS → Essential Bus**
 
-Wire 77016A22N. The GEA's power ground goes through the dedicated wire path (proven healthy by ECU data). However, if Pin 20 (dedicated wire) and Pin 47 (unknown ground path) are at different potentials, ADC common-mode range could be exceeded, causing erratic readings.
+Four relay/breaker contacts between BATT BUS and Essential Bus: Power Relay (PWR 60A), MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A. The ECU bypasses all of these (ECU BUS is fed directly from BATT BUS). Resistance across these contacts would be load-dependent — potentially explaining part of the offset. Measure Essential Bus voltage directly vs AUX POWER (HOT BUS) to quantify any drop in the positive path.
+
+**~~5. Battery negative terminal, wire 24008B4N (IPC "Cable 200"), and structural grounds~~ — ELIMINATED**
+
+Cleaned and retorqued Feb 25, 2026. Structural ground voltage drops measured at all major airframe points — all < 6 mV from battery negative under full avionics load. Problem persists unchanged in flight. **Not the fault.**
 
 ### 5.2 Ground Stud Locations (GS-IP Series)
 
 | Ground Stud | What's Connected | Priority |
 |-------------|-----------------|----------|
-| **Pin 47 ground** | **GEA Pin 47 (ANALOG IN 5 LO)** — wire 31299A22BL (unknown termination) | **TRACE AND CHECK FIRST** |
+| **P701 connector** | **All GEA pins — inspect connector first** | **CHECK FIRST** |
+| **Pin 47 ground** | **GEA Pin 47 (ANALOG IN 5 LO)** — wire 31299A22BL (unknown termination) | **TRACE THIS WIRE** |
 | **GS-IP-14** | **GEA 71S Pin 20 + Pin 45** (wire 77016A22N) + Pin 49 glow lamp | **CHECK SECOND** |
-| **GS IP-6** | GIA 63W #1 + GIA 63W #2 | **CHECK SECOND** |
+| **GS IP-6** | GIA 63W #1 + GIA 63W #2 | Check third |
 | **GS IP-4** | GDU 1050 PFD + GDU 1060 MFD + GMA 1360 + COM 1 | Check third — most loaded (4 LRUs) |
 | **GS IP-5** | GRS 79 AHRS #1 + AHRS #2 (via GS AVB) | Check fourth |
 | **GS IP-3** | GPS/NAV 1 + Wx 500 Stormscope | Check fifth |
@@ -809,7 +911,9 @@ The ENG INST breaker is in the Essential Bus group, confirming the GEA 71S is on
 
 #### 6.6.1 IPC 24-31 Battery Installation
 
-Battery mounting in aft fuselage. Shows three connections at battery negative: wire 24008A4N, wire 24405A6N, and **Cable 200** ("Cable, Battery GND").
+Battery mounting in aft fuselage. The IPC shows three connections at battery negative: wire 24008A4N, wire 24405A6N, and "Cable 200" (item 200 in the IPC catalog — a generic sequential item number, not a wire number).
+
+**Actual inspection (Feb 25, 2026)** found three cables at B1(-): 24008A4N (GS-IP), **24008B4N** (GS-RP), and 24405A6N (EPU). The IPC's "Cable 200" (P/N D44-2403-160-00, "Cable, Battery GND") is actually **wire 24008B4N** — "Cable 200" is just the IPC's generic item number for this cable. The wire number 24008B4N does not appear in AMM schematics but is labeled on the physical cable. Battery terminal was cleaned, retorqued; structural grounds verified < 6 mV — **problem persists unchanged in flight**.
 
 ![IPC 24-31 Battery Installation](docs/24-31%20Battery%20Installation.png)
 
