@@ -687,7 +687,24 @@ Four relay/breaker contacts between BATT BUS and Essential Bus: Power Relay (PWR
 
 **~~5. Battery negative terminal, wire 24008B4N (IPC "Cable 200"), and aft/cabin structural grounds~~ — ELIMINATED**
 
-Cleaned and retorqued Feb 25, 2026. Structural ground voltage drops measured at aft fuselage and cabin points — all < 6 mV from battery negative under full avionics load. Problem persists unchanged in flight. **Not the fault.** Note: GS-IP studs (instrument panel) and engine compartment grounds not yet tested — see item 3 above for GS-IP-14.
+Cleaned and retorqued Feb 25, 2026. Structural ground voltage drops measured at aft fuselage and cabin points — all < 6 mV from battery negative under full avionics load. Problem persists unchanged in flight. **Not the fault.**
+
+**6. Areas Not Yet Tested (TODO)**
+
+Two areas remain untested and should be checked for completeness:
+
+**Instrument panel area** — contains the Main Bus, Avionic Bus, Essential Bus (what the GEA reads), and the GS-IP ground stud series. This is where all the bus ground references (airplane ground symbols on the schematic) physically terminate. Key tests:
+- Voltage drop from battery negative to each GS-IP stud (especially GS-IP-14)
+- Voltage drop from battery negative to the Essential Bus ground reference
+- Direct voltage measurement on the Essential Bus vs AUX POWER (quantifies positive path drops)
+- **Trace Pin 47 wire (31299A22BL)** — it must terminate somewhere in this area
+
+**Engine compartment** — contains the fuse panel (100A ECU BUS fuse, other high-current fuses), ALT AMPS current sensor (J7700), ECU BUS, and Battery Bus. The schematic shows Pin 47 connected to the ECU BUS, which has a physical presence here. Key tests:
+- Voltage drop from battery negative to engine compartment ground points (alternator ground strap, engine-to-mount bonding, firewall ground)
+- Inspect the fuse panel and its ground connections
+- Check whether the ECU BUS connection shown for Pin 47 has any physical wiring in the engine area
+
+Testing both areas completes the ground survey from battery negative → aft fuselage (done) → cabin (done) → instrument panel (TODO) → engine compartment (TODO). If all test clean, the fault is definitively at the P701 connector contacts or GS-IP-14 stud.
 
 ### 5.2 Ground Stud Locations (GS-IP Series)
 

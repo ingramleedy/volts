@@ -807,6 +807,10 @@ The engine was removed and reinstalled a second time in **Apr-Jul 2025** (piston
 - **Section 5.1 revised:** Pin 20 (POWER GROUND) and Pin 35 (AIRCRAFT POWER 1) elevated as primary suspects (current-carrying pins). Pin 47 remains important but secondary (sensing input, near-zero current).
 - Updated README.md: section 2.4.2 (added load context to Feb 20 tests), section 2.5 (complete rewrite), section 3.2 (resistance estimate), section 3.2 table (recalculated with 0.19Ω), section 5.1 (revised suspect priorities), TOC
 - N541SA comparison context: a healthy DA40 NG shows stable voltage — the excess noise and instability in N238PS is consistent with a vibration-sensitive pin contact unique to this aircraft
+- **Structural ground test scope corrected:** Feb 25 tests covered aft fuselage and cabin only. Two areas remain untested:
+  - **Instrument panel area** — Main Bus, Avionic Bus, Essential Bus, GS-IP ground stud series (including GS-IP-14), bus ground references (airplane ground symbols). This is where Pin 47 wire must terminate. Need to study instrument panel diagrams to identify access points and test locations.
+  - **Engine compartment** — fuse panel (100A ECU BUS fuse), ALT AMPS current sensor (J7700), ECU BUS physical presence, Battery Bus. The schematic shows Pin 47 connected to ECU BUS which has components here. Also: alternator ground strap, engine-to-mount bonding, firewall ground points.
+- Updated README.md sections 2.4.3, 2.5.5, and 5.1 to accurately reflect test coverage; added new section 5.1 item 6 "Areas Not Yet Tested (TODO)" with instrument panel and engine compartment test plans
 
 ## Scripts
 
