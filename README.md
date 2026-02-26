@@ -1,6 +1,6 @@
 # N238PS — G1000 LOW VOLTS Investigation
 
-**Aircraft:** N238PS (Diamond DA40NG, MAM40-858)
+**Aircraft:** N238PS (Diamond DA40NG, S/N 40.NC249, MAM40-858, Airworthiness Date: June 2023)
 **Problem:** G1000 NXi displays lower voltage than actual bus voltage, causing intermittent LOW VOLTS annunciations
 **Date:** February 2026
 **Prepared by:** Aircraft Owner (Ingram Leedy)
