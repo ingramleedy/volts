@@ -410,7 +410,18 @@ Both R&Rs worsened the GEA-specific path. Before R&R #1, the G1000 was actually 
 
 ### 3.1 Where the Voltage Is Actually Measured
 
-The G1000 bus voltage ("volt1") is measured by the **GEA 71S** (Engine/Airframe unit), mounted on the **instrument panel shelf** behind the MFD (AMM 31-40-00, p.985, Figure 6). It is the bottom-left unit on the shelf, accessible by removing the lower instrument panel cover.
+The G1000 bus voltage ("volt1") is measured by the **GEA 71B** (Engine/Airframe unit, P/N 011-03682-00), mounted on the **instrument panel shelf** behind the MFD in a mounting rack (AMM 31-40-00, p.985-986, Figure 6). It is the bottom-left unit on the shelf, accessible by removing the lower instrument panel cover.
+
+**Physical installation (N238PS):**
+
+| | |
+|---|---|
+| ![GEA 71B side profile showing cable harnesses](docs/GEA71B-SIDEPROFILE.png) | ![GEA 71B top-down showing part numbers](docs/GEA71B-TOPDOWN.png) |
+| Side profile — two cable harnesses (P701/P702) exit from bottom, held by a retaining clamp. Connector access is from below. | Top-down — Garmin labels and part numbers visible. Unit secured in mounting rack by retainer screw from above. |
+
+![AMM 31-40-00 Figure 6 — GEA 71/71B Processor Installation](docs/AMM_p986_GEA71_installation.png)
+
+*AMM 31-40-00, Figure 6: GEA 71/71B mounts in a rack on the instrument panel shelf. Secured by retainer + retainer screw. Connectors mate from below — to inspect P701 pins, remove lower instrument panel cover and demate the connector, or remove the retainer screw and slide the unit out.*
 
 **AMM Schematic — G1000 NXi GEA 71S Wiring (D44-9231-60-03, Sheet 4/6):**
 
