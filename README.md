@@ -259,7 +259,7 @@ The **24.0V G1000 reading on battery** is right at the LOW VOLTS annunciation th
 | Wire loom ground (near battery, aft) | **2.3 mV** | Excellent |
 | Relay chassis (GS-RP) | **0 mV** | Perfect |
 
-**All structural ground points on the entire airframe are within 6 mV of battery negative.** The structural ground network is healthy.
+**All tested structural ground points are within 6 mV of battery negative** — aft fuselage and cabin structural grounds are healthy. **Not yet tested:** instrument panel ground studs (GS-IP series, including GS-IP-14 where the GEA terminates) and engine compartment grounds. These require studying the instrument panel diagrams to identify access points.
 
 **G1000 system power draw** (measured with Fluke i410 AC/DC Current Clamp, 1 mV/A, on GPU plug cable):
 
@@ -342,7 +342,7 @@ The ECU grounds through **GS-IP-3 and GS-IP-4** → GS-IP bus bar → wire 24008
 #### 2.5.5 What's Ruled Out
 
 - Battery negative terminal — cleaned and retorqued, no improvement
-- Structural ground network — all points < 6 mV from battery negative under full load
+- Structural ground network (aft fuselage and cabin) — all tested points < 6 mV from battery negative under full load. GS-IP studs and engine compartment grounds not yet tested.
 - Wire 24008A4N and 24008B4N (IPC "Cable 200") — verified healthy
 - GS-IP bus bar — ECU uses it and reads correctly
 - Alternator, voltage regulator, charging system — ECU and VDL48 confirm correct bus voltage
@@ -685,9 +685,9 @@ Wire 77016A22N. The GEA's power ground terminates at GS-IP-14 — the only LRU o
 
 Four relay/breaker contacts between BATT BUS and Essential Bus: Power Relay (PWR 60A), MAIN TIE 30A, Ess Tie Relay, ESS TIE 30A. The ECU bypasses all of these (ECU BUS is fed directly from BATT BUS). Resistance across these contacts would be load-dependent — potentially explaining part of the offset. Measure Essential Bus voltage directly vs AUX POWER (HOT BUS) to quantify any drop in the positive path.
 
-**~~5. Battery negative terminal, wire 24008B4N (IPC "Cable 200"), and structural grounds~~ — ELIMINATED**
+**~~5. Battery negative terminal, wire 24008B4N (IPC "Cable 200"), and aft/cabin structural grounds~~ — ELIMINATED**
 
-Cleaned and retorqued Feb 25, 2026. Structural ground voltage drops measured at all major airframe points — all < 6 mV from battery negative under full avionics load. Problem persists unchanged in flight. **Not the fault.**
+Cleaned and retorqued Feb 25, 2026. Structural ground voltage drops measured at aft fuselage and cabin points — all < 6 mV from battery negative under full avionics load. Problem persists unchanged in flight. **Not the fault.** Note: GS-IP studs (instrument panel) and engine compartment grounds not yet tested — see item 3 above for GS-IP-14.
 
 ### 5.2 Ground Stud Locations (GS-IP Series)
 
